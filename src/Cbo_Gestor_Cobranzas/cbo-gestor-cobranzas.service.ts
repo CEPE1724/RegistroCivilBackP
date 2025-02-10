@@ -37,7 +37,7 @@ export class CboGestorCobranzasService {
 
   // Obtener todos los registros con filtros y paginación
   async findAll(filters: FindAllFiltersDto): Promise<ResponseDto<CboGestorCobranzas>> {
-    const { idCbo_Gestores, idCbo_Gestores_Estrategia, page = 1, limit = 10 } = filters;
+    const { idCbo_Gestores, Bodega, page = 1, limit = 10 } = filters;
 
     const qb = this.cboGestorCobranzasRepository.createQueryBuilder('g');
 
@@ -46,8 +46,8 @@ export class CboGestorCobranzasService {
       qb.andWhere('g.idCbo_Gestores = :idCbo_Gestores', { idCbo_Gestores });
     }
 
-    if (idCbo_Gestores_Estrategia) {
-      qb.andWhere('g.idCbo_Gestores_Estrategia = :idCbo_Gestores_Estrategia', { idCbo_Gestores_Estrategia });
+    if (Bodega) {
+      qb.andWhere('g.Bodega = :Bodega', { Bodega });
     }
 
     // Paginación

@@ -13,6 +13,9 @@ export class CboGestorCobranzas {
   idCbo_Gestores: number;
 
   @Column({ nullable: true })
+  Bodega: number;
+
+  @Column({ nullable: true })
   idCbo_Gestores_Estrategia: number;
 
   @Column({ nullable: true })

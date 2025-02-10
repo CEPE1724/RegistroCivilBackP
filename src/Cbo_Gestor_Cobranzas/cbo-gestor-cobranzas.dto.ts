@@ -5,9 +5,10 @@ export class FindAllFiltersDto {
   @IsInt()
   idCbo_Gestores?: number;
 
+ 
   @IsOptional()
   @IsInt()
-  idCbo_Gestores_Estrategia?: number;
+  Bodega?: number;
 
   @IsOptional()
   @IsInt()
@@ -16,6 +17,7 @@ export class FindAllFiltersDto {
   @IsOptional()
   @IsInt()
   limit?: number = 10;
+
 }
 
 // src/cbo-gestor/cbo-gestor-cobranzas.dto.ts
