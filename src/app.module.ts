@@ -8,6 +8,7 @@ import { HistoricoModule } from './historico/historico.module';
 import { CboGestorCobranzasModule } from './Cbo_Gestor_Cobranzas/cbo-gestor-cobranzas.module';
 import { CboGestoresModule } from './cbo-gestores/cbo-gestores.module';
 import { CboGestoresEstrategiaModule } from './Cbo_Gestores_Estrategia/Cbo_Gestores_Estrategia.module';
+import {BodegaModule} from './Bodega/Bodega.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,6 +42,7 @@ import { CboGestoresEstrategiaModule } from './Cbo_Gestores_Estrategia/Cbo_Gesto
     CboGestorCobranzasModule,
     CboGestoresModule,
     CboGestoresEstrategiaModule,
+    BodegaModule
   ],
 })
 export class AppModule {}

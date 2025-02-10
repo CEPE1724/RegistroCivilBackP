@@ -1,6 +1,5 @@
 import { Controller, Get, Query } from '@nestjs/common';  // Agregar @Query() desde @nestjs/common
 import { CboGestorCobranzasService } from './cbo-gestor-cobranzas.service';
-import { CboGestorCobranzas } from './cbo-gestor-cobranzas.entity';
 import { FindAllFiltersDto, ResponseDto } from './cbo-gestor-cobranzas.dto';
 
 @Controller('cbo-gestor-cobranzas')
