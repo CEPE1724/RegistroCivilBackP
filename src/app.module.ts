@@ -9,6 +9,9 @@ import { CboGestorCobranzasModule } from './Cbo_Gestor_Cobranzas/cbo-gestor-cobr
 import { CboGestoresModule } from './cbo-gestores/cbo-gestores.module';
 import { CboGestoresEstrategiaModule } from './Cbo_Gestores_Estrategia/Cbo_Gestores_Estrategia.module';
 import {BodegaModule} from './Bodega/Bodega.module';
+import { Cbo_EstadosGestionModule } from './Cbo_EstadosGestion/Cbo_EstadosGestion.module';
+import { Cbo_EstadosTipoContactoModule } from './Cbo_EstadosTipoContacto/Cbo_EstadosTipoContacto.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -42,7 +45,9 @@ import {BodegaModule} from './Bodega/Bodega.module';
     CboGestorCobranzasModule,
     CboGestoresModule,
     CboGestoresEstrategiaModule,
-    BodegaModule
+    BodegaModule,
+    Cbo_EstadosGestionModule,
+    Cbo_EstadosTipoContactoModule
   ],
 })
 export class AppModule {}
