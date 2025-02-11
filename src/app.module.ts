@@ -11,6 +11,7 @@ import { CboGestoresEstrategiaModule } from './Cbo_Gestores_Estrategia/Cbo_Gesto
 import {BodegaModule} from './Bodega/Bodega.module';
 import { Cbo_EstadosGestionModule } from './Cbo_EstadosGestion/Cbo_EstadosGestion.module';
 import { Cbo_EstadosTipoContactoModule } from './Cbo_EstadosTipoContacto/Cbo_EstadosTipoContacto.module';
+import { Cbo_ResultadoGestionModule } from './Cbo_ResultadoGestion/Cbo_ResultadoGestion.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { Cbo_EstadosTipoContactoModule } from './Cbo_EstadosTipoContacto/Cbo_Est
     CboGestoresEstrategiaModule,
     BodegaModule,
     Cbo_EstadosGestionModule,
-    Cbo_EstadosTipoContactoModule
+    Cbo_EstadosTipoContactoModule,
+    Cbo_ResultadoGestionModule
   ],
 })
 export class AppModule {}
