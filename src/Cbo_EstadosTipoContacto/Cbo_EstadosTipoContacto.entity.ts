@@ -15,6 +15,4 @@ export class Cbo_EstadosTipoContactoEntity {
 	idCbo_EstadoGestion: number;
 	@Column()
 	Estado: string;
-	@Column()
-	Activo: boolean;
 }
