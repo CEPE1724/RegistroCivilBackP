@@ -12,7 +12,6 @@ export class Cbo_ResultadoGestionController {
     @Get() 
     async find(@Query('idCbo_EstadosTipocontacto') idCbo_EstadosTipocontacto: number): Promise<any> {
         console.log('idCbo_EstadosTipocontacto', idCbo_EstadosTipocontacto);
-        console.log('El valor del parámetro es:')
         if (!idCbo_EstadosTipocontacto) {
             return { statusCode: 400, message: 'Bad Request', data: null };
         }

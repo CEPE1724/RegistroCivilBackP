@@ -12,8 +12,8 @@ export class Cbo_EstadosTipoContactoService {
 
     //obtener un registro por id
 
-    async findOne(idCbo_EstadoGestion: number): Promise<Cbo_EstadosTipoContactoEntity> {
-        return await this.repository.findOne({ where: { idCbo_EstadoGestion } });
+    async find(idCbo_EstadoGestion: number): Promise<Cbo_EstadosTipoContactoEntity[]> {
+        return this.repository.find({ where: { idCbo_EstadoGestion } });
     }
 
 }
