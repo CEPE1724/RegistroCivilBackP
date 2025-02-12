@@ -10,20 +10,10 @@ export class Cbo_EstadosTipoContactoService {
         private readonly repository: Repository<Cbo_EstadosTipoContactoEntity>
     ) {}
 
-    //obtener todos los registros
-
-    async findAll(): Promise<Cbo_EstadosTipoContactoEntity[]> {
-        return await this.repository.find(
-            {
-                where: { idCbo_EstadoGestion: 8 },
-            }
-        );
-    }
-
     //obtener un registro por id
 
-    async findOne(idCbo_EstadoGestion: number): Promise<Cbo_EstadosTipoContactoEntity> {
-        return await this.repository.findOne({ where: { idCbo_EstadoGestion } });
+    async find(idCbo_EstadoGestion: number): Promise<Cbo_EstadosTipoContactoEntity[]> {
+        return this.repository.find({ where: { idCbo_EstadoGestion } });
     }
 
 }
