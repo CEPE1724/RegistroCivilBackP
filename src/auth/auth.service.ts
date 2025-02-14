@@ -7,7 +7,7 @@ export class AuthService {
   constructor(private readonly jwtService: JwtService) {}
 
   generateJwtToken(user: Usuario): string {
-    const payload = { Nombre: user.Nombre, sub: user.idUsuario };
+    const payload = { Nombre: user.Nombre, sub: user.idUsuario, roles: user.idGrupo };
     return this.jwtService.sign(payload, { expiresIn: '3h' });
   }
   
