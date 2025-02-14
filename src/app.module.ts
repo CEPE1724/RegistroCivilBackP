@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { join } from 'path';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuarioModule } from './usuarios/usuario.module';
@@ -12,9 +13,15 @@ import {BodegaModule} from './Bodega/Bodega.module';
 import { Cbo_EstadosGestionModule } from './Cbo_EstadosGestion/Cbo_EstadosGestion.module';
 import { Cbo_EstadosTipoContactoModule } from './Cbo_EstadosTipoContacto/Cbo_EstadosTipoContacto.module';
 import { Cbo_ResultadoGestionModule } from './Cbo_ResultadoGestion/Cbo_ResultadoGestion.module';
+import { DatacognoModule } from './datacogno/datacogno.module';
+import { ServeStaticModule } from '@nestjs/serve-static';
+
 
 @Module({
   imports: [
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'public'),
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
 
@@ -49,7 +56,8 @@ import { Cbo_ResultadoGestionModule } from './Cbo_ResultadoGestion/Cbo_Resultado
     BodegaModule,
     Cbo_EstadosGestionModule,
     Cbo_EstadosTipoContactoModule,
-    Cbo_ResultadoGestionModule
+    Cbo_ResultadoGestionModule,
+    DatacognoModule
   ],
 })
 export class AppModule {}
