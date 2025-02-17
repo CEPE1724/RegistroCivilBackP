@@ -15,6 +15,8 @@ import { Cbo_EstadosTipoContactoModule } from './Cbo_EstadosTipoContacto/Cbo_Est
 import { Cbo_ResultadoGestionModule } from './Cbo_ResultadoGestion/Cbo_ResultadoGestion.module';
 import { DatacognoModule } from './datacogno/datacogno.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { CreVerificacionTelefonicaModule } from './cre_verificacion-telefonica/cre_verificacion-telefonica.module';
+import { CommonModule } from './common/common.module';
 
 
 @Module({
@@ -57,7 +59,9 @@ import { ServeStaticModule } from '@nestjs/serve-static';
     Cbo_EstadosGestionModule,
     Cbo_EstadosTipoContactoModule,
     Cbo_ResultadoGestionModule,
-    DatacognoModule
+    DatacognoModule,
+    CreVerificacionTelefonicaModule,
+    CommonModule
   ],
 })
 export class AppModule {}
