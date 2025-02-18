@@ -5,7 +5,7 @@ import { ResponseDto } from "./Cbo_ResultadoGestion.dto";
 import { Param } from "@nestjs/common";
 import { query } from "express";
 
-@Controller('api/v1/Cbo_ResultadoGestion')
+@Controller('Cbo_ResultadoGestion')
 export class Cbo_ResultadoGestionController {
     constructor(private readonly service: Cbo_ResultadoGestionService) {}
 

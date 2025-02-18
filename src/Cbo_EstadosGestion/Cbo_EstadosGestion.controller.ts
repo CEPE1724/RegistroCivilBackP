@@ -3,7 +3,7 @@ import { Cbo_EstadosGestionService } from "./Cbo_EstadosGestion.service";
 import { Cbo_EstadosGestionEntity } from "./Cbo_EstadosGestion.entity";
 import { ResponseDto } from "./Cbo_EstadosGestion.dto";
 
-@Controller('api/v1/Cbo_EstadosGestion')
+@Controller('Cbo_EstadosGestion')
 export class Cbo_EstadosGestionController {
     constructor(private readonly service: Cbo_EstadosGestionService) {}
 

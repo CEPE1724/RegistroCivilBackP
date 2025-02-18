@@ -4,7 +4,7 @@ import { Request } from 'express';
 import { JwtAuthGuard } from '../auth/JwtAuthGuard';
 import { UseGuards } from '@nestjs/common';
 
-@Controller('api/v1/historico')
+@Controller('historico')
 export class HistoricoController {
   constructor(
     private readonly historicoService: HistoricoService,
