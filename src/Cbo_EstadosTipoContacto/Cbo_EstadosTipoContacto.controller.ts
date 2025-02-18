@@ -4,7 +4,7 @@ import { Cbo_EstadosTipoContactoEntity } from "./Cbo_EstadosTipoContacto.entity"
 import { ResponseDto } from "./Cbo_EstadosTipoContacto.dto";
 import { Param } from "@nestjs/common";
 
-@Controller('api/v1/Cbo_EstadosTipoContacto')
+@Controller('Cbo_EstadosTipoContacto')
 export class Cbo_EstadosTipoContactoController {
     constructor(private readonly service: Cbo_EstadosTipoContactoService) {}
 

@@ -1,21 +1,23 @@
+
 import { IsOptional, IsInt, IsString } from 'class-validator';
 
 export class FindAllFiltersDto {
   @IsOptional()
-  @IsInt()
+
   idCbo_Gestores?: number;
 
- 
   @IsOptional()
-  @IsInt()
+ 
   Bodega?: number;
 
   @IsOptional()
-  @IsInt()
+
+
   page?: number = 1;
 
   @IsOptional()
-  @IsInt()
+
+
   limit?: number = 10;
 
 }
@@ -35,4 +37,8 @@ export class ResponseDto<T> {
       this.limit = limit;
     }
   }
+
+function Type(arg0: () => NumberConstructor): (target: FindAllFiltersDto, propertyKey: "Bodega") => void {
+  throw new Error('Function not implemented.');
+}
   

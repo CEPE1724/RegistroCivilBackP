@@ -12,7 +12,7 @@ import {
 import { JwtAuthGuard } from '../auth/JwtAuthGuard';
 import { CiudadanoService } from './ciudadano.service';
 
-@Controller('api/v1/dactilar')
+@Controller('dactilar')
 
 export class CiudadanoController {
   constructor(private readonly ciudadanoService: CiudadanoService) {}
