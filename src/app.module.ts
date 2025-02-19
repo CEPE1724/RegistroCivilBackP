@@ -18,6 +18,8 @@ import { ServeStaticModule } from '@nestjs/serve-static';
 import { CreVerificacionTelefonicaModule } from './cre_verificacion-telefonica/cre_verificacion-telefonica.module';
 import { CommonModule } from './common/common.module';
 import { CompraencuestaModule } from './compraencuesta/compraencuesta.module';
+import { CreActividadeconominaModule } from './cre_actividadeconomina/cre_actividadeconomina.module';
+import { CreTiempoModule } from './cre_tiempo/cre_tiempo.module';
 
 
 @Module({
@@ -63,7 +65,9 @@ import { CompraencuestaModule } from './compraencuesta/compraencuesta.module';
     DatacognoModule,
     CreVerificacionTelefonicaModule,
     CommonModule,
-    CompraencuestaModule
+    CompraencuestaModule,
+    CreActividadeconominaModule,
+    CreTiempoModule
   ],
 })
 export class AppModule {}
