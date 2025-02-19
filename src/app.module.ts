@@ -17,6 +17,7 @@ import { DatacognoModule } from './datacogno/datacogno.module';
 import { ServeStaticModule } from '@nestjs/serve-static';
 import { CreVerificacionTelefonicaModule } from './cre_verificacion-telefonica/cre_verificacion-telefonica.module';
 import { CommonModule } from './common/common.module';
+import { CompraencuestaModule } from './compraencuesta/compraencuesta.module';
 
 
 @Module({
@@ -61,7 +62,8 @@ import { CommonModule } from './common/common.module';
     Cbo_ResultadoGestionModule,
     DatacognoModule,
     CreVerificacionTelefonicaModule,
-    CommonModule
+    CommonModule,
+    CompraencuestaModule
   ],
 })
 export class AppModule {}
