@@ -1,0 +1,114 @@
+
+/*CREATE TABLE [dbo].[Cre_SolicitudWeb](
+    [idCre_SolicitudWeb] [int] IDENTITY(1,1) NOT NULL,
+    [Fecha] [datetime] NULL,
+    [NumeroSolicitud] [varchar](50) NULL,
+    [Bodega] [int] NULL,
+    [idVendedor] [int] NULL,
+    [idCompraEncuesta] [int] NULL,
+    [Cedula] [varchar](20) NULL,
+    [CodDactilar] [varchar](20) NULL,
+    [Apellidos] [varchar](150) NULL,
+    [Nombres] [varchar](150) NULL,
+    [Celular] [varchar](20) NULL,
+    [Email] [varchar](150) NULL,
+    [idActEconomina] [int] NULL,
+    [idCre_Tiempo] [int] NULL,
+    [bAfiliado] [bit] NULL,
+    [bTieneRuc] [bit] NULL,
+    [Foto] [varchar](max) NULL,
+    [bTerminosYCondiciones] [bit] NULL,
+    [bPoliticas] [bit] NULL,
+    [Estado] [int] NULL,
+    [idProductos] [int] NULL,
+    [FechaSistema] [datetime] NULL,
+    [Estacion] [varchar](50) NULL,
+    [Usuario] [varchar](50) NULL,*/
+
+import {
+    IsNotEmpty, IsString, IsNumber, IsBoolean, IsDate, IsOptional, isNumber, Min,
+    MinLength,
+    IsPositive
+} from 'class-validator';
+import { Type } from 'class-transformer';
+
+export class CreateCreSolicitudWebDto {
+
+    @IsDate()
+    @Type(() => Date)
+    Fecha: Date;
+
+    @IsString()
+    @MinLength(5)
+    @IsOptional()
+    NumeroSolicitud: string;
+
+    @IsNumber()
+    @IsPositive()
+    Bodega: number;
+
+    @IsNumber()
+    @IsPositive()
+    idVendedor: number;
+
+    @IsNumber()
+    @IsPositive()
+    idCompraEncuesta: number;
+
+    @IsString()
+    @MinLength(10)
+    Cedula: string;
+
+    @IsString()
+    @MinLength(8)
+    CodDactilar: string;
+
+    @IsString()
+    @MinLength(4)
+    Apellidos: string;
+
+    @IsString()
+    @MinLength(4)
+    Nombres: string;
+
+    @IsString()
+    @MinLength(10)
+    Celular: string;
+
+    @IsString()
+    @MinLength(5)
+    Email: string;
+
+    @IsNumber()
+    @IsPositive()
+    idActEconomina: number;
+
+    @IsNumber()
+    @IsPositive()
+    idCre_Tiempo: number;
+
+    @IsBoolean()
+    bAfiliado: boolean;
+
+    @IsBoolean()
+    bTieneRuc: boolean;
+
+    @IsString()
+    @MinLength(5)
+    Foto: string;
+
+    @IsBoolean()
+    bTerminosYCondiciones: boolean;
+
+    @IsBoolean()
+    bPoliticas: boolean;
+
+    @IsNumber()
+    @IsOptional()
+    Estado?: number;
+
+    @IsNumber()
+    @IsPositive()
+    idProductos: number;
+
+}
