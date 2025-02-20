@@ -20,6 +20,7 @@ import { CommonModule } from './common/common.module';
 import { CompraencuestaModule } from './compraencuesta/compraencuesta.module';
 import { CreActividadeconominaModule } from './cre_actividadeconomina/cre_actividadeconomina.module';
 import { CreTiempoModule } from './cre_tiempo/cre_tiempo.module';
+import { CreSolicitudWebModule } from './cre_solicitud-web/cre_solicitud-web.module';
 
 
 @Module({
@@ -67,7 +68,8 @@ import { CreTiempoModule } from './cre_tiempo/cre_tiempo.module';
     CommonModule,
     CompraencuestaModule,
     CreActividadeconominaModule,
-    CreTiempoModule
+    CreTiempoModule,
+    CreSolicitudWebModule
   ],
 })
 export class AppModule {}
