@@ -1,8 +1,14 @@
 import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsPositive, Min } from "class-validator";
+import { IsInt, IsOptional, IsPositive, IsString, Min } from "class-validator";
 
 
 export class PaginationDto {
+
+  @IsOptional()
+  @IsString()
+  @Type (() => String)
+  Filtro?: string;
+
   @IsOptional()
   @IsPositive()
   @Type (() => Number)
@@ -13,3 +19,4 @@ export class PaginationDto {
   @Type (() => Number)
   offset?: number ;
 }
+/* para crear  nest g mo common*/

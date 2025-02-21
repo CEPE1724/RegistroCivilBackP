@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { CreSolicitudWebService } from './cre_solicitud-web.service';
 import { CreateCreSolicitudWebDto } from './dto/create-cre_solicitud-web.dto';
 import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Controller('cre-solicitud-web')
 export class CreSolicitudWebController {
@@ -13,8 +14,8 @@ export class CreSolicitudWebController {
   }
 
   @Get()
-  findAll() {
-    return this.creSolicitudWebService.findAll();
+  findAll(@Query() paginationDto: PaginationDto) {
+    return this.creSolicitudWebService.findAll(paginationDto);
   }
 
   @Get(':id')
