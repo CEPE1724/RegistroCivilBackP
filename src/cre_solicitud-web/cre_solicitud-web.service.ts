@@ -1,9 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import { In, Repository } from 'typeorm';
+import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { Brackets, In, Repository } from 'typeorm';
 import { CreateCreSolicitudWebDto } from './dto/create-cre_solicitud-web.dto';
 import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { CreSolicitudWeb } from './entities/cre_solicitud-web.entity';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationDto } from 'src/common/dtos/pagination.dto';
 
 @Injectable()
 export class CreSolicitudWebService {
@@ -26,9 +27,46 @@ export class CreSolicitudWebService {
     }
   }
 
-  findAll() {
-    return this.creSolicitudWebRepository.find();
+  async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0, Filtro = '' } = paginationDto;
+  
+    let creSolicitudWeb: CreSolicitudWeb[];
+  
+    const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
+  
+    // Solo agregar el filtro si Filtro tiene un valor
+    if (Filtro) {
+      console.log('Filtro', Filtro);
+  
+      // Aplica un filtro a las columnas
+      queryBuilder.where(
+        new Brackets(qb => {
+          qb.where('LOWER(cre_solicitud_web.NumeroSolicitud) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
+            .orWhere('LOWER(cre_solicitud_web.Cedula) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
+            .orWhere('LOWER(cre_solicitud_web.Apellidos) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
+            .orWhere('LOWER(cre_solicitud_web.Nombres) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
+            .orWhere('LOWER(cre_solicitud_web.Celular) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
+            .orWhere('LOWER(cre_solicitud_web.Email) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` });
+        })
+      );
+    }
+  
+    // Aplicar la paginación
+    queryBuilder.skip(offset).take(limit);
+  
+    // Ejecutar la consulta y devolver los resultados
+    creSolicitudWeb = await queryBuilder.getMany();
+  
+    if (creSolicitudWeb.length === 0) {
+      throw new NotFoundException('No se encontraron registros');
+    }
+  
+    return creSolicitudWeb;
   }
+  
+  
+  
+  
 
   findOne(id: number) {
     return `This action returns a #${id} creSolicitudWeb`;

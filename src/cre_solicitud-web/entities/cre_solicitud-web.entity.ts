@@ -1,5 +1,5 @@
 
-import { Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { BeforeInsert, Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('Cre_SolicitudWeb')
 export class CreSolicitudWeb {
@@ -11,6 +11,7 @@ export class CreSolicitudWeb {
     Fecha: Date;
 
     @Column('varchar')
+    
     NumeroSolicitud: string;
 
     @Column('int')
@@ -66,5 +67,20 @@ export class CreSolicitudWeb {
 
     @Column('int')
     idProductos: number;
+
+    @BeforeInsert()
+    upperApellidos() {
+        if (this.Apellidos) {
+            this.Apellidos = this.Apellidos.toUpperCase();
+        }
+    }
+    
+    @BeforeInsert()
+    upperNombres() {
+        if (this.Nombres) {
+            this.Nombres = this.Nombres.toUpperCase();
+        }
+    }
+    
 
 }
