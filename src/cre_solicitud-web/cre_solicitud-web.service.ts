@@ -19,25 +19,25 @@ export class CreSolicitudWebService {
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
 
     try {
-       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
-       await this.creSolicitudWebRepository.save(creSolicitudWeb);
-        return creSolicitudWeb;
+      const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
+      await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      return creSolicitudWeb;
     } catch (error) {
-        this.handleDBException(error);
+      this.handleDBException(error);
     }
   }
 
   async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0, Filtro = '' } = paginationDto;
-  
+
     let creSolicitudWeb: CreSolicitudWeb[];
-  
+
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
-  
+
     // Solo agregar el filtro si Filtro tiene un valor
     if (Filtro) {
       console.log('Filtro', Filtro);
-  
+
       // Aplica un filtro a las columnas
       queryBuilder.where(
         new Brackets(qb => {
@@ -50,23 +50,30 @@ export class CreSolicitudWebService {
         })
       );
     }
-  
+
+    // Aplicar la paginación
+    const totalCount = await queryBuilder.getCount();
+
     // Aplicar la paginación
     queryBuilder.skip(offset).take(limit);
-  
-    // Ejecutar la consulta y devolver los resultados
+
+    // Ejecutar la consulta para obtener los registros
     creSolicitudWeb = await queryBuilder.getMany();
-  
+
     if (creSolicitudWeb.length === 0) {
       throw new NotFoundException('No se encontraron registros');
     }
-  
-    return creSolicitudWeb;
+
+    // Devolver los registros junto con el total de registros
+    return {
+      data: creSolicitudWeb,
+      total: totalCount, // Total de registros sin paginación
+    };
   }
-  
-  
-  
-  
+
+
+
+
 
   findOne(id: number) {
     return `This action returns a #${id} creSolicitudWeb`;
@@ -81,9 +88,9 @@ export class CreSolicitudWebService {
   }
 
   private handleDBException(error: any) {
-     if(error.code === '23505') {
-         throw new BadRequestException(error.detail);
-        }
+    if (error.code === '23505') {
+      throw new BadRequestException(error.detail);
+    }
     this.logger.error(error);
     throw new InternalServerErrorException('Unexpected error');
 
