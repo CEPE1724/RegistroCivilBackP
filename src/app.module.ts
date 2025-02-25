@@ -21,7 +21,8 @@ import { CompraencuestaModule } from './compraencuesta/compraencuesta.module';
 import { CreActividadeconominaModule } from './cre_actividadeconomina/cre_actividadeconomina.module';
 import { CreTiempoModule } from './cre_tiempo/cre_tiempo.module';
 import { CreSolicitudWebModule } from './cre_solicitud-web/cre_solicitud-web.module';
-
+import { CognosolicitudcreditoModule } from './cognosolicitudcredito/cognosolicitudcredito.module';
+import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 
 @Module({
   imports: [
@@ -69,7 +70,9 @@ import { CreSolicitudWebModule } from './cre_solicitud-web/cre_solicitud-web.mod
     CompraencuestaModule,
     CreActividadeconominaModule,
     CreTiempoModule,
-    CreSolicitudWebModule
+    CreSolicitudWebModule,
+    CognosolicitudcreditoModule,
+    AuthModuleCogno,
   ],
 })
 export class AppModule {}
