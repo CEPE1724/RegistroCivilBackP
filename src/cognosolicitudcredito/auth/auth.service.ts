@@ -8,9 +8,11 @@ import axios from 'axios';
 import * as qs from 'qs';  // Asegúrate de tener instalado qs
 import { CreateCognosolicitudcreditoDto } from '../dto/create-cognosolicitudcredito.dto';
 import { CreateCognopersonanaturalDto } from '../dto/create-cognopersonanatural.dto';
+import { CreateCognolugarnacimientoDto } from '../dto/create-cognolugarnacimiento.dto';
 import { UpdateCognosolicitudcreditoDto } from '../dto/update-cognosolicitudcredito.dto';
 import { Cognosolicitudcredito } from '../entities/cognosolicitudcredito.entity';
 import { CognoPersonaNatural }from '../entities/cognopersonanatural.entity';
+import { CognoSolicitudLugarNacimiento } from '../entities/cognosolicitudlugarnacimiento.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class AuthService {
@@ -27,6 +29,9 @@ export class AuthService {
         
         @InjectRepository(CognoPersonaNatural)
         private readonly cognoPersonaNaturalRepository: Repository<CognoPersonaNatural>, 
+
+        @InjectRepository(CognoSolicitudLugarNacimiento)
+        private readonly cognoSolicitudLugarNacimientoRepository: Repository<CognoSolicitudLugarNacimiento>,
    
     
     ) { }
@@ -275,6 +280,75 @@ export class AuthService {
             this.handleDBException(error);
         }
     }
+    
+    async createLugarNacimiento(apiData: any, idCognoSolicitudCredito: number , Tipo: number): Promise<CognoSolicitudLugarNacimiento> {
+        try {
+        console.log('apiData', apiData);
+        /// veirificar si existe la persona natural
+        const existingRecord = await this.cognoSolicitudLugarNacimientoRepository.findOne({
+            where: { idCognoSolicitudCredito: idCognoSolicitudCredito },
+        });
+
+        /* titutlar*/
+        if (existingRecord) {
+            // Actualizamos los datos si ya existe
+            existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
+            existingRecord.idLugar = apiData.personaNatural.lugarNacimiento.idLugar;
+            existingRecord.codigoPostal = apiData.personaNatural.lugarNacimiento.codigoPostal;
+            existingRecord.fechaActualizacion = apiData.personaNatural.lugarNacimiento.fechaActualizacion || null;
+            existingRecord.idPais = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.idPais; 
+            existingRecord.Pais = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.nombre;
+            existingRecord.codigoAreaPais = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoArea;
+            existingRecord.codigoIso2 = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso2;
+            existingRecord.codigoIso3 = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso3;
+            existingRecord.codigoIso = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso;
+            existingRecord.idProvincia = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.idProvincia;
+            existingRecord.Provincia = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.nombre;
+            existingRecord.codigoAreaProvincia = apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.codigoArea;
+            existingRecord.idCanton = apiData.personaNatural.lugarNacimiento.parroquia.canton.idCanton;
+            existingRecord.Canton = apiData.personaNatural.lugarNacimiento.parroquia.canton.nombre;
+            existingRecord.idParroquia = apiData.personaNatural.lugarNacimiento.parroquia.idParroquia;
+            existingRecord.Parroquia = apiData.personaNatural.lugarNacimiento.parroquia.nombre;
+            existingRecord.Tipo = 0;
+ 
+           //// tipo establesco como 0 
+           
+            await this.cognoSolicitudLugarNacimientoRepository.save(existingRecord);
+            return existingRecord;
+        }
+        else 
+        {
+           const createCognolugarNacimientoDto: CreateCognolugarnacimientoDto= {
+            idCognoSolicitudCredito: idCognoSolicitudCredito,
+            idLugar: apiData.personaNatural.lugarNacimiento.idLugar,
+            codigoPostal: apiData.personaNatural.lugarNacimiento.codigoPostal,
+            fechaActualizacion: apiData.personaNatural.lugarNacimiento.fechaActualizacion || null,
+            idPais: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.idPais, 
+            Pais: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.nombre,
+            codigoAreaPais: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoArea,
+            codigoIso2: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso2,
+            codigoIso3: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso3,
+            codigoIso: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso,
+            idProvincia: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.idProvincia,
+            Provincia: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.nombre,
+            codigoAreaProvincia: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.codigoArea,
+            idCanton: apiData.personaNatural.lugarNacimiento.parroquia.canton.idCanton,
+            Canton: apiData.personaNatural.lugarNacimiento.parroquia.canton.nombre,
+            idParroquia: apiData.personaNatural.lugarNacimiento.parroquia.idParroquia,
+            Parroquia: apiData.personaNatural.lugarNacimiento.parroquia.nombre,
+            Tipo: 0,
+           }
+           const newRecord = this.cognoSolicitudLugarNacimientoRepository.create(createCognolugarNacimientoDto);
+           await this.cognoSolicitudLugarNacimientoRepository.save(newRecord);
+           return newRecord;
+        }
+
+    }
+    catch (error) {
+        this.handleDBException(error);
+    }
+
+}
 
     private handleDBException(error: any) {
         if (error.code === '23505') {
