@@ -25,7 +25,8 @@ export class AuthController {
                  await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
             }
         }
-     const saveDataLugarNacimiento = await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
+        
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
 
         return { apiData, saveData, saveDataNatural };
     }

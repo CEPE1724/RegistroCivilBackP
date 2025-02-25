@@ -4,12 +4,13 @@ import { CognosolicitudcreditoService } from './cognosolicitudcredito.service';
 import { CognosolicitudcreditoController } from './cognosolicitudcredito.controller';
 import { Cognosolicitudcredito } from './entities/cognosolicitudcredito.entity';
 import { CognoPersonaNatural } from './entities/cognopersonanatural.entity';
+import { CognoSolicitudLugarNacimiento } from './entities/cognosolicitudlugarnacimiento.entity';
 import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 
 @Module({
   controllers: [CognosolicitudcreditoController, AuthController],
   providers: [CognosolicitudcreditoService, AuthService],
-  imports: [TypeOrmModule.forFeature([Cognosolicitudcredito, CognoPersonaNatural])],
+  imports: [TypeOrmModule.forFeature([Cognosolicitudcredito, CognoPersonaNatural, CognoSolicitudLugarNacimiento])],
 })
 export class CognosolicitudcreditoModule {}
