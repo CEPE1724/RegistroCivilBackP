@@ -283,12 +283,12 @@ export class AuthService {
     
     async createLugarNacimiento(apiData: any, idCognoSolicitudCredito: number , Tipo: number): Promise<CognoSolicitudLugarNacimiento> {
         try {
-        console.log('apiData', apiData);
+        //console.log('apiData', apiData);
         /// veirificar si existe la persona natural
         const existingRecord = await this.cognoSolicitudLugarNacimientoRepository.findOne({
             where: { idCognoSolicitudCredito: idCognoSolicitudCredito },
         });
-
+      
         /* titutlar*/
         if (existingRecord) {
             // Actualizamos los datos si ya existe
@@ -318,6 +318,7 @@ export class AuthService {
         }
         else 
         {
+            console.log('apiData', apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso2);
            const createCognolugarNacimientoDto: CreateCognolugarnacimientoDto= {
             idCognoSolicitudCredito: idCognoSolicitudCredito,
             idLugar: apiData.personaNatural.lugarNacimiento.idLugar,
@@ -329,7 +330,7 @@ export class AuthService {
             codigoIso2: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso2,
             codigoIso3: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso3,
             codigoIso: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso,
-            idProvincia: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.idProvincia,
+           idProvincia: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.idProvincia,
             Provincia: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.nombre,
             codigoAreaProvincia: apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.codigoArea,
             idCanton: apiData.personaNatural.lugarNacimiento.parroquia.canton.idCanton,
@@ -369,7 +370,9 @@ export class AuthService {
         if (error.code === '12684') {
             throw new BadRequestException(error.detail);
         }
-        
+        if(error.code === '7956'){
+            throw new BadRequestException(error.detail);
+        }
         this.logger.error(error);
         throw new InternalServerErrorException('Unexpected error');
 
