@@ -7,12 +7,13 @@ export class AuthController {
 
     @Post('cogno/token/:cedula')
     async login(@Param('cedula') cedula: string) {
-        console.log('Cedula recibida:', cedula);
+        console.log('cedulan recibida del controller', cedula);
 
         const token = await this.authService.getToken(cedula);
 
 
         const apiData = await this.authService.getApiData(token, cedula);
+        
 
         const saveData = await this.authService.create(apiData);
         console.log('saveData', saveData);
