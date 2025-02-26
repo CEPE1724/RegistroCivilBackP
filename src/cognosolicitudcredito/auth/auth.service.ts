@@ -10,9 +10,13 @@ import { CreateCognosolicitudcreditoDto } from '../dto/create-cognosolicitudcred
 import { CreateCognopersonanaturalDto } from '../dto/create-cognopersonanatural.dto';
 import { CreateCognolugarnacimientoDto } from '../dto/create-cognolugarnacimiento.dto';
 import { UpdateCognosolicitudcreditoDto } from '../dto/update-cognosolicitudcredito.dto';
+import { CreateCognosolicitudnacionalidadesDto } from '../dto/create-cognosolicitudnacionalidades.dto';
 import { Cognosolicitudcredito } from '../entities/cognosolicitudcredito.entity';
 import { CognoPersonaNatural } from '../entities/cognopersonanatural.entity';
+import { CognoSolicitudNacionalidades } from '../entities/cognosolicitudnacionalidades.entity';
+import { CreateCognosolicitudprofesionesDto } from '../dto/create-cognosolicitudprofesiones.dto';
 import { CognoSolicitudLugarNacimiento } from '../entities/cognosolicitudlugarnacimiento.entity';
+import { CognoSolicitudProfesiones } from '../entities/cognosolicitudprofesiones.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class AuthService {
@@ -33,6 +37,11 @@ export class AuthService {
         @InjectRepository(CognoSolicitudLugarNacimiento)
         private readonly cognoSolicitudLugarNacimientoRepository: Repository<CognoSolicitudLugarNacimiento>,
 
+        @InjectRepository(CognoSolicitudNacionalidades)
+        private readonly cognoSolicitudNacionalidadesRepository: Repository<CognoSolicitudNacionalidades>,
+       
+        @InjectRepository(CognoSolicitudProfesiones)
+        private readonly cognoSolicitudProfesionesRepository: Repository<CognoSolicitudProfesiones>,
 
     ) { }
 
@@ -362,7 +371,108 @@ export class AuthService {
         }
 
     }
+     
+    async createNacionalidades(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+        console.log('Datos recibidos en createNacionalidades:', apiData);
+    
+        try {
+            // Validación previa para evitar errores de undefined
+            if (!apiData?.nacionalidades || !Array.isArray(apiData.nacionalidades) || apiData.nacionalidades.length === 0) {
+                console.error("Error: apiData.nacionalidades es undefined o vacío.");
+                throw new Error("Los datos de nacionalidad son inválidos o incompletos.");
+            }
+    
+            for (const nacionalidad of apiData.nacionalidades) {
+                if (!nacionalidad?.pais) {
+                    console.error("Error: Una de las nacionalidades no tiene información del país.");
+                    continue; // Saltar esta iteración si no tiene país
+                }
+    
+                const { idPais, nombre, codigoArea, codigoIso2, codigoIso3, codigoIso } = nacionalidad.pais;
+    
+                // Verificar si ya existe un registro con la misma solicitud y país
+                const existingRecord = await this.cognoSolicitudNacionalidadesRepository.findOne({
+                    where: { idCognoSolicitudCredito, idPais },
+                });
+    
+                if (existingRecord) {
+                    // Si el registro existe, actualizamos los campos
+                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
+                    existingRecord.idPais = idPais;
+                    existingRecord.nombre = nombre;
+                    console.log("aaaaaaaaaaaaaaaaaa"+existingRecord.nombre);
+                    existingRecord.codigoArea = codigoArea;
+                    existingRecord.codigoIso2 = codigoIso2;
+                    existingRecord.codigoIso3 = codigoIso3;
+                    existingRecord.codigoIso = codigoIso;
+                    
+                    await this.cognoSolicitudNacionalidadesRepository.save(existingRecord);
+                } else {
+                    // Si el registro no existe, creamos uno nuevo
+                    const createCognosolicitudnacionalidadesDto: CreateCognosolicitudnacionalidadesDto = {
+                        idCognoSolicitudCredito,
+                        idPais,
+                        nombre,
+                        codigoArea,
+                        codigoIso2,
+                        codigoIso3,
+                        codigoIso,  
+                    };
+                    const newRecord = this.cognoSolicitudNacionalidadesRepository.create(createCognosolicitudnacionalidadesDto);
+                    await this.cognoSolicitudNacionalidadesRepository.save(newRecord);
+                }
+            }
+        } catch (error) {
+            console.error("Error en createNacionalidades:", error);
+            this.handleDBException(error);
+        }
+    }
+    
+async createProfesiones(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+    console.log('Datos recibidos en createProfesiones:', apiData);
 
+    try {
+        if (!apiData?.profesiones || !Array.isArray(apiData.profesiones) || apiData.profesiones.length === 0) {
+            console.error("Error: apiData.profesiones es undefined o vacío.");
+            throw new Error("Los datos de profesiones son inválidos o incompletos.");
+        }
+
+        for (const profesionData of apiData.profesiones) {
+            if (!profesionData?.profesion) {
+                console.error("Error: Una de las profesiones no tiene información.");
+                continue; // Saltar esta iteración si no tiene profesión
+            }
+
+            const idProfesion = profesionData.profesion.idProfesion;
+            const descripcion = profesionData.profesion.descripcion; // Obtener la descripción
+
+            // Verificar si ya existe un registro con la misma solicitud y profesión
+            const existingRecord = await this.cognoSolicitudProfesionesRepository.findOne({
+                where: { idCognoSolicitudCredito, idProfesion },
+            });
+
+            if (existingRecord) {
+                existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
+                existingRecord.idProfesion = idProfesion;
+                existingRecord.descripcion = descripcion; // Actualizar la descripción
+                await this.cognoSolicitudProfesionesRepository.save(existingRecord);
+            } else {
+                const createCognosolicitudprofesionesDto: CreateCognosolicitudprofesionesDto = {
+                    idCognoSolicitudCredito,
+                    idProfesion,
+                    descripcion // Agregar descripción
+                };
+                const newRecord = this.cognoSolicitudProfesionesRepository.create(createCognosolicitudprofesionesDto);
+                await this.cognoSolicitudProfesionesRepository.save(newRecord);
+            }
+        }
+    } catch (error) {
+        console.error("Error en createProfesiones:", error);
+        this.handleDBException(error);
+    }
+}
+
+   
     private handleDBException(error: any) {
         if (error.code === '23505') {
             throw new BadRequestException(error.detail);
