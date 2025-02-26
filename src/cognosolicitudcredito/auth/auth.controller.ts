@@ -25,9 +25,15 @@ export class AuthController {
                  await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
             }
         }
-        
-        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
 
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
+        
+        // domicilio ocnyuge
+        if(apiData.estadoCivil.estadoCivil.descripcion === 'CASADO'){
+            console.log('conyugue');
+            await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
+            await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 2);
+        }
         return { apiData, saveData, saveDataNatural };
     }
 }
