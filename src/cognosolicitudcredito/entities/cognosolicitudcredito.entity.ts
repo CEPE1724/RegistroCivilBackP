@@ -23,5 +23,4 @@ export class Cognosolicitudcredito {
     @Column('text', { default: '' })
     Mensaje: string;
 
-
 }
