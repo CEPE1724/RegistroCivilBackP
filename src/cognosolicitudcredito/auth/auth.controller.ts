@@ -34,6 +34,13 @@ export class AuthController {
             await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
             await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 2);
         }
+
+
+        await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
+
+
+        await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
+
         return { apiData, saveData, saveDataNatural };
     }
 }
