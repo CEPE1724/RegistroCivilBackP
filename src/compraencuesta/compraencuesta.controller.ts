@@ -9,7 +9,7 @@ export class CompraencuestaController {
   constructor(private readonly compraencuestaService: CompraencuestaService) {}
 
   @Get(':Estado')
-  @Auth(ValidRoles.admin)
+  //@Auth(ValidRoles.admin)
   findAll(@Param('Estado',ParseIntPipe) Estado: number) {
      
     return this.compraencuestaService.findAll(Estado);
