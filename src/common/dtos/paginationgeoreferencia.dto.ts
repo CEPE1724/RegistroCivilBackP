@@ -37,4 +37,13 @@ export class PaginationGeoreferenciaDto {
   @IsInt()
   @Transform(({ value }) => parseInt(value)) // Convierte el valor a un número entero
   offset: number = 0;  // Valor por defecto para el desplazamiento
+
+  @IsOptional()
+  @IsString()
+  orderDirection: 'asc' | 'desc' = 'asc'; // Valor por defecto: 'asc'
+
+  // Agregar campo para el campo de orden (por ejemplo, 'fecha', 'estado', 'tipo', etc.)
+  @IsOptional()
+  @IsString()
+  orderBy: string = ''; // Valor por defecto: cadena vacía
 }
