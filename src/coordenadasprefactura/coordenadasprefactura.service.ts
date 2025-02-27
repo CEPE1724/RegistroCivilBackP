@@ -23,6 +23,8 @@ export class CoordenadasprefacturaService {
       Cedula = '',
       limit = 10,
       offset = 0,
+      orderBy = 'FechaSistema', // Default order by field (can be modified based on your database schema)
+      orderDirection = 'asc', // Default order direction
     } = paginationGeoreferenciaDto;
 
     console.log('FechaInicio:', FechaInicio);
@@ -30,6 +32,8 @@ export class CoordenadasprefacturaService {
     console.log('Estado:', Estado);
     console.log('Tipo:', Tipo);
     console.log('Cedula:', Cedula);
+    console.log('Ordenar por:', orderBy);
+    console.log('Dirección del orden:', orderDirection);
 
     // Construimos el filtro de la consulta
     const query = this.coordenadasprefacturaRepository.createQueryBuilder('coordenadas')
@@ -46,6 +50,11 @@ export class CoordenadasprefacturaService {
 
     if (Cedula) {
       query.andWhere('coordenadas.cedula LIKE :cedula', { cedula: `%${Cedula}%` });
+    }
+
+    // Condicional para ordenar
+    if (orderBy) {
+      query.orderBy(`coordenadas.${orderBy}`, orderDirection.toUpperCase() === 'ASC' ? 'ASC' : 'DESC');
     }
 
     // Contamos el total de registros que coinciden con los filtros sin paginación
