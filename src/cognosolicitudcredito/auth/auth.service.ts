@@ -17,6 +17,8 @@ import { CognoSolicitudNacionalidades } from '../entities/cognosolicitudnacional
 import { CreateCognosolicitudprofesionesDto } from '../dto/create-cognosolicitudprofesiones.dto';
 import { CognoSolicitudLugarNacimiento } from '../entities/cognosolicitudlugarnacimiento.entity';
 import { CognoSolicitudProfesiones } from '../entities/cognosolicitudprofesiones.entity';
+import { CognoTrabajo } from '../entities/cognotrabajo.entity';
+import { CreateCognoTrabajoDto } from '../dto/create-cognotrabajo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 @Injectable()
 export class AuthService {
@@ -26,7 +28,7 @@ export class AuthService {
     private readonly username = process.env.KEYCLOAK_USERNAME;
     private readonly password = process.env.KEYCLOAK_PASSWORD;
     private readonly apiUrl = 'http://app.cognoconsultas.com/consultas/pn_inf_basica/'; // API externa
-
+    private readonly apiUrl2 = 'http://app.cognoconsultas.com/consultas/pn_trabajos/'; // API externa
     constructor(
         @InjectRepository(Cognosolicitudcredito)
         private readonly cognosolicitudcreditoRepository: Repository<Cognosolicitudcredito>,
@@ -39,9 +41,12 @@ export class AuthService {
 
         @InjectRepository(CognoSolicitudNacionalidades)
         private readonly cognoSolicitudNacionalidadesRepository: Repository<CognoSolicitudNacionalidades>,
-       
+
         @InjectRepository(CognoSolicitudProfesiones)
         private readonly cognoSolicitudProfesionesRepository: Repository<CognoSolicitudProfesiones>,
+
+        @InjectRepository(CognoTrabajo)
+        private readonly cognoTrabajoRepository: Repository<CognoTrabajo>,
 
     ) { }
 
@@ -97,33 +102,57 @@ export class AuthService {
         }
     }
 
-    async create(apiData: any): Promise<Cognosolicitudcredito> {
+    async getApiDataTrabajo(token: string, cedula: string): Promise<any> {
+        try {
+            // Realizamos la solicitud a la API externa usando el token
+            const url = `${this.apiUrl2}${cedula}`;  // Concatenamos la cédula en la URL
+
+            const response = await axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,  // Pasamos el token como Bearer
+                },
+            });
+
+            if (response.data) {
+                return response.data;  // Retornamos los datos de la API
+            }
+
+            throw new InternalServerErrorException('Error al obtener datos de la API');
+        } catch (error) {
+            console.error(error);
+            this.handleDBException(error);
+        }
+    }
+
+    async create(apiData: any, bApiDataTrabajo: boolean, numberId: number): Promise<Cognosolicitudcredito> {
         try {
 
             const existingRecord = await this.cognosolicitudcreditoRepository.findOne({
-                where: { Cedula: apiData.personaNatural.identificacion },
+                where: { Cedula: apiData.personaNatural.identificacion, idCre_SolicitudWeb: numberId },
             });
 
             const FechaActualizacion = new Date();
             if (existingRecord) {
+
+                existingRecord.idCre_SolicitudWeb = numberId;
                 existingRecord.Codigo = apiData.estado.codigo;
                 existingRecord.Mensaje = apiData.estado.mensaje;
                 existingRecord.FechaActualizacion = FechaActualizacion;
                 existingRecord.bInfoPersonal = true;
-                existingRecord.bInfoLaboral = false;
+                existingRecord.bInfoLaboral = bApiDataTrabajo;
                 await this.cognosolicitudcreditoRepository.save(existingRecord);
                 console.log('Updated record:', existingRecord);  // Verifica el registro actualizado
 
                 return existingRecord;
             } else {
                 const createCognosolicitudcreditoDto: CreateCognosolicitudcreditoDto = {
-
+                    idCre_SolicitudWeb: numberId,
                     Cedula: apiData.personaNatural.identificacion,
                     Codigo: apiData.estado.codigo,
                     Mensaje: apiData.estado.mensaje,
                     FechaActualizacion: FechaActualizacion,
                     bInfoPersonal: true,
-                    bInfoLaboral: true,
+                    bInfoLaboral: bApiDataTrabajo,
                 };
 
                 const newRecord = this.cognosolicitudcreditoRepository.create(createCognosolicitudcreditoDto);
@@ -301,7 +330,7 @@ export class AuthService {
             // apiData.personaNaturalConyuge.personaConyuge  conyuge
 
             let tipoJsoncogno = apiData.personaNatural.lugarNacimiento;
-            
+
             if (Tipo == 1) {
                 tipoJsoncogno = apiData.personaNaturalConyuge.personaConyuge.lugarNacimiento;
             }
@@ -371,41 +400,41 @@ export class AuthService {
         }
 
     }
-     
+
     async createNacionalidades(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
         console.log('Datos recibidos en createNacionalidades:', apiData);
-    
+
         try {
             // Validación previa para evitar errores de undefined
             if (!apiData?.nacionalidades || !Array.isArray(apiData.nacionalidades) || apiData.nacionalidades.length === 0) {
                 console.error("Error: apiData.nacionalidades es undefined o vacío.");
                 throw new Error("Los datos de nacionalidad son inválidos o incompletos.");
             }
-    
+
             for (const nacionalidad of apiData.nacionalidades) {
                 if (!nacionalidad?.pais) {
                     console.error("Error: Una de las nacionalidades no tiene información del país.");
                     continue; // Saltar esta iteración si no tiene país
                 }
-    
+
                 const { idPais, nombre, codigoArea, codigoIso2, codigoIso3, codigoIso } = nacionalidad.pais;
-    
+
                 // Verificar si ya existe un registro con la misma solicitud y país
                 const existingRecord = await this.cognoSolicitudNacionalidadesRepository.findOne({
                     where: { idCognoSolicitudCredito, idPais },
                 });
-    
+
                 if (existingRecord) {
                     // Si el registro existe, actualizamos los campos
                     existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
                     existingRecord.idPais = idPais;
                     existingRecord.nombre = nombre;
-                    console.log("aaaaaaaaaaaaaaaaaa"+existingRecord.nombre);
+                    console.log("aaaaaaaaaaaaaaaaaa" + existingRecord.nombre);
                     existingRecord.codigoArea = codigoArea;
                     existingRecord.codigoIso2 = codigoIso2;
                     existingRecord.codigoIso3 = codigoIso3;
                     existingRecord.codigoIso = codigoIso;
-                    
+
                     await this.cognoSolicitudNacionalidadesRepository.save(existingRecord);
                 } else {
                     // Si el registro no existe, creamos uno nuevo
@@ -416,7 +445,7 @@ export class AuthService {
                         codigoArea,
                         codigoIso2,
                         codigoIso3,
-                        codigoIso,  
+                        codigoIso,
                     };
                     const newRecord = this.cognoSolicitudNacionalidadesRepository.create(createCognosolicitudnacionalidadesDto);
                     await this.cognoSolicitudNacionalidadesRepository.save(newRecord);
@@ -427,52 +456,189 @@ export class AuthService {
             this.handleDBException(error);
         }
     }
-    
-async createProfesiones(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
-    console.log('Datos recibidos en createProfesiones:', apiData);
 
-    try {
-        if (!apiData?.profesiones || !Array.isArray(apiData.profesiones) || apiData.profesiones.length === 0) {
-            console.error("Error: apiData.profesiones es undefined o vacío.");
-            throw new Error("Los datos de profesiones son inválidos o incompletos.");
-        }
+    async createProfesiones(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+        console.log('Datos recibidos en createProfesiones:', apiData);
 
-        for (const profesionData of apiData.profesiones) {
-            if (!profesionData?.profesion) {
-                console.error("Error: Una de las profesiones no tiene información.");
-                continue; // Saltar esta iteración si no tiene profesión
+        try {
+            if (!apiData?.profesiones || !Array.isArray(apiData.profesiones) || apiData.profesiones.length === 0) {
+                console.error("Error: apiData.profesiones es undefined o vacío.");
+                throw new Error("Los datos de profesiones son inválidos o incompletos.");
             }
 
-            const idProfesion = profesionData.profesion.idProfesion;
-            const descripcion = profesionData.profesion.descripcion; // Obtener la descripción
+            for (const profesionData of apiData.profesiones) {
+                if (!profesionData?.profesion) {
+                    console.error("Error: Una de las profesiones no tiene información.");
+                    continue; // Saltar esta iteración si no tiene profesión
+                }
 
-            // Verificar si ya existe un registro con la misma solicitud y profesión
-            const existingRecord = await this.cognoSolicitudProfesionesRepository.findOne({
-                where: { idCognoSolicitudCredito, idProfesion },
-            });
+                const idProfesion = profesionData.profesion.idProfesion;
+                const descripcion = profesionData.profesion.descripcion; // Obtener la descripción
 
-            if (existingRecord) {
-                existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
-                existingRecord.idProfesion = idProfesion;
-                existingRecord.descripcion = descripcion; // Actualizar la descripción
-                await this.cognoSolicitudProfesionesRepository.save(existingRecord);
-            } else {
-                const createCognosolicitudprofesionesDto: CreateCognosolicitudprofesionesDto = {
-                    idCognoSolicitudCredito,
-                    idProfesion,
-                    descripcion // Agregar descripción
-                };
-                const newRecord = this.cognoSolicitudProfesionesRepository.create(createCognosolicitudprofesionesDto);
-                await this.cognoSolicitudProfesionesRepository.save(newRecord);
+                // Verificar si ya existe un registro con la misma solicitud y profesión
+                const existingRecord = await this.cognoSolicitudProfesionesRepository.findOne({
+                    where: { idCognoSolicitudCredito, idProfesion },
+                });
+
+                if (existingRecord) {
+                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
+                    existingRecord.idProfesion = idProfesion;
+                    existingRecord.descripcion = descripcion; // Actualizar la descripción
+                    await this.cognoSolicitudProfesionesRepository.save(existingRecord);
+                } else {
+                    const createCognosolicitudprofesionesDto: CreateCognosolicitudprofesionesDto = {
+                        idCognoSolicitudCredito,
+                        idProfesion,
+                        descripcion // Agregar descripción
+                    };
+                    const newRecord = this.cognoSolicitudProfesionesRepository.create(createCognosolicitudprofesionesDto);
+                    await this.cognoSolicitudProfesionesRepository.save(newRecord);
+                }
             }
+        } catch (error) {
+            console.error("Error en createProfesiones:", error);
+            this.handleDBException(error);
         }
-    } catch (error) {
-        console.error("Error en createProfesiones:", error);
-        this.handleDBException(error);
     }
-}
 
-   
+    async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+        console.log('Datos recibidos en createTrabajo:', apiData);
+
+        try {
+            if (!apiData?.trabajos || !Array.isArray(apiData.trabajos) || apiData.trabajos.length === 0) {
+                console.error("Error: apiData.trabajos es undefined o vacío.");
+                throw new Error("Los datos de trabajo son inválidos o incompletos.");
+            }
+
+            for (const trabajoData of apiData.trabajos) {
+
+                const existingRecord = await this.cognoTrabajoRepository.findOne({
+                    where: { idCognoSolicitudCredito: idCognoSolicitudCredito, identificacionPersonaPatrono: trabajoData.personaPatrono.identificacion },
+                });
+                if (existingRecord) {
+                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
+                    existingRecord.fechaActualizacion = trabajoData.fechaActualizacion;
+                    existingRecord.fechaIngreso = trabajoData.fechaIngreso;
+                    existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta;
+                    existingRecord.identificacionPersonaPatrono = trabajoData.personaPatrono.identificacion;
+                    existingRecord.nombrePatrono = trabajoData.personaPatrono.nombre;
+                    existingRecord.nombreUno = trabajoData.personaPatrono.nombreUno;
+                    existingRecord.nombreDos = trabajoData.personaPatrono.nombreDos;
+                    existingRecord.idTipoIdentificacion = trabajoData.personaPatrono.tipoIdentificacion.idTipoIdentificacion;
+                    existingRecord.descripcion = trabajoData.personaPatrono.tipoIdentificacion.descripcion;
+                    existingRecord.plazoSocial = trabajoData.personaPatrono.plazoSocial;
+                    existingRecord.expediente = trabajoData.personaPatrono.expediente;
+                    existingRecord.fechaConstitucion = trabajoData.personaPatrono.fechaConstitucion;
+                    existingRecord.nombreComercial = trabajoData.personaPatrono.nombreComercial;
+                    existingRecord.idTipoCompania = trabajoData.personaPatrono.tipoCompania.idTipoCompania;
+                    existingRecord.nombretipoCompania = trabajoData.personaPatrono.tipoCompania.nombre;
+                    existingRecord.idCanton = trabajoData.personaPatrono.oficinaControl.idCanton;
+                    existingRecord.nombreCanton = trabajoData.personaPatrono.oficinaControl.nombre;
+                    existingRecord.idProvincia = trabajoData.personaPatrono.oficinaControl.provincia.idProvincia;
+                    existingRecord.nombreProvincia = trabajoData.personaPatrono.oficinaControl.provincia.nombre;
+                    existingRecord.codigoArea = trabajoData.personaPatrono.oficinaControl.provincia.codigoArea;
+                    existingRecord.idPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.idPais;
+                    existingRecord.nombrePais = trabajoData.personaPatrono.oficinaControl.provincia.pais.nombre;
+                    existingRecord.codigoAreaPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoArea;
+                    existingRecord.codigoIso2 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso2;
+                    existingRecord.codigoIso3 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso3;
+                    existingRecord.codigoIso = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso;
+                    existingRecord.nombreSituacionLegal = trabajoData.personaPatrono.situacionLegal.nombre;
+                    existingRecord.proveedoraEstado = trabajoData.personaPatrono.proveedoraEstado;
+                    existingRecord.pagoRemesas = trabajoData.personaPatrono.pagoRemesas;
+                    existingRecord.vendeCredito = trabajoData.personaPatrono.vendeCredito;
+                    existingRecord.capitalSuscrito = trabajoData.personaPatrono.capitalSuscrito;
+                    existingRecord.capitalAutorizado = trabajoData.personaPatrono.capitalAutorizado;
+                    existingRecord.valorNominal = trabajoData.personaPatrono.valorNominal;
+                    existingRecord.perteneceMv = trabajoData.personaPatrono.perteneceMv;
+                    existingRecord.apellidoUno = trabajoData.personaPatrono.apellidoUno;
+                    existingRecord.apellidoDos = trabajoData.personaPatrono.apellidoDos;
+
+                    existingRecord.valor = trabajoData.personaIngreso.valor;
+                    existingRecord.tipoIngreso = trabajoData.personaIngreso.tipoIngreso;
+                    existingRecord.frecuenciaIngreso = trabajoData.personaIngreso.frecuenciaIngreso;
+                    existingRecord.valorRango = trabajoData.personaIngreso.valorRango;
+
+                    existingRecord.idCargo = trabajoData.cargo.idCargo;
+                    existingRecord.nombreCargo = trabajoData.cargo.nombre;
+
+                    existingRecord.tipoAfiliado = trabajoData.tipoAfiliado;
+                    existingRecord.telefonoOfi = trabajoData.telefonoOfi;
+                    existingRecord.telefonoAfi = trabajoData.telefonoAfi;
+                    existingRecord.direccionOfi = trabajoData.direccionOfi;
+                    existingRecord.direccionAfi = trabajoData.direccionAfi;
+                    existingRecord.celular = trabajoData.celular;
+                    existingRecord.baseDate = trabajoData.baseDate;
+
+                } else {
+                    const createCognoTrabajoDto: CreateCognoTrabajoDto = {
+                        idCognoSolicitudCredito: idCognoSolicitudCredito,
+                        fechaActualizacion: trabajoData.fechaActualizacion,
+                        fechaIngreso: trabajoData.fechaIngreso,
+                        fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta,
+                        identificacionPersonaPatrono: trabajoData.personaPatrono.identificacion,
+                        nombrePatrono: trabajoData.personaPatrono.nombre,
+                        nombreUno: trabajoData.personaPatrono.nombreUno,
+                        nombreDos: trabajoData.personaPatrono.nombreDos,
+                        idTipoIdentificacion: trabajoData.personaPatrono.tipoIdentificacion.idTipoIdentificacion,
+                        descripcion: trabajoData.personaPatrono.tipoIdentificacion.descripcion,
+                        plazoSocial: trabajoData.personaPatrono.plazoSocial,
+                        expediente: trabajoData.personaPatrono.expediente,
+                        fechaConstitucion: trabajoData.personaPatrono.fechaConstitucion,
+                        nombreComercial: trabajoData.personaPatrono.nombreComercial,
+                        idTipoCompania: trabajoData.personaPatrono.tipoCompania.idTipoCompania,
+                        nombretipoCompania: trabajoData.personaPatrono.tipoCompania.nombre,
+                        idCanton: trabajoData.personaPatrono.oficinaControl.idCanton,
+                        nombreCanton: trabajoData.personaPatrono.oficinaControl.nombre,
+                        idProvincia: trabajoData.personaPatrono.oficinaControl.provincia.idProvincia,
+                        nombreProvincia: trabajoData.personaPatrono.oficinaControl.provincia.nombre,
+                        codigoArea: trabajoData.personaPatrono.oficinaControl.provincia.codigoArea,
+                        idPais: trabajoData.personaPatrono.oficinaControl.provincia.pais.idPais,
+                        nombrePais: trabajoData.personaPatrono.oficinaControl.provincia.pais.nombre,
+                        codigoAreaPais: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoArea,
+                        codigoIso2: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso2,
+                        codigoIso3: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso3,
+                        codigoIso: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso,
+                        nombreSituacionLegal: trabajoData.personaPatrono.situacionLegal.nombre,
+                        proveedoraEstado: trabajoData.personaPatrono.proveedoraEstado,
+                        pagoRemesas: trabajoData.personaPatrono.pagoRemesas,
+                        vendeCredito: trabajoData.personaPatrono.vendeCredito,
+                        capitalSuscrito: trabajoData.personaPatrono.capitalSuscrito,
+                        capitalAutorizado: trabajoData.personaPatrono.capitalAutorizado,
+                        valorNominal: trabajoData.personaPatrono.valorNominal,
+                        perteneceMv: trabajoData.personaPatrono.perteneceMv,
+                        apellidoUno: trabajoData.personaPatrono.apellidoUno,
+                        apellidoDos: trabajoData.personaPatrono.apellidoDos,
+                        valor: trabajoData.personaIngreso.valor,
+                        tipoIngreso: trabajoData.personaIngreso.tipoIngreso,
+                        frecuenciaIngreso: trabajoData.personaIngreso.frecuenciaIngreso,
+                        valorRango: trabajoData.personaIngreso.valorRango,
+                        idCargo: trabajoData.cargo.idCargo,
+                        nombreCargo: trabajoData.cargo.nombre,
+                        tipoAfiliado: trabajoData.tipoAfiliado,
+                        telefonoOfi: trabajoData.telefonoOfi,
+                        telefonoAfi: trabajoData.telefonoAfi,
+                        direccionOfi: trabajoData.direccionOfi,
+                        direccionAfi: trabajoData.direccionAfi,
+                        celular: trabajoData.celular,
+                        baseDate: trabajoData.baseDate,
+
+
+                    };
+                    const newRecord = this.cognoTrabajoRepository.create(createCognoTrabajoDto);
+                    await this.cognoTrabajoRepository.save(newRecord);
+                }
+
+            }
+        } catch (error) {
+            console.error("Error en createTrabajo:", error);
+            this.handleDBException(error);
+        }
+    }
+
+
+
+
     private handleDBException(error: any) {
         if (error.code === '23505') {
             throw new BadRequestException(error.detail);

@@ -1,12 +1,17 @@
 import { Body, Controller, Post, Param } from '@nestjs/common';
 import { AuthService } from './auth.service';
 
+
 @Controller('auth')
 export class AuthController {
-    constructor(private readonly authService: AuthService) { }
+    constructor(
+        private readonly authService: AuthService,
+    
+    ) { }
 
-    @Post('cogno/token/:cedula')
-    async login(@Param('cedula') cedula: string) {
+    @Post('cogno/token/:cedula/:numberId')
+    async login(@Param('cedula') cedula: string, 
+                @Param('numberId') numberId: number) {
         console.log('Cedula recibida:', cedula);
 
         const token = await this.authService.getToken(cedula);
@@ -14,8 +19,21 @@ export class AuthController {
 
         const apiData = await this.authService.getApiData(token, cedula);
 
-        const saveData = await this.authService.create(apiData);
-        console.log('saveData', saveData);
+         /* apí trabajo*/
+         const apiDataTrabajo = await this.authService.getApiDataTrabajo(token, cedula);
+         let bApiDataTrabajo = false;
+         /* si apiDataTrabajo tiene datos  true caso contrario false */
+         if(apiDataTrabajo.trabajos){
+             if(apiDataTrabajo.trabajos.length > 0){
+                 bApiDataTrabajo = true;
+             }else{
+                 bApiDataTrabajo = false;
+             }
+         }
+        
+        const saveData = await this.authService.create(apiData, bApiDataTrabajo, numberId );
+       
+      
         const saveDataNatural = await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
 
         if (apiData.personaNaturalConyuge.personaConyuge.identificacion && apiData.personaNaturalConyuge.personaConyuge.nombre) {
@@ -41,6 +59,10 @@ export class AuthController {
 
         await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
+      if (bApiDataTrabajo) {
+        await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
+      }
+    
         return { apiData, saveData, saveDataNatural };
     }
 }

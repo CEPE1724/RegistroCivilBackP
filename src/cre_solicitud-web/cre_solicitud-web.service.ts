@@ -5,7 +5,7 @@ import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { CreSolicitudWeb } from './entities/cre_solicitud-web.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-
+import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';
 @Injectable()
 export class CreSolicitudWebService {
 
@@ -13,7 +13,8 @@ export class CreSolicitudWebService {
 
   constructor(
     @InjectRepository(CreSolicitudWeb)
-    private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>
+    private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>,
+    private readonly authService: AuthService
   ) { }
 
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
@@ -21,6 +22,53 @@ export class CreSolicitudWebService {
     try {
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      /* obtener el id de la solicitud creada y cedula */
+      const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
+      const cedula = creSolicitudWeb.Cedula;
+      const token = await this.authService.getToken(cedula); // Llamada a AuthService para obtener el token
+
+      // Llamamos a getApiData con el token obtenido
+      const apiData = await this.authService.getApiData(token, cedula);
+
+      // Lógica adicional para manejar los datos obtenidos
+      const apiDataTrabajo = await this.authService.getApiDataTrabajo(token, cedula);
+      let bApiDataTrabajo = false;
+
+      if (apiDataTrabajo.trabajos) {
+        bApiDataTrabajo = apiDataTrabajo.trabajos.length > 0;
+      }
+
+      // Guardamos los datos
+      const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
+
+      const saveDataNatural = await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
+
+      if (apiData.personaNaturalConyuge.personaConyuge.identificacion && apiData.personaNaturalConyuge.personaConyuge.nombre) {
+        if (apiData.personaNaturalConyuge.personaConyuge.identificacion !== null && apiData.personaNaturalConyuge.personaConyuge.nombre !== '') {
+          console.log('saveData.idCognoSolicitudCredito', saveData.idCognoSolicitudCredito);
+          await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
+        }
+      }
+
+      // Crear lugar de nacimiento
+      await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
+
+      // Domicilio del cónyuge
+      if (apiData.estadoCivil.estadoCivil.descripcion === 'CASADO') {
+        console.log('conyugue');
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 2);
+      }
+
+      // Crear nacionalidades, profesiones y trabajos
+      await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
+      await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
+
+      if (bApiDataTrabajo) {
+        await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
+      }
+
+
       return creSolicitudWeb;
     } catch (error) {
       this.handleDBException(error);
