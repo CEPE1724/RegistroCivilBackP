@@ -5,6 +5,9 @@ export class Cognosolicitudcredito {
     @PrimaryGeneratedColumn('increment')
     idCognoSolicitudCredito: number;
 
+    @Column('int', { default: 0 })
+    idCre_SolicitudWeb: number;
+
     @Column('text', { default: '' })
     Cedula: string;
 
@@ -22,6 +25,5 @@ export class Cognosolicitudcredito {
 
     @Column('text', { default: '' })
     Mensaje: string;
-
 
 }

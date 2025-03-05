@@ -24,6 +24,9 @@ import { CreSolicitudWebModule } from './cre_solicitud-web/cre_solicitud-web.mod
 import { CognosolicitudcreditoModule } from './cognosolicitudcredito/cognosolicitudcredito.module';
 import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadasprefactura.module';
+import { AuthsModule } from './auths/auths.module';
+import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
+
 
 @Module({
   imports: [
@@ -75,6 +78,8 @@ import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadas
     CognosolicitudcreditoModule,
     AuthModuleCogno,
     CoordenadasprefacturaModule,
+    AuthsModule,
+    WebSolicitudgrandeModule,
   ],
 })
 export class AppModule {}

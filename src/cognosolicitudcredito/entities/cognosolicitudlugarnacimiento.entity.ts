@@ -41,7 +41,7 @@ export class CognoSolicitudLugarNacimiento {
     codigoIso2: string;
 
     @Column('varchar', {
-        length :3
+        length: 5
     })
     codigoIso3: string;
 

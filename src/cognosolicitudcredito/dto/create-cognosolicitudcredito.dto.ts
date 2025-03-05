@@ -2,6 +2,7 @@
 
 CREATE TABLE CognoSolicitudCredito (
         idCognoSolicitudCredito INT IDENTITY(1,1) PRIMARY KEY,
+        idCre_SolicitudWeb INT DEFAULT 0,
         Cedula VARCHAR(20),
         FechaActualizacion DATETIME DEFAULT GETDATE(),
         bInfoPersonal BIT, 
@@ -16,6 +17,10 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 export class CreateCognosolicitudcreditoDto {
+
+    @IsNumber()
+    @IsPositive()
+    idCre_SolicitudWeb?: number;
 
     @IsString()
     @MinLength(10)
