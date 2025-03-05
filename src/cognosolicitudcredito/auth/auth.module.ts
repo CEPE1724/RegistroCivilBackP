@@ -8,13 +8,16 @@ import { Cognosolicitudcredito} from '../entities/cognosolicitudcredito.entity';
 import { CognoSolicitudLugarNacimiento } from '../entities/cognosolicitudlugarnacimiento.entity';
 import { CognoSolicitudNacionalidades } from '../entities/cognosolicitudnacionalidades.entity';
 import { CognoSolicitudProfesiones } from '../entities/cognosolicitudprofesiones.entity';
+import { CognoTrabajo } from '../entities/cognotrabajo.entity';
 
 @Module({
   controllers: [AuthController],
   providers: [AuthService],
     imports: [
-       TypeOrmModule.forFeature([Cognosolicitudcredito, CognoPersonaNatural, CognoSolicitudLugarNacimiento , CognoSolicitudNacionalidades , CognoSolicitudProfesiones])
-      ]
+       TypeOrmModule.forFeature([Cognosolicitudcredito, CognoPersonaNatural, CognoSolicitudLugarNacimiento ,
+         CognoSolicitudNacionalidades , CognoSolicitudProfesiones, CognoTrabajo])
+      ],
+  exports: [AuthService]
 })
 export class AuthModuleCogno {}
 
