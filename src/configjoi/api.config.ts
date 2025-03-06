@@ -1,3 +1,5 @@
+import { url } from "inspector";
+
 export const ApiConfig = () => ({
     environment: process.env.NODE_ENV || 'dev',
     database: {
@@ -29,6 +31,9 @@ export const ApiConfig = () => ({
       client_id: process.env.KEYCLOAK_CLIENT_ID,
       username: process.env.KEYCLOAK_USERNAME,
       password: process.env.KEYCLOAK_PASSWORD,
+    },
+    google: {
+      urlkeygoogle: process.env.GOOGLE_CLOUD_KEYFILE,
     },
   });
   
