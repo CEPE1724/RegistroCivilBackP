@@ -1,10 +1,14 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
-import {  Repository } from 'typeorm';
+
+import { Repository } from 'typeorm';
+
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreNiveleducacion } from './entities/cre_niveleducacion.entity';
 
 @Injectable()
 export class CreNiveleducacionService {
+
   /* control de errores y ubicaicondel archivo*/
   private readonly logger = new Logger('CreTipodocumentoService');
 
@@ -27,5 +31,6 @@ export class CreNiveleducacionService {
     this.logger.error(error);
     throw new InternalServerErrorException('Error al guardar los datos');
   }
+
 
 }

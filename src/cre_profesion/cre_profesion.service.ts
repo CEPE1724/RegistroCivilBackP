@@ -1,10 +1,13 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+
 import { CreProfesion } from './entities/cre_profesion.entity';
 
 @Injectable()
 export class CreProfesionService {
+
   /* control de errores y ubicacion del archivo*/
   private readonly logger = new Logger('CreProfesionService');
 
@@ -25,4 +28,5 @@ export class CreProfesionService {
     this.logger.error(error);
     throw new InternalServerErrorException('Error al guardar los datos');
   }
+
 }

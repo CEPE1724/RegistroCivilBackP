@@ -44,6 +44,12 @@ import { CreParentescoModule } from './cre_parentesco/cre_parentesco.module';
 import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 
+import { CreNiveleducacionModule } from './cre_niveleducacion/cre_niveleducacion.module';
+import { CreProfesionModule } from './cre_profesion/cre_profesion.module';
+import { CreTipoempresaModule } from './cre_tipoempresa/cre_tipoempresa.module';
+import { CreTipocontratoModule } from './cre_tipocontrato/cre_tipocontrato.module';
+import { CreTiposueldoModule } from './cre_tiposueldo/cre_tiposueldo.module';
+import { CreCargoModule } from './cre_cargo/cre_cargo.module';
 
 @Module({
   imports: [
@@ -101,6 +107,9 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     CompraencuestaModule,
     CreActividadeconominaModule,
     CreTiempoModule,
+    CreTipoempresaModule,
+    CreTipocontratoModule,
+    CreCargoModule,
     CreSolicitudWebModule,
     CognosolicitudcreditoModule,
     AuthModuleCogno,
