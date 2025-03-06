@@ -40,3 +40,5 @@ ApiCobrador/api/ProteccionDatos/*.docx
 iisnode/*.txt
 # Excluir la carpeta logs y su contenido
 logs/  
+
+/config/google-credentials.json
