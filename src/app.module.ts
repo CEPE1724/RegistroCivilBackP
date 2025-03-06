@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { join } from 'path';
-import { ApiConfig } from './config/api.config';
-import { JoinValidationSchema } from './config/joi.validation';
+import { ApiConfig } from './configjoi/api.config';
+import { JoinValidationSchema } from './configjoi/joi.validation';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuarioModule } from './usuarios/usuario.module';
