@@ -64,12 +64,20 @@ export class CreateCreSolicitudWebDto {
     CodDactilar: string;
 
     @IsString()
-    @MinLength(4)
-    Apellidos: string;
+    @MinLength(3)
+    ApellidoPaterno: string;
 
     @IsString()
-    @MinLength(4)
-    Nombres: string;
+    @MinLength(3)
+    ApellidoMaterno: string;
+
+    @IsString()
+    @MinLength(3)
+    PrimerNombre: string;
+
+    @IsString()
+    @MinLength(3)
+    SegundoNombre: string;
 
     @IsString()
     @MinLength(10)

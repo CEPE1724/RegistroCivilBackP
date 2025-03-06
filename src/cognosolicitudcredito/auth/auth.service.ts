@@ -622,8 +622,6 @@ export class AuthService {
                         direccionAfi: trabajoData.direccionAfi,
                         celular: trabajoData.celular,
                         baseDate: trabajoData.baseDate,
-
-
                     };
                     const newRecord = this.cognoTrabajoRepository.create(createCognoTrabajoDto);
                     await this.cognoTrabajoRepository.save(newRecord);
