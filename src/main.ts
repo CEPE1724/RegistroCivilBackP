@@ -23,3 +23,4 @@ async function bootstrap() {
   console.log(`Application is running on: ${process.env.PORT }`);
 }
 bootstrap();
+/* ANTES DE SUBIR A PRODUCCION HACER UN NPM RUN START Y DESPUES UN NPM RUN BUILD*/
