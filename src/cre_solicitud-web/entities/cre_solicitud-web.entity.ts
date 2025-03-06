@@ -30,10 +30,16 @@ export class CreSolicitudWeb {
     CodDactilar: string;
 
     @Column('varchar')
-    Apellidos: string;
+    ApellidoPaterno: string;
 
     @Column('varchar')
-    Nombres: string;
+    ApellidoMaterno: string;
+
+    @Column('varchar')
+    PrimerNombre: string;
+
+    @Column('varchar')
+    SegundoNombre: string;
 
     @Column('varchar')
     Celular: string;
@@ -70,15 +76,29 @@ export class CreSolicitudWeb {
 
     @BeforeInsert()
     upperApellidos() {
-        if (this.Apellidos) {
-            this.Apellidos = this.Apellidos.toUpperCase();
+        if (this.ApellidoMaterno) {
+            this.ApellidoMaterno = this.ApellidoMaterno.toUpperCase();
         }
     }
     
     @BeforeInsert()
     upperNombres() {
-        if (this.Nombres) {
-            this.Nombres = this.Nombres.toUpperCase();
+        if (this.PrimerNombre) {
+            this.PrimerNombre = this.PrimerNombre.toUpperCase();
+        }
+    }
+
+    @BeforeInsert()
+    upperSegundoNombre() {
+        if (this.SegundoNombre) {
+            this.SegundoNombre = this.SegundoNombre.toUpperCase();
+        }
+    }
+
+    @BeforeInsert()
+    uppperApellidoPaterno() {
+        if (this.ApellidoPaterno) {
+            this.ApellidoPaterno = this.ApellidoPaterno.toUpperCase();
         }
     }
     
