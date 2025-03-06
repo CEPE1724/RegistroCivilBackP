@@ -28,6 +28,7 @@ import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadasprefactura.module';
 import { AuthsModule } from './auths/auths.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
+import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
 
 @Module({
   imports: [
@@ -91,6 +92,7 @@ import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgra
     CoordenadasprefacturaModule,
     AuthsModule,
     WebSolicitudgrandeModule,
+    CreTipodocumentoModule,
   ],
 })
 export class AppModule {}
