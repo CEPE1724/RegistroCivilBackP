@@ -29,6 +29,10 @@ import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadas
 import { AuthsModule } from './auths/auths.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
 import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
+import { CreSexoModule } from './cre_sexo/cre_sexo.module';
+import { CreNiveleducacionModule } from './cre_niveleducacion/cre_niveleducacion.module';
+import { CreProfesionModule } from './cre_profesion/cre_profesion.module';
+import { CreParentescoModule } from './cre_parentesco/cre_parentesco.module';
 
 @Module({
   imports: [
@@ -93,6 +97,10 @@ import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.mo
     AuthsModule,
     WebSolicitudgrandeModule,
     CreTipodocumentoModule,
+    CreSexoModule,
+    CreNiveleducacionModule,
+    CreProfesionModule,
+    CreParentescoModule,
   ],
 })
 export class AppModule {}
