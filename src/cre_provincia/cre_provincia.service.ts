@@ -10,7 +10,7 @@ import { Logger } from '@nestjs/common';
 export class CreProvinciaService {
 
 
- private readonly logger = new Logger('CompraencuestaService');
+ private readonly logger = new Logger('CreProvinciaService');
 
   constructor(
     @InjectRepository(CreProvincia)
