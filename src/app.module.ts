@@ -21,6 +21,12 @@ import { CompraencuestaModule } from './compraencuesta/compraencuesta.module';
 import { CreActividadeconominaModule } from './cre_actividadeconomina/cre_actividadeconomina.module';
 import { CreTiempoModule } from './cre_tiempo/cre_tiempo.module';
 
+import { CreNiveleducacionModule } from './cre_niveleducacion/cre_niveleducacion.module';
+import { CreProfesionModule } from './cre_profesion/cre_profesion.module';
+import { CreTipoempresaModule } from './cre_tipoempresa/cre_tipoempresa.module';
+import { CreTipocontratoModule } from './cre_tipocontrato/cre_tipocontrato.module';
+import { CreTiposueldoModule } from './cre_tiposueldo/cre_tiposueldo.module';
+import { CreCargoModule } from './cre_cargo/cre_cargo.module';
 
 @Module({
   imports: [
@@ -67,7 +73,13 @@ import { CreTiempoModule } from './cre_tiempo/cre_tiempo.module';
     CommonModule,
     CompraencuestaModule,
     CreActividadeconominaModule,
-    CreTiempoModule
+    CreTiempoModule,
+    CreNiveleducacionModule,
+    CreProfesionModule,
+    CreTipoempresaModule,
+    CreTipocontratoModule,
+    CreTiposueldoModule,
+    CreCargoModule,
   ],
 })
 export class AppModule {}
