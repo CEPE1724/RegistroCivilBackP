@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { join } from 'path';
-import { ApiConfig } from './config/api.config';
-import { JoinValidationSchema } from './config/joi.validation';
+import { ApiConfig } from './configjoi/api.config';
+import { JoinValidationSchema } from './configjoi/joi.validation';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuarioModule } from './usuarios/usuario.module';
@@ -28,11 +28,22 @@ import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadasprefactura.module';
 import { AuthsModule } from './auths/auths.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
+
+import { CreProvinciaModule } from './cre_provincia/cre_provincia.module';
+import { CreCantonModule } from './cre-canton/cre-canton.module';
+import { CreParroquiaModule } from './cre_parroquia/cre_parroquia.module';
+import { CreBarrioModule } from './cre_barrio/cre_barrio.module';
+
 import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
+
 import { CreSexoModule } from './cre_sexo/cre_sexo.module';
 import { CreNiveleducacionModule } from './cre_niveleducacion/cre_niveleducacion.module';
 import { CreProfesionModule } from './cre_profesion/cre_profesion.module';
 import { CreParentescoModule } from './cre_parentesco/cre_parentesco.module';
+
+import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
+
 
 @Module({
   imports: [
@@ -96,11 +107,22 @@ import { CreParentescoModule } from './cre_parentesco/cre_parentesco.module';
     CoordenadasprefacturaModule,
     AuthsModule,
     WebSolicitudgrandeModule,
+    CreProvinciaModule,
+    CreCantonModule,
+    CreParroquiaModule,
+    CreBarrioModule,
+
     CreTipodocumentoModule,
+
     CreSexoModule,
     CreNiveleducacionModule,
     CreProfesionModule,
     CreParentescoModule,
+
+    CreEstadocivilModule,
+    FileUploadModule,
+
+
   ],
 })
 export class AppModule {}

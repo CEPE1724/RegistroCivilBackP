@@ -1,5 +1,5 @@
 import {
-    BadRequestException, Injectable,
+    BadRequestException, ConsoleLogger, Injectable,
     InternalServerErrorException,
     Logger, NotFoundException
 } from '@nestjs/common';
@@ -61,6 +61,7 @@ export class AuthService {
                 client_id: this.clientId,
                 grant_type: 'password',
             });
+            console.log("aui esta la data " + data);
 
             // Solicitud para obtener el token
             const response = await axios.post(this.keycloakUrl, data, {
@@ -68,6 +69,7 @@ export class AuthService {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
             });
+            console.log(response);
 
             if (response.data && response.data.access_token) {
                 return response.data.access_token;  // Retornamos el token
@@ -81,6 +83,8 @@ export class AuthService {
 
     // Método para consumir la API externa usando el token y la cédula como parámetro en la URL
     async getApiData(token: string, cedula: string): Promise<any> {
+
+        console.log('Token recibido:', token);
         try {
             // Realizamos la solicitud a la API externa usando el token
             const url = `${this.apiUrl}${cedula}`;  // Concatenamos la cédula en la URL
