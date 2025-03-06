@@ -30,7 +30,7 @@ import { AuthsModule } from './auths/auths.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
 import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
 import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
-
+import { FileUploadModule } from './file-upload/file-upload.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -95,6 +95,7 @@ import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
     WebSolicitudgrandeModule,
     CreTipodocumentoModule,
     CreEstadocivilModule,
+    FileUploadModule,
   ],
 })
 export class AppModule {}
