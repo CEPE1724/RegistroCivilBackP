@@ -19,7 +19,7 @@ async function bootstrap() {
  app.setGlobalPrefix('api/v1'); // Prefijo global para todas las rutas
  app.useGlobalPipes(    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true,   }) );
  
-  await app.listen(3008, IP_SERVER);
-  console.log(`Application is running on: ${await app.getUrl()}`);
+  await app.listen(process.env.PORT || 3008);
+  console.log(`Application is running on: ${process.env.PORT }`);
 }
 bootstrap();
