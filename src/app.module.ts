@@ -29,6 +29,7 @@ import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadas
 import { AuthsModule } from './auths/auths.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
 import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
+import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
 
 @Module({
   imports: [
@@ -93,6 +94,7 @@ import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.mo
     AuthsModule,
     WebSolicitudgrandeModule,
     CreTipodocumentoModule,
+    CreEstadocivilModule,
   ],
 })
 export class AppModule {}
