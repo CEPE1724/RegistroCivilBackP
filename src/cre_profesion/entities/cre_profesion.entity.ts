@@ -2,6 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('Cre_Profesion')
 export class CreProfesion {
+
 	
 	@PrimaryGeneratedColumn('increment')
 	idProfesion: number;
@@ -14,5 +15,6 @@ export class CreProfesion {
 
 	@Column({ type: 'int' })
     Codigo_BA: number;
+
 
 }

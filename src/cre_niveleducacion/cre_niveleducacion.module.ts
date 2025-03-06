@@ -8,7 +8,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   controllers: [CreNiveleducacionController],
   providers: [CreNiveleducacionService],
   imports: [
-		TypeOrmModule.forFeature([CreNiveleducacion]),
-	  ]
+    TypeOrmModule.forFeature([CreNiveleducacion]),
+  ]
 })
 export class CreNiveleducacionModule {}

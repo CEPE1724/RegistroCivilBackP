@@ -5,10 +5,12 @@ import { CreProfesion } from './entities/cre_profesion.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-	controllers: [CreProfesionController],
-	providers: [CreProfesionService],
-	imports: [
-		TypeOrmModule.forFeature([CreProfesion]),
-	]
+
+  controllers: [CreProfesionController],
+  providers: [CreProfesionService],
+  imports: [
+    TypeOrmModule.forFeature([CreProfesion]),
+  ]
+
 })
 export class CreProfesionModule { }
