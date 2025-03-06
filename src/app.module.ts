@@ -28,9 +28,16 @@ import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadasprefactura.module';
 import { AuthsModule } from './auths/auths.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
+
+import { CreProvinciaModule } from './cre_provincia/cre_provincia.module';
+import { CreCantonModule } from './cre-canton/cre-canton.module';
+import { CreParroquiaModule } from './cre_parroquia/cre_parroquia.module';
+import { CreBarrioModule } from './cre_barrio/cre_barrio.module';
+
 import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
 import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -93,9 +100,15 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     CoordenadasprefacturaModule,
     AuthsModule,
     WebSolicitudgrandeModule,
+    CreProvinciaModule,
+    CreCantonModule,
+    CreParroquiaModule,
+    CreBarrioModule,
+
     CreTipodocumentoModule,
     CreEstadocivilModule,
     FileUploadModule,
+
   ],
 })
 export class AppModule {}
