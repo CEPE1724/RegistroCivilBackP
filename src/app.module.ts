@@ -39,6 +39,7 @@ import { CreProfesionModule } from './cre_profesion/cre_profesion.module';
 import { CreParentescoModule } from './cre_parentesco/cre_parentesco.module';
 import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { TipoClienteModule } from './tipo-cliente/tipo-cliente.module';
 import { CreTipoempresaModule } from './cre_tipoempresa/cre_tipoempresa.module';
 import { CreTipocontratoModule } from './cre_tipocontrato/cre_tipocontrato.module';
 import { CreTiposueldoModule } from './cre_tiposueldo/cre_tiposueldo.module';
@@ -51,6 +52,7 @@ import { PermissionsWebModule } from './permissions-web/permissions-web.module';
 import { SeguridadmenuModule } from './seguridadmenu/seguridadmenu.module';
 import { MenuItemRoleModule } from './menu-item-role/menu-item-role.module';
 import { UsuarioBodegaModule } from './usuario-bodega/usuario-bodega.module';
+
 
 @Module({
   imports: [
@@ -131,6 +133,9 @@ import { UsuarioBodegaModule } from './usuario-bodega/usuario-bodega.module';
 
     CreEstadocivilModule,
     FileUploadModule,
+
+    TipoClienteModule,
+
     CreTiposueldoModule,
     RoleswebModule,
     UserRolesWebModule,
@@ -140,6 +145,7 @@ import { UsuarioBodegaModule } from './usuario-bodega/usuario-bodega.module';
     SeguridadmenuModule,
     MenuItemRoleModule,
     UsuarioBodegaModule,
+
 
 
   ],
