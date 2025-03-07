@@ -60,8 +60,7 @@ export class FileUploadService {
 
       // Eliminar archivo temporal después de cargarlo
       fs.unlinkSync(tempFilePath);
-      console.log(`${fileName} eliminado del servidor local.`);
-
+    
       // Generar y devolver la URL pública del archivo subido
       const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${filePath}`;
       return publicUrl;

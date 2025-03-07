@@ -20,7 +20,7 @@ export class FileUploadController {
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
     @Body() body: { almacen: string; cedula: string;  numerosolicitud: string },
-  ): Promise<string> {
+  ): Promise<{ url: string }> {
     if (!file) {
       throw new Error('No file uploaded');
     }
@@ -32,14 +32,20 @@ export class FileUploadController {
 
     try {
       const uploadedFileUrl = await this.fileUploadService.uploadFile(
-                                 file,almacen, cedula, 
-                                 numerosolicitud);
-      return `File uploaded successfully: ${uploadedFileUrl}`;
+        file,
+        almacen,
+        cedula,
+        numerosolicitud
+      );
+      
+      // Retornar la URL del archivo en formato JSON
+      return { url: uploadedFileUrl };
     } catch (error) {
       console.error('Error uploading file:', error);
       throw new Error('Error uploading file: ' + error.message);
     }
   }
 }
+
 
 

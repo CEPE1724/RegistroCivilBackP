@@ -8,9 +8,9 @@ export class UsuarioBodegaController {
   ) {}
 
   // Endpoint para obtener bodegas asociadas a un usuario específico
-  @Get('usuario/:userId/bodegas')
+  @Get('usuario/bodegas')
   async findBodegasByUser(
-    @Param('userId') userId: string, // ID del usuario (vía URL)
+    @Query('userId') userId: number, // ID del usuario (vía URL)
     @Query('idTipoFactura') idTipoFactura: number, // idTipoFactura (vía query)
     @Query('fecha') fecha: string = new Date().toISOString(), // fecha (vía query), valor por defecto es la fecha actual
     @Query('recibeConsignacion') recibeConsignacion: boolean = false, // recibeConsignacion (vía query), valor por defecto es false
@@ -24,7 +24,7 @@ export class UsuarioBodegaController {
     // Llamamos al servicio pasando los parámetros obtenidos del request
     return this.usuarioBodegaService.getBodegasByUser(
       +userId, // Convertir el userId a número
-      idTipoFactura,
+      +idTipoFactura,
       parsedFecha,
       recibeConsignacion,
     );
