@@ -52,6 +52,11 @@ import { PermissionsWebModule } from './permissions-web/permissions-web.module';
 import { SeguridadmenuModule } from './seguridadmenu/seguridadmenu.module';
 import { MenuItemRoleModule } from './menu-item-role/menu-item-role.module';
 import { UsuarioBodegaModule } from './usuario-bodega/usuario-bodega.module';
+import { DetalleTipoClienteModule } from './detalle-tipo-cliente/detalle-tipo-cliente.module';
+import { TipoTrabajoModule } from './tipo-trabajo/tipo-trabajo.module';
+import { CreTipocalificacionModule } from './cre-tipocalificacion/cre-tipocalificacion.module';
+import { CreEstadoModule } from './cre-estado/cre-estado.module';
+import { EstadoSolicitudModule } from './estado-solicitud/estado-solicitud.module';
 
 
 @Module({
@@ -145,6 +150,11 @@ import { UsuarioBodegaModule } from './usuario-bodega/usuario-bodega.module';
     SeguridadmenuModule,
     MenuItemRoleModule,
     UsuarioBodegaModule,
+    DetalleTipoClienteModule,
+    TipoTrabajoModule,
+    CreTipocalificacionModule,
+    CreEstadoModule,
+    EstadoSolicitudModule,
 
 
 
