@@ -37,6 +37,7 @@ import { CreBarrioModule } from './cre_barrio/cre_barrio.module';
 import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
 import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
+import { TipoClienteModule } from './tipo-cliente/tipo-cliente.module';
 
 @Module({
   imports: [
@@ -108,6 +109,7 @@ import { FileUploadModule } from './file-upload/file-upload.module';
     CreTipodocumentoModule,
     CreEstadocivilModule,
     FileUploadModule,
+    TipoClienteModule,
 
   ],
 })

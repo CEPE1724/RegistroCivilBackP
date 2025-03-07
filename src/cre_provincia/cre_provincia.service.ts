@@ -16,9 +16,6 @@ export class CreProvinciaService {
     @InjectRepository(CreProvincia)
     private readonly creprovinicarepository: Repository<CreProvincia>,
   ) { }
-  create(createCreProvinciaDto: CreateCreProvinciaDto) {
-    return 'This action adds a new creProvincia';
-  }
 
   findAll() {
     return this.creprovinicarepository.find();
