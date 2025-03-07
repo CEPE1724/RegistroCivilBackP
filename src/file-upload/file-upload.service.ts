@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
 import * as path from 'path';
+import * as fs from 'fs';
 
 @Injectable()
 export class FileUploadService {
@@ -23,26 +24,50 @@ export class FileUploadService {
     });
   }
 
-  async uploadFile(file: Express.Multer.File): Promise<string> {
+  async uploadFile(file: Express.Multer.File, almacen: string, cedula: string, numerosolicitud: string): Promise<string> {
     if (!file) {
       throw new Error('No file provided');
     }
 
     const bucket = this.storage.bucket(this.bucketName);
-    const blob = bucket.file(file.originalname);
-    const blobStream = blob.createWriteStream();
+    const Year = new Date().getFullYear();
+    const Month = new Date().toLocaleString('default', { month: 'long' }).toUpperCase();
+    const Day = new Date().toLocaleString('default', { day: '2-digit' });
+    const nombre_del_archivo = new Date().getTime();
+    console.log('Fecha:', Year, Month, Day);
+    // Definir el directorio y la ruta dentro del bucket de GCS
 
-    return new Promise((resolve, reject) => {
-      blobStream.on('finish', () => {
-        resolve(`https://storage.googleapis.com/${this.bucketName}/${file.originalname}`);
-      });
+    const filePath = `CREDIPOINT/${almacen}/${Year}/${Month}/${cedula}/${numerosolicitud}/${nombre_del_archivo}`;
+    const fileName = `${nombre_del_archivo}`;
+    const tempFilePath = path.join(__dirname, fileName);
 
-      blobStream.on('error', (err) => {
-        console.error('Error uploading to Google Cloud:', err);
-        reject(`Error uploading file: ${err.message}`);
-      });
+    // Guardar temporalmente el archivo en el servidor local
+    fs.writeFileSync(tempFilePath, file.buffer);
+    console.log(`${fileName} guardado en el servidor local.`);
 
-      blobStream.end(file.buffer); // Finaliza el stream del archivo
-    });
+    const gcsFile = bucket.file(filePath);
+    const options = {
+      destination: gcsFile,
+      metadata: {
+        contentType: file.mimetype, // Usar el tipo de archivo dinámicamente
+      },
+    };
+
+    try {
+      // Subir el archivo al bucket
+      await bucket.upload(tempFilePath, options);
+      console.log(`${fileName} subido a ${this.bucketName}.`);
+
+      // Eliminar archivo temporal después de cargarlo
+      fs.unlinkSync(tempFilePath);
+      console.log(`${fileName} eliminado del servidor local.`);
+
+      // Generar y devolver la URL pública del archivo subido
+      const publicUrl = `https://storage.googleapis.com/${this.bucketName}/${filePath}`;
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading file to GCS:', error);
+      throw new Error('Error uploading file: ' + error.message);
+    }
   }
 }

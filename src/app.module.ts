@@ -28,16 +28,31 @@ import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadasprefactura.module';
 import { AuthsModule } from './auths/auths.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
-
 import { CreProvinciaModule } from './cre_provincia/cre_provincia.module';
 import { CreCantonModule } from './cre-canton/cre-canton.module';
 import { CreParroquiaModule } from './cre_parroquia/cre_parroquia.module';
 import { CreBarrioModule } from './cre_barrio/cre_barrio.module';
-
 import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
+import { CreSexoModule } from './cre_sexo/cre_sexo.module';
+import { CreNiveleducacionModule } from './cre_niveleducacion/cre_niveleducacion.module';
+import { CreProfesionModule } from './cre_profesion/cre_profesion.module';
+import { CreParentescoModule } from './cre_parentesco/cre_parentesco.module';
 import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
 import { FileUploadModule } from './file-upload/file-upload.module';
 import { TipoClienteModule } from './tipo-cliente/tipo-cliente.module';
+import { CreTipoempresaModule } from './cre_tipoempresa/cre_tipoempresa.module';
+import { CreTipocontratoModule } from './cre_tipocontrato/cre_tipocontrato.module';
+import { CreTiposueldoModule } from './cre_tiposueldo/cre_tiposueldo.module';
+import { CreCargoModule } from './cre_cargo/cre_cargo.module';
+import { RoleswebModule } from './rolesweb/rolesweb.module';
+import { UserRolesWebModule } from './user-roles-web/user-roles-web.module';
+import { RolePermissionsWebModule } from './role-permissions-web/role-permissions-web.module';
+import { RouteswebModule } from './routesweb/routesweb.module';
+import { PermissionsWebModule } from './permissions-web/permissions-web.module';
+import { SeguridadmenuModule } from './seguridadmenu/seguridadmenu.module';
+import { MenuItemRoleModule } from './menu-item-role/menu-item-role.module';
+import { UsuarioBodegaModule } from './usuario-bodega/usuario-bodega.module';
+
 
 @Module({
   imports: [
@@ -95,6 +110,9 @@ import { TipoClienteModule } from './tipo-cliente/tipo-cliente.module';
     CompraencuestaModule,
     CreActividadeconominaModule,
     CreTiempoModule,
+    CreTipoempresaModule,
+    CreTipocontratoModule,
+    CreCargoModule,
     CreSolicitudWebModule,
     CognosolicitudcreditoModule,
     AuthModuleCogno,
@@ -107,9 +125,28 @@ import { TipoClienteModule } from './tipo-cliente/tipo-cliente.module';
     CreBarrioModule,
 
     CreTipodocumentoModule,
+
+    CreSexoModule,
+    CreNiveleducacionModule,
+    CreProfesionModule,
+    CreParentescoModule,
+
     CreEstadocivilModule,
     FileUploadModule,
+
     TipoClienteModule,
+
+    CreTiposueldoModule,
+    RoleswebModule,
+    UserRolesWebModule,
+    RolePermissionsWebModule,
+    RouteswebModule,
+    PermissionsWebModule,
+    SeguridadmenuModule,
+    MenuItemRoleModule,
+    UsuarioBodegaModule,
+
+
 
   ],
 })

@@ -15,6 +15,7 @@ constructor(
   @InjectRepository(CreCanton)
   private readonly creCantonRepository: Repository<CreCanton>,
 ) { }
+
 async findByProvincia(idProvincia: number) {
   return await this.creCantonRepository.find({
     where: { idProvincia }, // Filtramos los cantones que pertenezcan a esa provincia
