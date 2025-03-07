@@ -5,7 +5,7 @@ import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { CreSolicitudWeb } from './entities/cre_solicitud-web.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';
+import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';   
 @Injectable()
 export class CreSolicitudWebService {
 
