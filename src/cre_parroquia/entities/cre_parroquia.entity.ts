@@ -16,7 +16,7 @@ import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 export class CreParroquia {
 
     @PrimaryGeneratedColumn('increment')
-    idParroquia: number;
+    idProvincia: number;
 
     @Column('varchar', {
         length: 70,
