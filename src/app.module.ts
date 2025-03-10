@@ -60,6 +60,8 @@ import { EstadoSolicitudModule } from './estado-solicitud/estado-solicitud.modul
 import { CreNacionalidadModule } from './cre_nacionalidad/cre_nacionalidad.module';
 import { CreInmuebleModule } from './cre_inmueble/cre_inmueble.module';
 import { CreCiudadinmuebleModule } from './cre_ciudadinmueble/cre_ciudadinmueble.module';
+import { CreTipoviviendaModule } from './cre_tipovivienda/cre_tipovivienda.module';
+import { CreTiempoviviendaModule } from './cre_tiempovivienda/cre_tiempovivienda.module';
 
 
 @Module({
@@ -161,6 +163,8 @@ import { CreCiudadinmuebleModule } from './cre_ciudadinmueble/cre_ciudadinmueble
     CreNacionalidadModule,
     CreInmuebleModule,
     CreCiudadinmuebleModule,
+    CreTipoviviendaModule,
+    CreTiempoviviendaModule,
 
 
 
