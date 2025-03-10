@@ -120,11 +120,21 @@ export class CreSolicitudWebService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} creSolicitudWeb`;
+    return this.creSolicitudWebRepository.findOne({where: {idCre_SolicitudWeb: id}});
   }
 
-  update(id: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-    return `This action updates a #${id} creSolicitudWeb`;
+  async update(idCre_SolicitudWeb: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
+    if (!creSolicitudWeb) {
+      throw new NotFoundException('Registro no encontrado');
+    }
+    try {
+      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+      await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      return creSolicitudWeb;
+    } catch (error) {
+      this.handleDBException(error);
+    }
   }
 
   remove(id: number) {

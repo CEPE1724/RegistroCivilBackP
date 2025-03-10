@@ -71,6 +71,9 @@ export class CreSolicitudWeb {
     @Column({ type: 'int', default: 1 })
     Estado: number;
 
+    @Column({type : 'int', default: 0})
+    idCre_TiempoVivienda: number;
+
     @Column('int')
     idProductos: number;
 
