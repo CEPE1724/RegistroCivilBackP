@@ -57,6 +57,7 @@ import { TipoTrabajoModule } from './tipo-trabajo/tipo-trabajo.module';
 import { CreTipocalificacionModule } from './cre-tipocalificacion/cre-tipocalificacion.module';
 import { CreEstadoModule } from './cre-estado/cre-estado.module';
 import { EstadoSolicitudModule } from './estado-solicitud/estado-solicitud.module';
+import { CrectaedogestionModule } from './crectaedogestion/crectaedogestion.module';
 
 import { CreNacionalidadModule } from './cre_nacionalidad/cre_nacionalidad.module';
 import { CreInmuebleModule } from './cre_inmueble/cre_inmueble.module';
@@ -165,6 +166,7 @@ import { OtpcodigoModule } from './otpcodigo/otpcodigo.module';
     CreTipocalificacionModule,
     CreEstadoModule,
     EstadoSolicitudModule,
+    CrectaedogestionModule,
 
     CreNacionalidadModule,
     CreInmuebleModule,
