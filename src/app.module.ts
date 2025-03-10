@@ -57,6 +57,7 @@ import { TipoTrabajoModule } from './tipo-trabajo/tipo-trabajo.module';
 import { CreTipocalificacionModule } from './cre-tipocalificacion/cre-tipocalificacion.module';
 import { CreEstadoModule } from './cre-estado/cre-estado.module';
 import { EstadoSolicitudModule } from './estado-solicitud/estado-solicitud.module';
+import { CrectaedogestionModule } from './crectaedogestion/crectaedogestion.module';
 
 
 @Module({
@@ -155,6 +156,7 @@ import { EstadoSolicitudModule } from './estado-solicitud/estado-solicitud.modul
     CreTipocalificacionModule,
     CreEstadoModule,
     EstadoSolicitudModule,
+    CrectaedogestionModule,
 
 
 
