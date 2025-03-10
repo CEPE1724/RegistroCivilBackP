@@ -57,8 +57,16 @@ import { TipoTrabajoModule } from './tipo-trabajo/tipo-trabajo.module';
 import { CreTipocalificacionModule } from './cre-tipocalificacion/cre-tipocalificacion.module';
 import { CreEstadoModule } from './cre-estado/cre-estado.module';
 import { EstadoSolicitudModule } from './estado-solicitud/estado-solicitud.module';
+
+import { CreNacionalidadModule } from './cre_nacionalidad/cre_nacionalidad.module';
+import { CreInmuebleModule } from './cre_inmueble/cre_inmueble.module';
+import { CreCiudadinmuebleModule } from './cre_ciudadinmueble/cre_ciudadinmueble.module';
+import { CreTipoviviendaModule } from './cre_tipovivienda/cre_tipovivienda.module';
+import { CreTiempoviviendaModule } from './cre_tiempovivienda/cre_tiempovivienda.module';
+
 import { NominaModule } from './nomina/nomina.module';
 import { OtpcodigoModule } from './otpcodigo/otpcodigo.module';
+
 
 
 @Module({
@@ -157,8 +165,16 @@ import { OtpcodigoModule } from './otpcodigo/otpcodigo.module';
     CreTipocalificacionModule,
     CreEstadoModule,
     EstadoSolicitudModule,
+
+    CreNacionalidadModule,
+    CreInmuebleModule,
+    CreCiudadinmuebleModule,
+    CreTipoviviendaModule,
+    CreTiempoviviendaModule,
+
     NominaModule,
     OtpcodigoModule,
+
 
 
 
