@@ -53,8 +53,9 @@ export class OtpcodigoService {
     });
 
     if (existingOtp) {
-      // Si ya existe un OTP activo, no generar uno nuevo
-      throw new Error('Ya existe un OTP pendiente para este número de teléfono.');
+      // Si ya existe un OTP activo, lo marcamos como usado
+      existingOtp.is_used = true;
+      await this.otpRepository.save(existingOtp);
     }
 
     const otpCode = Math.floor(10000 + Math.random() * 90000).toString(); // OTP de 5 dígitos

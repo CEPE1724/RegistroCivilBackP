@@ -20,6 +20,7 @@ export class CreSolicitudWebService {
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
 
     try {
+      console.log('createCreSolicitudWebDto', createCreSolicitudWebDto);
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
       /* obtener el id de la solicitud creada y cedula */

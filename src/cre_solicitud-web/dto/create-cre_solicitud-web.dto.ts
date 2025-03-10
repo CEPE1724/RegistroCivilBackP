@@ -119,4 +119,8 @@ export class CreateCreSolicitudWebDto {
     @IsPositive()
     idProductos: number;
 
+    @IsNumber()
+    @IsPositive()
+    idCre_TiempoVivienda: number;
+
 }
