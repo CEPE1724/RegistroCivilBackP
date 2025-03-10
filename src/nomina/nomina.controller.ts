@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { NominaService } from './nomina.service';
 import { CreateNominaDto } from './dto/create-nomina.dto';
 import { UpdateNominaDto } from './dto/update-nomina.dto';
+import { get } from 'http';
 
 @Controller('nomina')
 export class NominaController {
@@ -12,4 +13,8 @@ export class NominaController {
     return this.nominaService.findOne(id);
   }
 
+  @Get('Vendedor/:id')
+  findOneId(@Param('id') id: number) {
+    return this.nominaService.findOneId(id);
+  }
 }

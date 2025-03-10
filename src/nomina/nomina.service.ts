@@ -14,4 +14,8 @@ export class NominaService {
     return  this.nominaRepository.findOne({ where: { Codigo: Codigo } });
   }
 
+  findOneId(id: number) {
+    return this.nominaRepository.findOne({ where: { idPersonal: id } });
+  }
+
 }
