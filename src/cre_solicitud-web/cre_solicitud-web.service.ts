@@ -7,7 +7,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';   
 @Injectable()
-export class CreSolicitudWebService {
+export class CreSolicitudWebService { 
 
   private readonly logger = new Logger('CreSolicitudWebService');
 
