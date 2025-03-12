@@ -68,7 +68,7 @@ export class CreateCreSolicitudWebDto {
     ApellidoPaterno: string;
 
     @IsString()
-    @MinLength(3)
+    @IsOptional()
     ApellidoMaterno: string;
 
     @IsString()
@@ -76,8 +76,8 @@ export class CreateCreSolicitudWebDto {
     PrimerNombre: string;
 
     @IsString()
-    @MinLength(3)
-    SegundoNombre: string;
+    @IsOptional()
+    SegundoNombre?: string;
 
     @IsString()
     @MinLength(10)

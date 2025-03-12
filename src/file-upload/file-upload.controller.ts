@@ -21,8 +21,18 @@ export class FileUploadController {
     @UploadedFile() file: Express.Multer.File,
     @Body() body: { almacen: string; cedula: string;  numerosolicitud: string },
   ): Promise<{ url: string }> {
+    // validacion de todos los parametrso
     if (!file) {
-      throw new Error('No file uploaded');
+      throw new Error('No se recepto el archivo');
+    }
+    if (!body.almacen) {
+      throw new Error('No almacen provided');
+    }
+    if (!body.cedula) {
+      throw new Error('No cedula provided');
+    }
+    if (!body.numerosolicitud) {
+      throw new Error('No numerosolicitud provided');
     }
 
     // Verificar qué contiene el archivo
