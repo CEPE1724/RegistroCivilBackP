@@ -20,6 +20,7 @@ import { CognoSolicitudProfesiones } from '../entities/cognosolicitudprofesiones
 import { CognoTrabajo } from '../entities/cognotrabajo.entity';
 import { CreateCognoTrabajoDto } from '../dto/create-cognotrabajo.dto';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Console } from 'console';
 @Injectable()
 export class AuthService {
     private readonly logger = new Logger('AuthServiceCogno');
@@ -52,7 +53,7 @@ export class AuthService {
 
 
     async getToken(cedula: string): Promise<string> {
-        console.log('Cedula recibida:', cedula);
+
         try {
             // Pasamos la cédula como parte de las credenciales si es necesario
             const data = qs.stringify({
@@ -61,7 +62,7 @@ export class AuthService {
                 client_id: this.clientId,
                 grant_type: 'password',
             });
-            console.log("aui esta la data " + data);
+       
 
             // Solicitud para obtener el token
             const response = await axios.post(this.keycloakUrl, data, {
@@ -69,7 +70,7 @@ export class AuthService {
                     'Content-Type': 'application/x-www-form-urlencoded',
                 },
             });
-            console.log(response);
+          
 
             if (response.data && response.data.access_token) {
                 return response.data.access_token;  // Retornamos el token
@@ -84,7 +85,7 @@ export class AuthService {
     // Método para consumir la API externa usando el token y la cédula como parámetro en la URL
     async getApiData(token: string, cedula: string): Promise<any> {
 
-        console.log('Token recibido:', token);
+     
         try {
             // Realizamos la solicitud a la API externa usando el token
             const url = `${this.apiUrl}${cedula}`;  // Concatenamos la cédula en la URL
@@ -145,8 +146,7 @@ export class AuthService {
                 existingRecord.bInfoPersonal = true;
                 existingRecord.bInfoLaboral = bApiDataTrabajo;
                 await this.cognosolicitudcreditoRepository.save(existingRecord);
-                console.log('Updated record:', existingRecord);  // Verifica el registro actualizado
-
+              
                 return existingRecord;
             } else {
                 const createCognosolicitudcreditoDto: CreateCognosolicitudcreditoDto = {
@@ -160,8 +160,7 @@ export class AuthService {
                 };
 
                 const newRecord = this.cognosolicitudcreditoRepository.create(createCognosolicitudcreditoDto);
-                console.log('Created new record:', newRecord);  // Verifica el nuevo registro creado
-
+                
                 await this.cognosolicitudcreditoRepository.save(newRecord);
                 // Validamos si existe la persona natural en la base de datos
                 return newRecord;
@@ -249,7 +248,7 @@ export class AuthService {
     async createNaturalConyugue(apiData: any, idCognoSolicitudCredito: number, Tipo: number): Promise<CognoPersonaNatural> {
         try {
 
-            console.log('apiData', apiData);
+            
             /// veirificar si existe la persona natural
             const existingRecord = await this.cognoPersonaNaturalRepository.findOne({
                 where: { idCognoSolicitudCredito: idCognoSolicitudCredito, Tipo: Tipo },
@@ -345,10 +344,9 @@ export class AuthService {
             if (existingRecord) {
 
                 // ller parroquia len
-                console.log('apiData', tipoJsoncogno.parroquia.nombre);
                 // Actualizamos los datos si ya existe
                 existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
-                existingRecord.idLugar = tipoJsoncogno.idLugar;
+                existingRecord.idLugar = tipoJsoncogno.idLugar || 0;
                 existingRecord.codigoPostal = tipoJsoncogno.codigoPostal;
                 existingRecord.fechaActualizacion = tipoJsoncogno.fechaActualizacion || null;
                 existingRecord.idPais = tipoJsoncogno.parroquia.canton.provincia.pais.idPais;
@@ -372,10 +370,10 @@ export class AuthService {
                 return existingRecord;
             }
             else {
-                console.log('apiData', apiData.personaNatural.lugarNacimiento.parroquia.canton.provincia.pais.codigoIso2);
+             
                 const createCognolugarNacimientoDto: CreateCognolugarnacimientoDto = {
                     idCognoSolicitudCredito: idCognoSolicitudCredito,
-                    idLugar: tipoJsoncogno.idLugar,
+                    idLugar: tipoJsoncogno.idLugar || 0,
                     codigoPostal: tipoJsoncogno.codigoPostal,
                     fechaActualizacion: tipoJsoncogno.fechaActualizacion || null,
                     idPais: tipoJsoncogno.parroquia.canton.provincia.pais.idPais,
@@ -406,8 +404,6 @@ export class AuthService {
     }
 
     async createNacionalidades(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
-        console.log('Datos recibidos en createNacionalidades:', apiData);
-
         try {
             // Validación previa para evitar errores de undefined
             if (!apiData?.nacionalidades || !Array.isArray(apiData.nacionalidades) || apiData.nacionalidades.length === 0) {
@@ -433,7 +429,7 @@ export class AuthService {
                     existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
                     existingRecord.idPais = idPais;
                     existingRecord.nombre = nombre;
-                    console.log("aaaaaaaaaaaaaaaaaa" + existingRecord.nombre);
+                    
                     existingRecord.codigoArea = codigoArea;
                     existingRecord.codigoIso2 = codigoIso2;
                     existingRecord.codigoIso3 = codigoIso3;
@@ -462,7 +458,7 @@ export class AuthService {
     }
 
     async createProfesiones(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
-        console.log('Datos recibidos en createProfesiones:', apiData);
+       
 
         try {
             if (!apiData?.profesiones || !Array.isArray(apiData.profesiones) || apiData.profesiones.length === 0) {
@@ -506,7 +502,7 @@ export class AuthService {
     }
 
     async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
-        console.log('Datos recibidos en createTrabajo:', apiData);
+       console.log('apiData', apiData);
 
         try {
             if (!apiData?.trabajos || !Array.isArray(apiData.trabajos) || apiData.trabajos.length === 0) {
@@ -519,117 +515,129 @@ export class AuthService {
                 const existingRecord = await this.cognoTrabajoRepository.findOne({
                     where: { idCognoSolicitudCredito: idCognoSolicitudCredito, identificacionPersonaPatrono: trabajoData.personaPatrono.identificacion },
                 });
+                console.log('trabajoData', existingRecord);
                 if (existingRecord) {
-                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
-                    existingRecord.fechaActualizacion = trabajoData.fechaActualizacion;
-                    existingRecord.fechaIngreso = trabajoData.fechaIngreso;
-                    existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta;
-                    existingRecord.identificacionPersonaPatrono = trabajoData.personaPatrono.identificacion;
-                    existingRecord.nombrePatrono = trabajoData.personaPatrono.nombre;
-                    existingRecord.nombreUno = trabajoData.personaPatrono.nombreUno;
-                    existingRecord.nombreDos = trabajoData.personaPatrono.nombreDos;
-                    existingRecord.idTipoIdentificacion = trabajoData.personaPatrono.tipoIdentificacion.idTipoIdentificacion;
-                    existingRecord.descripcion = trabajoData.personaPatrono.tipoIdentificacion.descripcion;
-                    existingRecord.plazoSocial = trabajoData.personaPatrono.plazoSocial;
-                    existingRecord.expediente = trabajoData.personaPatrono.expediente;
-                    existingRecord.fechaConstitucion = trabajoData.personaPatrono.fechaConstitucion;
-                    existingRecord.nombreComercial = trabajoData.personaPatrono.nombreComercial;
-                    existingRecord.idTipoCompania = trabajoData.personaPatrono.tipoCompania.idTipoCompania;
-                    existingRecord.nombretipoCompania = trabajoData.personaPatrono.tipoCompania.nombre;
-                    existingRecord.idCanton = trabajoData.personaPatrono.oficinaControl.idCanton;
-                    existingRecord.nombreCanton = trabajoData.personaPatrono.oficinaControl.nombre;
-                    existingRecord.idProvincia = trabajoData.personaPatrono.oficinaControl.provincia.idProvincia;
-                    existingRecord.nombreProvincia = trabajoData.personaPatrono.oficinaControl.provincia.nombre;
-                    existingRecord.codigoArea = trabajoData.personaPatrono.oficinaControl.provincia.codigoArea;
-                    existingRecord.idPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.idPais;
-                    existingRecord.nombrePais = trabajoData.personaPatrono.oficinaControl.provincia.pais.nombre;
-                    existingRecord.codigoAreaPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoArea;
-                    existingRecord.codigoIso2 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso2;
-                    existingRecord.codigoIso3 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso3;
-                    existingRecord.codigoIso = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso;
-                    existingRecord.nombreSituacionLegal = trabajoData.personaPatrono.situacionLegal.nombre;
-                    existingRecord.proveedoraEstado = trabajoData.personaPatrono.proveedoraEstado;
-                    existingRecord.pagoRemesas = trabajoData.personaPatrono.pagoRemesas;
-                    existingRecord.vendeCredito = trabajoData.personaPatrono.vendeCredito;
-                    existingRecord.capitalSuscrito = trabajoData.personaPatrono.capitalSuscrito;
-                    existingRecord.capitalAutorizado = trabajoData.personaPatrono.capitalAutorizado;
-                    existingRecord.valorNominal = trabajoData.personaPatrono.valorNominal;
-                    existingRecord.perteneceMv = trabajoData.personaPatrono.perteneceMv;
-                    existingRecord.apellidoUno = trabajoData.personaPatrono.apellidoUno;
-                    existingRecord.apellidoDos = trabajoData.personaPatrono.apellidoDos;
-
-                    existingRecord.valor = trabajoData.personaIngreso.valor;
-                    existingRecord.tipoIngreso = trabajoData.personaIngreso.tipoIngreso;
-                    existingRecord.frecuenciaIngreso = trabajoData.personaIngreso.frecuenciaIngreso;
-                    existingRecord.valorRango = trabajoData.personaIngreso.valorRango;
-
-                    existingRecord.idCargo = trabajoData.cargo.idCargo;
-                    existingRecord.nombreCargo = trabajoData.cargo.nombre;
-
-                    existingRecord.tipoAfiliado = trabajoData.tipoAfiliado;
-                    existingRecord.telefonoOfi = trabajoData.telefonoOfi;
-                    existingRecord.telefonoAfi = trabajoData.telefonoAfi;
-                    existingRecord.direccionOfi = trabajoData.direccionOfi;
-                    existingRecord.direccionAfi = trabajoData.direccionAfi;
-                    existingRecord.celular = trabajoData.celular;
-                    existingRecord.baseDate = trabajoData.baseDate;
-
+                    console.log('si existe aqui', trabajoData);
+                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || 0;
+                    existingRecord.fechaActualizacion = trabajoData.fechaActualizacion || 0;
+                    existingRecord.fechaIngreso = trabajoData.fechaIngreso || 0;
+                    existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta || new Date();
+                    
+                    if (trabajoData.personaPatrono) { 
+                      
+                         // Validar que personaPatrono exista
+                        existingRecord.identificacionPersonaPatrono = trabajoData.personaPatrono.identificacion || '';
+                        existingRecord.nombrePatrono = trabajoData.personaPatrono.nombre || '';
+                        existingRecord.nombreUno = trabajoData.personaPatrono.nombreUno || '';
+                        existingRecord.nombreDos = trabajoData.personaPatrono.nombreDos || '';
+                        existingRecord.idTipoIdentificacion = trabajoData.personaPatrono.tipoIdentificacion.idTipoIdentificacion || 0;
+                        existingRecord.descripcion = trabajoData.personaPatrono.tipoIdentificacion.descripcion || '';
+                        existingRecord.plazoSocial = trabajoData.personaPatrono.plazoSocial || new Date();
+                        existingRecord.expediente = trabajoData.personaPatrono.expediente || 0;
+                        existingRecord.fechaConstitucion = trabajoData.personaPatrono.fechaConstitucion || new Date();
+                        existingRecord.nombreComercial = trabajoData.personaPatrono.nombreComercial || '';
+                        existingRecord.idTipoCompania = trabajoData.personaPatrono.tipoCompania.idTipoCompania || 0;
+                        existingRecord.nombretipoCompania = trabajoData.personaPatrono.tipoCompania.nombre || '';
+                        existingRecord.idCanton = trabajoData.personaPatrono.oficinaControl.idCanton || 0;
+                        existingRecord.nombreCanton = trabajoData.personaPatrono.oficinaControl.nombre || '';
+                        existingRecord.idProvincia = trabajoData.personaPatrono.oficinaControl.provincia.idProvincia || 0;
+                        existingRecord.nombreProvincia = trabajoData.personaPatrono.oficinaControl.provincia.nombre || '';
+                        existingRecord.codigoArea = trabajoData.personaPatrono.oficinaControl.provincia.codigoArea || '';
+                        existingRecord.idPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.idPais || 0;
+                        existingRecord.nombrePais = trabajoData.personaPatrono.oficinaControl.provincia.pais.nombre || '';
+                        existingRecord.codigoAreaPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoArea || '';
+                        existingRecord.codigoIso2 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso2 || '';
+                        existingRecord.codigoIso3 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso3 || '';
+                        existingRecord.codigoIso = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso || '';
+                        existingRecord.nombreSituacionLegal = trabajoData.personaPatrono.situacionLegal.nombre || '';
+                        existingRecord.proveedoraEstado = trabajoData.personaPatrono.proveedoraEstado || '';
+                        existingRecord.pagoRemesas = trabajoData.personaPatrono.pagoRemesas || '';
+                        existingRecord.vendeCredito = trabajoData.personaPatrono.vendeCredito || '';
+                        existingRecord.capitalSuscrito = trabajoData.personaPatrono.capitalSuscrito || 0;
+                        existingRecord.capitalAutorizado = trabajoData.personaPatrono.capitalAutorizado || 0;
+                        existingRecord.valorNominal = trabajoData.personaPatrono.valorNominal || 0;
+                        existingRecord.perteneceMv = trabajoData.personaPatrono.perteneceMv || '';
+                        existingRecord.apellidoUno = trabajoData.personaPatrono.apellidoUno || '';
+                        existingRecord.apellidoDos = trabajoData.personaPatrono.apellidoDos || '';
+                    }
+                
+                    existingRecord.valor = trabajoData.personaIngreso.valor || 0;
+                    existingRecord.tipoIngreso = trabajoData.personaIngreso.tipoIngreso || '';
+                    existingRecord.frecuenciaIngreso = trabajoData.personaIngreso.frecuenciaIngreso || '';
+                    existingRecord.valorRango = trabajoData.personaIngreso.valorRango || '';
+                    
+                    existingRecord.idCargo = trabajoData.cargo.idCargo || 0;
+                    existingRecord.nombreCargo = trabajoData.cargo.nombre || '';
+                    
+                    existingRecord.tipoAfiliado = trabajoData.tipoAfiliado || '';
+                    existingRecord.telefonoOfi = trabajoData.telefonoOfi || '';
+                    existingRecord.telefonoAfi = trabajoData.telefonoAfi || '';
+                    existingRecord.direccionOfi = trabajoData.direccionOfi || '';
+                    existingRecord.direccionAfi = trabajoData.direccionAfi || '';
+                    existingRecord.celular = trabajoData.celular || '';
+                    existingRecord.baseDate = trabajoData.baseDate || new Date().toISOString();
                 } else {
+                    console.log('entra aqui', trabajoData);
                     const createCognoTrabajoDto: CreateCognoTrabajoDto = {
-                        idCognoSolicitudCredito: idCognoSolicitudCredito,
-                        fechaActualizacion: trabajoData.fechaActualizacion,
-                        fechaIngreso: trabajoData.fechaIngreso,
-                        fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta,
-                        identificacionPersonaPatrono: trabajoData.personaPatrono.identificacion,
-                        nombrePatrono: trabajoData.personaPatrono.nombre,
-                        nombreUno: trabajoData.personaPatrono.nombreUno,
-                        nombreDos: trabajoData.personaPatrono.nombreDos,
-                        idTipoIdentificacion: trabajoData.personaPatrono.tipoIdentificacion.idTipoIdentificacion,
-                        descripcion: trabajoData.personaPatrono.tipoIdentificacion.descripcion,
-                        plazoSocial: trabajoData.personaPatrono.plazoSocial,
-                        expediente: trabajoData.personaPatrono.expediente,
-                        fechaConstitucion: trabajoData.personaPatrono.fechaConstitucion,
-                        nombreComercial: trabajoData.personaPatrono.nombreComercial,
-                        idTipoCompania: trabajoData.personaPatrono.tipoCompania.idTipoCompania,
-                        nombretipoCompania: trabajoData.personaPatrono.tipoCompania.nombre,
-                        idCanton: trabajoData.personaPatrono.oficinaControl.idCanton,
-                        nombreCanton: trabajoData.personaPatrono.oficinaControl.nombre,
-                        idProvincia: trabajoData.personaPatrono.oficinaControl.provincia.idProvincia,
-                        nombreProvincia: trabajoData.personaPatrono.oficinaControl.provincia.nombre,
-                        codigoArea: trabajoData.personaPatrono.oficinaControl.provincia.codigoArea,
-                        idPais: trabajoData.personaPatrono.oficinaControl.provincia.pais.idPais,
-                        nombrePais: trabajoData.personaPatrono.oficinaControl.provincia.pais.nombre,
-                        codigoAreaPais: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoArea,
-                        codigoIso2: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso2,
-                        codigoIso3: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso3,
-                        codigoIso: trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso,
-                        nombreSituacionLegal: trabajoData.personaPatrono.situacionLegal.nombre,
-                        proveedoraEstado: trabajoData.personaPatrono.proveedoraEstado,
-                        pagoRemesas: trabajoData.personaPatrono.pagoRemesas,
-                        vendeCredito: trabajoData.personaPatrono.vendeCredito,
-                        capitalSuscrito: trabajoData.personaPatrono.capitalSuscrito,
-                        capitalAutorizado: trabajoData.personaPatrono.capitalAutorizado,
-                        valorNominal: trabajoData.personaPatrono.valorNominal,
-                        perteneceMv: trabajoData.personaPatrono.perteneceMv,
-                        apellidoUno: trabajoData.personaPatrono.apellidoUno,
-                        apellidoDos: trabajoData.personaPatrono.apellidoDos,
-                        valor: trabajoData.personaIngreso.valor,
-                        tipoIngreso: trabajoData.personaIngreso.tipoIngreso,
-                        frecuenciaIngreso: trabajoData.personaIngreso.frecuenciaIngreso,
-                        valorRango: trabajoData.personaIngreso.valorRango,
-                        idCargo: trabajoData.cargo.idCargo,
-                        nombreCargo: trabajoData.cargo.nombre,
-                        tipoAfiliado: trabajoData.tipoAfiliado,
-                        telefonoOfi: trabajoData.telefonoOfi,
-                        telefonoAfi: trabajoData.telefonoAfi,
-                        direccionOfi: trabajoData.direccionOfi,
-                        direccionAfi: trabajoData.direccionAfi,
-                        celular: trabajoData.celular,
-                        baseDate: trabajoData.baseDate,
+                        idCognoSolicitudCredito: idCognoSolicitudCredito || 0,
+                        fechaActualizacion: trabajoData.fechaActualizacion || 0,
+                        fechaIngreso: trabajoData.fechaIngreso || 0,
+                        fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta || new Date(),
+                        
+                        // Validar si existe personaPatrono
+                        identificacionPersonaPatrono: trabajoData.personaPatrono ? trabajoData.personaPatrono.identificacion || '' : '',
+                        nombrePatrono: trabajoData.personaPatrono ? trabajoData.personaPatrono.nombre || '' : '',
+                        nombreUno: trabajoData.personaPatrono ? trabajoData.personaPatrono.nombreUno || '' : '',
+                        nombreDos: trabajoData.personaPatrono ? trabajoData.personaPatrono.nombreDos || '' : '',
+                        idTipoIdentificacion: trabajoData.personaPatrono ? trabajoData.personaPatrono.tipoIdentificacion.idTipoIdentificacion || 0 : 0,
+                        descripcion: trabajoData.personaPatrono ? trabajoData.personaPatrono.tipoIdentificacion.descripcion || '' : '',
+                        plazoSocial: trabajoData.personaPatrono ? trabajoData.personaPatrono.plazoSocial || new Date() : new Date(),
+                        expediente: trabajoData.personaPatrono ? trabajoData.personaPatrono.expediente || 0 : 0,
+                        fechaConstitucion: trabajoData.personaPatrono ? trabajoData.personaPatrono.fechaConstitucion || new Date() : new Date(),
+                        nombreComercial: trabajoData.personaPatrono ? trabajoData.personaPatrono.nombreComercial || '' : '',
+                        idTipoCompania: trabajoData.personaPatrono ? trabajoData.personaPatrono.tipoCompania.idTipoCompania || 0 : 0,
+                        nombretipoCompania: trabajoData.personaPatrono ? trabajoData.personaPatrono.tipoCompania.nombre || '' : '',
+                        idCanton: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.idCanton || 0 : 0,
+                        nombreCanton: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.nombre || '' : '',
+                        idProvincia: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.idProvincia || 0 : 0,
+                        nombreProvincia: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.nombre || '' : '',
+                        codigoArea: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.codigoArea || '' : '',
+                        idPais: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.pais.idPais || 0 : 0,
+                        nombrePais: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.pais.nombre || '' : '',
+                        codigoAreaPais: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoArea || '' : '',
+                        codigoIso2: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso2 || '' : '',
+                        codigoIso3: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso3 || '' : '',
+                        codigoIso: trabajoData.personaPatrono ? trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso || '' : '',
+                        nombreSituacionLegal: trabajoData.personaPatrono ? trabajoData.personaPatrono.situacionLegal.nombre || '' : '',
+                        proveedoraEstado: trabajoData.personaPatrono ? trabajoData.personaPatrono.proveedoraEstado || '' : '',
+                        pagoRemesas: trabajoData.personaPatrono ? trabajoData.personaPatrono.pagoRemesas || '' : '',
+                        vendeCredito: trabajoData.personaPatrono ? trabajoData.personaPatrono.vendeCredito || '' : '',
+                        capitalSuscrito: trabajoData.personaPatrono ? trabajoData.personaPatrono.capitalSuscrito || 0 : 0,
+                        capitalAutorizado: trabajoData.personaPatrono ? trabajoData.personaPatrono.capitalAutorizado || 0 : 0,
+                        valorNominal: trabajoData.personaPatrono ? trabajoData.personaPatrono.valorNominal || 0 : 0,
+                        perteneceMv: trabajoData.personaPatrono ? trabajoData.personaPatrono.perteneceMv || '' : '',
+                        apellidoUno: trabajoData.personaPatrono ? trabajoData.personaPatrono.apellidoUno || '' : '',
+                        apellidoDos: trabajoData.personaPatrono ? trabajoData.personaPatrono.apellidoDos || '' : '',
+                        
+                        valor: trabajoData.personaIngreso.valor || 0,
+                        tipoIngreso: trabajoData.personaIngreso.tipoIngreso || '',
+                        frecuenciaIngreso: trabajoData.personaIngreso.frecuenciaIngreso || '',
+                        valorRango: trabajoData.personaIngreso.valorRango || '',
+                        idCargo: trabajoData.cargo.idCargo || 0,
+                        nombreCargo: trabajoData.cargo.nombre || '',
+                        tipoAfiliado: trabajoData.tipoAfiliado || '',
+                        telefonoOfi: trabajoData.telefonoOfi || '',
+                        telefonoAfi: trabajoData.telefonoAfi || '',
+                        direccionOfi: trabajoData.direccionOfi || '',
+                        direccionAfi: trabajoData.direccionAfi || '',
+                        celular: trabajoData.celular || '',
+                        baseDate: trabajoData.baseDate || new Date().toISOString(),
                     };
                     const newRecord = this.cognoTrabajoRepository.create(createCognoTrabajoDto);
                     await this.cognoTrabajoRepository.save(newRecord);
                 }
+                
+                
 
             }
         } catch (error) {

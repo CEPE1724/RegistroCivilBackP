@@ -68,6 +68,7 @@ import { CreTiempoviviendaModule } from './cre_tiempovivienda/cre_tiempovivienda
 import { NominaModule } from './nomina/nomina.module';
 import { OtpcodigoModule } from './otpcodigo/otpcodigo.module';
 import { CreverificaciontelefonicaModule } from './creverificaciontelefonica/creverificaciontelefonica.module';
+import { EqfxidentificacionconsultadaModule } from './eqfxidentificacionconsultada/eqfxidentificacionconsultada.module';
 
 
 
@@ -178,6 +179,7 @@ import { CreverificaciontelefonicaModule } from './creverificaciontelefonica/cre
     NominaModule,
     OtpcodigoModule,
     CreverificaciontelefonicaModule,
+    EqfxidentificacionconsultadaModule,
 
 
 
