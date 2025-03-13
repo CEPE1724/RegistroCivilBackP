@@ -12,23 +12,5 @@ export class DocumentosSolicitudController {
     return this.documentosSolicitudService.create(createDocumentosSolicitudDto);
   }
 
-  @Get()
-  findAll() {
-    return this.documentosSolicitudService.findAll();
-  }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.documentosSolicitudService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateDocumentosSolicitudDto: UpdateDocumentosSolicitudDto) {
-    return this.documentosSolicitudService.update(+id, updateDocumentosSolicitudDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.documentosSolicitudService.remove(+id);
-  }
 }
