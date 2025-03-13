@@ -19,7 +19,7 @@ export class FileUploadController {
   )
   async uploadFile(
     @UploadedFile() file: Express.Multer.File,
-    @Body() body: { almacen: string; cedula: string;  numerosolicitud: string },
+    @Body() body: { almacen: string; cedula: string;  numerosolicitud: string, Tipo:string },
   ): Promise<{ url: string }> {
     // validacion de todos los parametrso
     if (!file) {
@@ -38,14 +38,15 @@ export class FileUploadController {
     // Verificar qué contiene el archivo
     console.log('File received:', file); // Esto debe mostrar el archivo recibido y su buffer
 
-    const { almacen, cedula,  numerosolicitud } = body;
+    const { almacen, cedula,  numerosolicitud, Tipo } = body;
 
     try {
       const uploadedFileUrl = await this.fileUploadService.uploadFile(
         file,
         almacen,
         cedula,
-        numerosolicitud
+        numerosolicitud,
+        Tipo,
       );
       
       // Retornar la URL del archivo en formato JSON
