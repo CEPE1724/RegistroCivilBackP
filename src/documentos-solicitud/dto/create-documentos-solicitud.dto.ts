@@ -1,4 +1,3 @@
-// dto/create-documentos-solicitud.dto.ts
 
 import { IsInt, IsNumber, IsOptional, IsString} from 'class-validator';
 
@@ -17,3 +16,4 @@ export class CreateDocumentosSolicitudDto {
   @IsString()
   Observacion? : string;
 }
+
