@@ -23,7 +23,7 @@ export class CreverificaciontelefonicaService {
   }
 
   findOne(id: number) {
-    return `This action returns a #${id} creverificaciontelefonica`;
+    return this.creverificaciontelefonicaRepository.findOne({ where: { idCre_VerificacionTelefonica: id } });
   }
 
 
