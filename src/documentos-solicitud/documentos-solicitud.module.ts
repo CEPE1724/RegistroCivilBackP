@@ -11,6 +11,7 @@ import {HistorialObservaciones} from './entities/historial-observaciones.entity'
   [TypeOrmModule.forFeature([DocumentosSolicitud , HistorialObservaciones])],
   controllers: [DocumentosSolicitudController],
   providers: [DocumentosSolicitudService],
+  
  
 })
 export class DocumentosSolicitudModule {}
