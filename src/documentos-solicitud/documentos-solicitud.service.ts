@@ -45,11 +45,13 @@ export class DocumentosSolicitudService {
     return savedDocumento;
   }
 
-  // Crear observación
+
   async createObservacion(createHistorialObservacionesDto: CreateHistorialObservacionesDto): Promise<HistorialObservaciones> {
     const observaciones = this.historialObservacionesRepository.create(createHistorialObservacionesDto);
     return await this.historialObservacionesRepository.save(observaciones);
   }
+
+
 
   // Buscar documentos por solicitud
   async findBySolicitud(idSolicitud: number) {
