@@ -69,6 +69,7 @@ import { NominaModule } from './nomina/nomina.module';
 import { OtpcodigoModule } from './otpcodigo/otpcodigo.module';
 import { CreverificaciontelefonicaModule } from './creverificaciontelefonica/creverificaciontelefonica.module';
 import { EqfxidentificacionconsultadaModule } from './eqfxidentificacionconsultada/eqfxidentificacionconsultada.module';
+import { DocumentosSolicitudModule } from './documentos-solicitud/documentos-solicitud.module';
 import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverificaciontelefonica/cre-solicitudverificaciontelefonica.module';
 
 
@@ -181,7 +182,6 @@ import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverific
     OtpcodigoModule,
     CreverificaciontelefonicaModule,
     EqfxidentificacionconsultadaModule,
-    CreSolicitudverificaciontelefonicaModule,
 
 
 

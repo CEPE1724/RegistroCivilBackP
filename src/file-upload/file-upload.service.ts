@@ -24,7 +24,7 @@ export class FileUploadService {
     });
   }
 
-  async uploadFile(file: Express.Multer.File, almacen: string, cedula: string, numerosolicitud: string): Promise<string> {
+  async uploadFile(file: Express.Multer.File, almacen: string, cedula: string, numerosolicitud: string, Tipo:string): Promise<string> {
     if (!file) {
       throw new Error('No file provided');
     }
@@ -37,7 +37,7 @@ export class FileUploadService {
     console.log('Fecha:', Year, Month, Day);
     // Definir el directorio y la ruta dentro del bucket de GCS
 
-    const filePath = `CREDIPOINT/${almacen}/${Year}/${Month}/${cedula}/${numerosolicitud}/${nombre_del_archivo}`;
+    const filePath = `CREDIPOINT/${almacen}/${Year}/${Month}/${cedula}/${numerosolicitud}/${Tipo}/${nombre_del_archivo}`;
     const fileName = `${nombre_del_archivo}`;
     const tempFilePath = path.join(__dirname, fileName);
 

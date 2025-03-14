@@ -32,8 +32,10 @@ export class WebSolicitudgrandeService {
     return `This action returns all webSolicitudgrande`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} webSolicitudgrande`;
+  findOne(id: number, numerosolicitud: string) {
+    console.log("id",id);
+    console.log("numerosolicitud",numerosolicitud);
+    return this.webSolicitudgrandeRepository.findOne({ where: {  NumeroSolicitud:numerosolicitud } });
   }
 
   update(id: number, updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {

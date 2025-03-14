@@ -39,13 +39,13 @@ export class CreSolicitudWebService {
     }
   }
 
-  private async callStoredProcedureRetornaTipoCliente(cedula: string): Promise<any> {
+  private async callStoredProcedureRetornaTipoCliente(cedula: string, idSolicitud: number): Promise<any> {
     try {
 
       // Ejecutamos la consulta y pasamos el parámetro correctamente
       const result = await this.creSolicitudWebRepository.query(
-        `EXEC Cre_RetornaTipoCliente @Cedula = @0`, // Usamos el nombre del parámetro en la consulta
-        [cedula] // Aseguramos que el parámetro se pase como un objeto con el tipo correcto
+        `EXEC Cre_RetornaTipoCliente @Cedula = @0, @idSolicitud = @1`, // Usamos el nombre del parámetro en la consulta
+        [cedula, idSolicitud] // Aseguramos que el parámetro se pase como un objeto con el tipo correcto
       );
       // Si el procedimiento devuelve algo, procesamos el resultado
       return result;
@@ -138,7 +138,8 @@ export class CreSolicitudWebService {
 
 
       // validar tipo cliente
-      const storedProcedureResult = await this.callStoredProcedureRetornaTipoCliente(cedula);
+
+      const storedProcedureResult = await this.callStoredProcedureRetornaTipoCliente(cedula, idSolicitud);
       const tipoCliente = storedProcedureResult[0].TipoCliente;
 
       // actualizar el tipo de cliente en la tabla cre_solicitud_web
