@@ -1,3 +1,4 @@
+
 /**
  CREATE   TABLE  DocumentosSolicitudWeb (
     idDocumentosSolicitudWeb INT IDENTITY(1,1) PRIMARY KEY, -- Identificador único del documento
@@ -39,3 +40,4 @@ export class DocumentosSolicitud {
     @Column({ type: 'nvarchar', length: 50, nullable: true })
     Usuario: string;
 } 
+
