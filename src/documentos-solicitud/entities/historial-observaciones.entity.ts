@@ -35,8 +35,8 @@ export class HistorialObservaciones {
     @Column({ type: 'datetime', nullable: false })
     Fecha: Date;
 
-    @Column({ type: 'varchar', length: 50, nullable: false })
-    TipoUsuario: string;
+    @Column({ type: 'int'})
+    TipoUsuario: number;
 
     @Column({ type: 'datetime', default: () => 'GETDATE()' })
     FechaSistema: Date;
@@ -46,4 +46,8 @@ export class HistorialObservaciones {
 
     @Column({ type: 'varchar', length: 50, default: () => "SUSER_NAME()" })
     Usuario: string;
+
+    @Column({ type: 'int', nullable: true })
+    idTipoDocumentoWEB: number;
+
 }
