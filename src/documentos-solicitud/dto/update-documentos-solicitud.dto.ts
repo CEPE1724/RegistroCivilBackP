@@ -1,4 +1,6 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateDocumentosSolicitudDto } from './create-documentos-solicitud.dto';
+import { IsInt } from 'class-validator';
 
-export class UpdateDocumentosSolicitudDto extends PartialType(CreateDocumentosSolicitudDto) {}
+export class UpdateDocumentoStatusDto {
+  @IsInt()
+  idEstadoDocumento: number;  // Permite actualizar solo este campo
+}

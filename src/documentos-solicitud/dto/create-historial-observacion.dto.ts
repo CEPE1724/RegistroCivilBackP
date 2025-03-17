@@ -1,4 +1,4 @@
-import { IsInt, IsOptional, IsString, IsDate } from 'class-validator';
+import { IsInt, IsOptional, IsString, IsDate, IsNumber } from 'class-validator';
 
 export class CreateHistorialObservacionesDto {
     @IsOptional()
@@ -22,8 +22,8 @@ export class CreateHistorialObservacionesDto {
     Fecha?: Date;
 
     @IsOptional()
-    @IsString()
-    TipoUsuario?: string;
+    @IsNumber()
+    TipoUsuario?: number;
 
     @IsOptional()
     @IsDate()
@@ -36,4 +36,7 @@ export class CreateHistorialObservacionesDto {
     @IsOptional()
     @IsString()
     Usuario?: string;
+
+    @IsNumber()
+    idTipoDocumentoWEB?: number;
 }

@@ -1,7 +1,7 @@
 
 import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert  } from "typeorm";
 
-@Entity()
+@Entity('Web_SolicitudGrande')
 export class WebSolicitudgrande {
 
     @PrimaryGeneratedColumn('increment')

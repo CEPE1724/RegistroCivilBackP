@@ -3,13 +3,13 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CompraencuestaService } from './compraencuesta.service';
 import { CompraencuestaController } from './compraencuesta.controller';
 import { Compraencuesta } from './entities/compraencuesta.entity';
-import { AuthsModule } from '../auths/auths.module';
+import { AuthModule } from '../auth/auth.module';
 @Module({
   controllers: [CompraencuestaController],
   providers: [CompraencuestaService],
   imports: [
     TypeOrmModule.forFeature([Compraencuesta]),
-    AuthsModule,
+    AuthModule,
   ]
 })
 export class CompraencuestaModule {}
