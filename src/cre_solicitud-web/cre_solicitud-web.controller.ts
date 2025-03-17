@@ -12,10 +12,25 @@ export class CreSolicitudWebController {
   create(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
-
+  @Get('prueba')
+	getPrueba() {
+		console.log('Endpoint de prueba ejecutado');
+		return { message: 'Prueba OK' };
+	}
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.creSolicitudWebService.findAll(paginationDto);
+  }
+
+  @Get('repositorios')
+  async getrepositorios(
+    @Query('anio') anio?: string,
+    @Query('mes') mes?: string,
+  ) {
+	console.log('repositorios');
+    const anioParsed = anio ? parseInt(anio, 10) : undefined;
+    const mesParsed = mes ? parseInt(mes, 10) : undefined;
+    return await this.creSolicitudWebService.getSolicitudesWebRepositorio(anioParsed, mesParsed);
   }
 
   @Get(':id')
