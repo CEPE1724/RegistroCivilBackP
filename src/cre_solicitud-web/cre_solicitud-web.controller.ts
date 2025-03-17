@@ -23,6 +23,17 @@ export class CreSolicitudWebController {
     return this.creSolicitudWebService.findOne(+id);
   }
 
+  @Get('repositorios')
+  async getrepositorios(
+    @Query('anio') anio?: string,
+    @Query('mes') mes?: string,
+  ) {
+	console.log('repositorios');
+    const anioParsed = anio ? parseInt(anio, 10) : undefined;
+    const mesParsed = mes ? parseInt(mes, 10) : undefined;
+    return await this.creSolicitudWebService.getSolicitudesWebRepositorio(anioParsed, mesParsed);
+  }
+
   @Put(':idCre_SolicitudWeb')
   async update(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number, @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
     return this.creSolicitudWebService.update(idCre_SolicitudWeb, updateCreSolicitudWebDto);

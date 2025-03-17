@@ -215,6 +215,17 @@ export class CreSolicitudWebService {
     return `This action removes a #${id} creSolicitudWeb`;
   }
 
+  async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
+	console.log('anio', anio, 'mes', mes);
+	const result = await this.creSolicitudWebRepository.query(
+	  `EXEC sp_GetSolicitudWebRepositorio @Anio = ?, @Mes = ?`,
+	  [anio ?? null, mes ?? null],
+	);
+	console.log('Resultado del SP:', result);
+	return result;
+  }
+  
+
   private handleDBException(error: any) {
     if (error.code === '23505') {
       throw new BadRequestException(error.detail);
