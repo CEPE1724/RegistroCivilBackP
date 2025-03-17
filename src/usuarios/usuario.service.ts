@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Like, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Usuario } from './usuario.entity';
+import { not } from 'joi';
+import { Console } from 'console';
 
 @Injectable()
 export class UsuarioService {
@@ -32,6 +34,17 @@ export class UsuarioService {
   async findAll(): Promise<Usuario[]> {
     return await this.usuarioRepository.find({
       where: { idGrupo: In([1, 18, 16, 17 , 22, 11])},
+    });
+  }
+
+
+  async findAllAnalistas(Filtro: any): Promise<Usuario[]> {
+    console.log('Filtro', Filtro);
+    return await this.usuarioRepository.find({
+      where: {
+        Nombre: Like(`%${Filtro}%`),  // Simula el LIKE de SQL
+        idGrupo: Not(In([36])),        // Excluye los usuarios cuyo idGrupo es 36
+      },
     });
   }
 
