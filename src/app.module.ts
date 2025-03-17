@@ -5,7 +5,6 @@ import { JoinValidationSchema } from './configjoi/joi.validation';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuarioModule } from './usuarios/usuario.module';
-import { AuthModule } from './auth/auth.module';
 import { CiudadanoModule } from './ciudadanos/ciudadano.module';
 import { HistoricoModule } from './historico/historico.module';
 import { CboGestorCobranzasModule } from './Cbo_Gestor_Cobranzas/cbo-gestor-cobranzas.module';
@@ -26,7 +25,7 @@ import { CreSolicitudWebModule } from './cre_solicitud-web/cre_solicitud-web.mod
 import { CognosolicitudcreditoModule } from './cognosolicitudcredito/cognosolicitudcredito.module';
 import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadasprefactura.module';
-import { AuthsModule } from './auths/auths.module';
+import { AuthModule } from './auth/auth.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
 import { CreProvinciaModule } from './cre_provincia/cre_provincia.module';
 import { CreCantonModule } from './cre-canton/cre-canton.module';
@@ -71,6 +70,7 @@ import { CreverificaciontelefonicaModule } from './creverificaciontelefonica/cre
 import { EqfxidentificacionconsultadaModule } from './eqfxidentificacionconsultada/eqfxidentificacionconsultada.module';
 import { DocumentosSolicitudModule } from './documentos-solicitud/documentos-solicitud.module';
 import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverificaciontelefonica/cre-solicitudverificaciontelefonica.module';
+
 
 
 
@@ -137,7 +137,7 @@ import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverific
     CognosolicitudcreditoModule,
     AuthModuleCogno,
     CoordenadasprefacturaModule,
-    AuthsModule,
+    AuthModule,
     WebSolicitudgrandeModule,
     CreProvinciaModule,
     CreCantonModule,
@@ -182,6 +182,8 @@ import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverific
     OtpcodigoModule,
     CreverificaciontelefonicaModule,
     EqfxidentificacionconsultadaModule,
+    DocumentosSolicitudModule,
+    CreSolicitudverificaciontelefonicaModule,
 
 
 

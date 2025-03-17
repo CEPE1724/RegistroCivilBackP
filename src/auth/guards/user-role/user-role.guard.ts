@@ -1,7 +1,7 @@
 import { BadRequestException, CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { META_ROLES } from 'src/auths/decorators/role-protected.decorator';
+import { META_ROLES } from 'src/auth/decorators/role-protected.decorator';
 import { Usuario } from 'src/usuarios/usuario.entity';
 
 @Injectable()

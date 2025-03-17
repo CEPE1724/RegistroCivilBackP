@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Post, Req } from '@nestjs/common';
 import { HistoricoService } from './historico.service';
 import { Request } from 'express';
-import { JwtAuthGuard } from '../auth/JwtAuthGuard';
+import { RawHeaders, GetUser, Auth } from '../auth/decorators';
 import { UseGuards } from '@nestjs/common';
 
 @Controller('historico')
@@ -10,13 +10,13 @@ export class HistoricoController {
     private readonly historicoService: HistoricoService,
   ) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Auth()
   @Get()
   async obtenerHistorial() {
     return this.historicoService.obtenerHistorial();
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Auth()
   @Post('registrar')
   async registrarConsulta(@Req() request: Request, @Body('cedula') cedula: string, @Body('apiRC') apiRC: boolean) {
     const usuario = request.user.Nombre; // JWT contiene la información del usuario

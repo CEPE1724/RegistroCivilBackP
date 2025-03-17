@@ -1,64 +1,92 @@
-import {
-  Controller,
-  Post,
-  Body,
-  UnauthorizedException,
-  HttpStatus,
-  UseGuards,
-  Get,
-} from '@nestjs/common';
-import { UsuarioService } from '../usuarios/usuario.service';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards , Headers, SetMetadata} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from './JwtAuthGuard';
-import { User } from './user.decorator';
+
+import { LoginUserDto } from './dto/login-user.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { Usuario } from 'src/usuarios/usuario.entity';
+import { RawHeaders, GetUser, Auth } from './decorators';
+import { IncomingHttpHeaders } from 'http';
+import { UserRoleGuard } from './guards/user-role/user-role.guard';
+import { RoleProtected } from './decorators/role-protected.decorator';
+import { ValidRoles } from './interfaces';
 
 @Controller('auth')
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly usuarioService: UsuarioService,
-  ) {}
+  constructor(private readonly authsService: AuthService) {}
 
   @Post('login')
-  async login(@Body() loginDto: LoginDto) {
-    // Llamamos al servicio findByNombre
-    const userOrMessage = await this.usuarioService.findByNombre(loginDto.Nombre);
-
-    // Verificar si el resultado es un mensaje
-    if (typeof userOrMessage === 'string') {
-      // Si es un mensaje, lanzamos UnauthorizedException con el mensaje
-      throw new UnauthorizedException({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: userOrMessage, // El mensaje que devuelve el servicio (Ej. "El usuario está bloqueado" o "Usuario no encontrado")
-      });
-    }
-
-    // Si no es un mensaje, es un objeto usuario
-    const user = userOrMessage;
-
-    // Verificar que las credenciales (contraseña) sean correctas
-    const isPasswordValid = loginDto.password === user.Clave;
-    if (!isPasswordValid) {
-      throw new UnauthorizedException({
-        statusCode: HttpStatus.UNAUTHORIZED,
-        message: 'Credenciales inválidas: contraseña incorrecta',
-      });
-    }
-
-    // Si las credenciales son correctas, generamos un JWT
-    const token = await this.authService.generateJwtToken(user);
-
-    return {
-      statusCode: HttpStatus.OK,
-      message: 'Inicio de sesión exitoso',
-      token,
-    };
+  loginUser(@Body() loginUserDto: LoginUserDto) {
+    console.log('login', loginUserDto);
+    return this.authsService.login(loginUserDto);
   }
-  
-  @UseGuards(JwtAuthGuard)
-  @Get('profile')
-  async getProfile(@User() user) {
-    return user;
+
+  @Get('private')
+  @UseGuards(AuthGuard())
+  getPrivate(
+    @GetUser() user: Usuario,
+    @GetUser('Nombre') nombre: string,
+    @RawHeaders() rawHeaders: string [],
+    @Headers() headers: IncomingHttpHeaders
+  ) {
+    return {
+      ok: true,
+      message: 'This is a private route',
+      usuario: user,
+      nombre,
+      rawHeaders,
+      headers
+
+    }
+  }
+
+ @Get('profile')
+  @UseGuards(AuthGuard())
+  getProfile(
+    @GetUser() user: Usuario,
+    @GetUser('Nombre') nombre: string,
+    @RawHeaders() rawHeaders: string [],
+    @Headers() headers: IncomingHttpHeaders
+  ) {
+    return {
+      ok: true,
+      message: 'This is a private route',
+      usuario: user,
+      nombre,
+      rawHeaders,
+      headers
+
+    }
+  }
+
+  @Get('private2')
+  //@SetMetadata('roles', ['1'])
+  @RoleProtected(ValidRoles.almacen, ValidRoles.admin)
+  @UseGuards(AuthGuard(), UserRoleGuard)
+  privateRoute2(
+    @GetUser() user: Usuario
+  ){
+    return {
+      ok: true,
+      message: 'This is a private route 2',
+      usuario: user
+    }
+  }
+
+  @Get('private3')
+  //@SetMetadata('roles', ['1'])
+  //@RoleProtected(ValidRoles.almacen, ValidRoles.admin)
+  //@UseGuards(AuthGuard(), UserRoleGuard) ejemplos no van
+  // aqui si vamos a usar el decorador Auth
+  //@Auth() validamos solo token y no roles
+  @Auth(ValidRoles.almacen, ValidRoles.calidad)
+  privateRoute3(
+    @GetUser() user: Usuario
+  ){
+    return {
+      ok: true,
+      message: 'This is a private route 2',
+      usuario: user
+    }
   }
 }
+

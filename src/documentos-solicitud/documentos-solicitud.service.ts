@@ -22,6 +22,7 @@ export class DocumentosSolicitudService {
 
   // Crear un nuevo documento
   async create(createDocumentosSolicitudDto: CreateDocumentosSolicitudDto): Promise<DocumentosSolicitud> {
+    console.log(createDocumentosSolicitudDto); // Verifica que los datos del documento estén llegando correctamente
     const documento = this.documentosSolicitudRepository.create(createDocumentosSolicitudDto);
     const observacion = createDocumentosSolicitudDto.Observacion;
     const idCresolicitud = createDocumentosSolicitudDto.idCre_SolicitudWeb;
