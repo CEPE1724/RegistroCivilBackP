@@ -194,6 +194,17 @@ export class CreSolicitudWebService {
     };
   }
 
+	async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
+		console.log('anio', anio, 'mes', mes);
+		const anioValue = (anio != null && !isNaN(anio)) ? anio : 'NULL';
+		const mesValue = (mes != null && !isNaN(mes)) ? mes : 'NULL';
+		const query = `EXEC sp_GetSolicitudWebRepositorio @Anio = ${anioValue}, @Mes = ${mesValue}`;
+		console.log('Query a ejecutar:', query);
+
+		const result = await this.creSolicitudWebRepository.query(query);
+		return result;
+	}
+
   findOne(id: number) {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
   }
@@ -215,17 +226,6 @@ export class CreSolicitudWebService {
   remove(id: number) {
     return `This action removes a #${id} creSolicitudWeb`;
   }
-
-  async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
-	console.log('anio', anio, 'mes', mes);
-	const result = await this.creSolicitudWebRepository.query(
-	  `EXEC sp_GetSolicitudWebRepositorio @Anio = ?, @Mes = ?`,
-	  [anio ?? null, mes ?? null],
-	);
-	console.log('Resultado del SP:', result);
-	return result;
-  }
-  
 
   private handleDBException(error: any) {
     if (error.code === '23505') {
