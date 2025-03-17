@@ -70,6 +70,8 @@ import { CreverificaciontelefonicaModule } from './creverificaciontelefonica/cre
 import { EqfxidentificacionconsultadaModule } from './eqfxidentificacionconsultada/eqfxidentificacionconsultada.module';
 import { DocumentosSolicitudModule } from './documentos-solicitud/documentos-solicitud.module';
 import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverificaciontelefonica/cre-solicitudverificaciontelefonica.module';
+import { AnalistacreditoModule } from './analistacredito/analistacredito.module';
+import { FechaAnalistaModule } from './fecha-analista/fecha-analista.module';
 
 
 
@@ -184,6 +186,8 @@ import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverific
     EqfxidentificacionconsultadaModule,
     DocumentosSolicitudModule,
     CreSolicitudverificaciontelefonicaModule,
+    AnalistacreditoModule,
+    FechaAnalistaModule,
 
 
 
