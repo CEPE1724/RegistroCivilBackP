@@ -8,6 +8,7 @@ import { UpdateDocumentoStatusDto } from './dto/update-documentos-solicitud.dto'
 import { HistorialObservaciones } from './entities/historial-observaciones.entity';
 import { CreateHistorialObservacionesDto } from './dto/create-historial-observacion.dto';
 import { Logger, HttpException, HttpStatus } from '@nestjs/common';
+import { number } from 'joi';
 
 @Injectable()
 export class DocumentosSolicitudService {
@@ -33,6 +34,7 @@ export class DocumentosSolicitudService {
 
     console.log(savedDocumento); // Verifica que el documento se guardó correctamente
 
+    if (observacion != undefined && observacion != '' && observacion != null) {
     // Crear y guardar la observación después de guardar el documento
     await this.createObservacion({
       idCre_SolicitudWeb: idCresolicitud,
@@ -42,6 +44,7 @@ export class DocumentosSolicitudService {
       TipoUsuario: 1, // Puedes cambiarlo según sea necesario
       idTipoDocumentoWEB: idTipoDocumentoWEB
     });
+    }
 
     return savedDocumento;
   }
@@ -73,5 +76,39 @@ export class DocumentosSolicitudService {
   
     return await this.documentosSolicitudRepository.save(documento);
   }
+
+  // Verifica si ya existe un archivo con el idCreSolicitudWeb y tipoDocumento con estado 1
+
+  async checkIfFileExists(idCreSolicitudWeb: number, tipoDocumento: number): Promise<boolean> {
+    console.log('Consultando en la base de datos con:', idCreSolicitudWeb, tipoDocumento);
   
+    const result = await this.documentosSolicitudRepository.find({
+      where: {
+        idCre_SolicitudWeb: idCreSolicitudWeb,
+        idTipoDocumentoWEB: tipoDocumento,
+        idEstadoDocumento: 1,  // Asegúrate de que el estado sea el correcto
+      }
+    });
+  
+    console.log('Resultado de la consulta:', result);
+    return result.length > 0; // Si hay resultados, devuelve true, si no, false
+  }
+  
+
+  async updateEstado(idSolicitud: number): Promise<void> {
+    const documentos = await this.documentosSolicitudRepository.find({
+        where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: 1 }
+    });
+
+    if (!documentos.length) {
+        throw new Error('No hay documentos en estado 1 para actualizar.');
+    }
+
+    for (const documento of documentos) {
+        documento.idEstadoDocumento = 2;
+    }
+
+    await this.documentosSolicitudRepository.save(documentos);
+}
+
 }

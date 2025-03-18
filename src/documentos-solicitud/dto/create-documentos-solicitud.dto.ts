@@ -1,4 +1,3 @@
-
 import { IsInt, IsNumber, IsOptional, IsString} from 'class-validator';
 
 export class CreateDocumentosSolicitudDto {
@@ -14,6 +13,7 @@ export class CreateDocumentosSolicitudDto {
   RutaDocumento?: string;
 
   @IsString()
+  @IsOptional()
   Observacion? : string;
 }
 
