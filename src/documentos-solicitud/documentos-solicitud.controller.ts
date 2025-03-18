@@ -52,7 +52,11 @@ async checkIfFileExists(
   }
 
 
- 
+  @Patch('updateEstado/:idSolicitud')
+  async updateEstado(@Param('idSolicitud') idSolicitud: string) {
+    await this.documentosSolicitudService.updateEstado(Number(idSolicitud));
+    return { message: 'Documentos actualizados correctamente.' };
+  }
 
 
 }

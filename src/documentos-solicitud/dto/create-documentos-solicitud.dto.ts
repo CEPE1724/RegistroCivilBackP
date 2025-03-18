@@ -13,6 +13,7 @@ export class CreateDocumentosSolicitudDto {
   RutaDocumento?: string;
 
   @IsString()
+  @IsOptional()
   Observacion? : string;
 }
 

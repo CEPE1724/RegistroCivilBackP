@@ -34,6 +34,7 @@ export class DocumentosSolicitudService {
 
     console.log(savedDocumento); // Verifica que el documento se guardó correctamente
 
+    if (observacion != undefined && observacion != '' && observacion != null) {
     // Crear y guardar la observación después de guardar el documento
     await this.createObservacion({
       idCre_SolicitudWeb: idCresolicitud,
@@ -43,6 +44,7 @@ export class DocumentosSolicitudService {
       TipoUsuario: 1, // Puedes cambiarlo según sea necesario
       idTipoDocumentoWEB: idTipoDocumentoWEB
     });
+    }
 
     return savedDocumento;
   }
@@ -92,5 +94,21 @@ export class DocumentosSolicitudService {
     return result.length > 0; // Si hay resultados, devuelve true, si no, false
   }
   
+
+  async updateEstado(idSolicitud: number): Promise<void> {
+    const documentos = await this.documentosSolicitudRepository.find({
+        where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: 1 }
+    });
+
+    if (!documentos.length) {
+        throw new Error('No hay documentos en estado 1 para actualizar.');
+    }
+
+    for (const documento of documentos) {
+        documento.idEstadoDocumento = 2;
+    }
+
+    await this.documentosSolicitudRepository.save(documentos);
+}
 
 }
