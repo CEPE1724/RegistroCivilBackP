@@ -72,6 +72,7 @@ import { DocumentosSolicitudModule } from './documentos-solicitud/documentos-sol
 import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverificaciontelefonica/cre-solicitudverificaciontelefonica.module';
 import { AnalistacreditoModule } from './analistacredito/analistacredito.module';
 import { FechaAnalistaModule } from './fecha-analista/fecha-analista.module';
+import { HorariosanalistasModule } from './horariosanalistas/horariosanalistas.module';
 
 
 
@@ -188,6 +189,7 @@ import { FechaAnalistaModule } from './fecha-analista/fecha-analista.module';
     CreSolicitudverificaciontelefonicaModule,
     AnalistacreditoModule,
     FechaAnalistaModule,
+    HorariosanalistasModule,
 
 
 
