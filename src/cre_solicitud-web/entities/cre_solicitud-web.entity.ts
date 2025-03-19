@@ -80,6 +80,9 @@ export class CreSolicitudWeb {
     @Column('int')
     idProductos: number;
 
+	@Column('varchar')
+	otp_code: string;
+
     @BeforeInsert()
     upperApellidos() {
         if (this.ApellidoMaterno) {

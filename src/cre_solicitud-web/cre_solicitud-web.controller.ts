@@ -10,6 +10,7 @@ export class CreSolicitudWebController {
 
   @Post()
   create(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+	console.log(createCreSolicitudWebDto);
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
   @Get('prueba')
