@@ -15,5 +15,13 @@ export class CreateDocumentosSolicitudDto {
   @IsString()
   @IsOptional()
   Observacion? : string;
+
+
+  @IsString()
+  Usuario: string;
+
+  @IsNumber()
+  IdUsuario: number;
+
 }
 

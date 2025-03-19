@@ -9,7 +9,6 @@ export class CreateHistorialObservacionesDto {
     @IsInt()
     idDocumentosSolicitudWeb?: number;
 
-    @IsOptional()
     @IsInt()
     idUsuario?: number;
 
@@ -33,7 +32,6 @@ export class CreateHistorialObservacionesDto {
     @IsString()
     Estacion?: string;
 
-    @IsOptional()
     @IsString()
     Usuario?: string;
 

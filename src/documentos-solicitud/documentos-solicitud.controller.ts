@@ -14,6 +14,19 @@ export class DocumentosSolicitudController {
     return this.documentosSolicitudService.create(createDocumentosSolicitudDto);
   }
 
+  
+@Get('observaciones')
+async getObservaciones(
+  @Query('idSolicitud') idSolicitud: string,
+  @Query('idTipoDocumento') idTipoDocumento: string
+) {
+  return await this.documentosSolicitudService.getObservaciones(
+    Number(idSolicitud),
+    Number(idTipoDocumento)
+  );
+}
+
+
 
 @Get('check')
 async checkIfFileExists(
@@ -37,7 +50,7 @@ async checkIfFileExists(
   return { exists: result }; // Devuelve el resultado en formato JSON
 }
 
-  
+
   
    
 
@@ -57,6 +70,8 @@ async checkIfFileExists(
     await this.documentosSolicitudService.updateEstado(Number(idSolicitud));
     return { message: 'Documentos actualizados correctamente.' };
   }
+
+
 
 
 }

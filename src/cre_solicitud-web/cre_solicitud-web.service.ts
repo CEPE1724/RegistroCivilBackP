@@ -151,7 +151,61 @@ export class CreSolicitudWebService {
     }
   }
 
+  
   async findAll(paginationDto: PaginationDto) {
+    const { limit = 10, offset = 0, fechaInicio, fechaFin, bodega, estado } = paginationDto;
+  
+    const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
+  
+    // Convertir las fechas de solo fecha (sin hora) a fechas completas
+    let fechaInicioFormatted = fechaInicio ? new Date(fechaInicio) : null;
+    let fechaFinFormatted = fechaFin ? new Date(fechaFin) : null;
+  
+    // Si se pasa una fecha de inicio, ajustamos la hora a las 00:00:00
+    if (fechaInicioFormatted) {
+      fechaInicioFormatted.setHours(0, 0, 0, 0); // Hora 00:00:00
+    }
+  
+    // Si se pasa una fecha de fin, ajustamos la hora a las 23:59:59
+    if (fechaFinFormatted) {
+      fechaFinFormatted.setHours(23, 59, 59, 999); // Hora 23:59:59
+    }
+  
+    // Aplicar los filtros de fechas con las horas ajustadas
+    if (fechaInicioFormatted && fechaFinFormatted) {
+      queryBuilder.andWhere(
+        'cre_solicitud_web.FechaSistema BETWEEN :fechaInicio AND :fechaFin',
+        { fechaInicio: fechaInicioFormatted, fechaFin: fechaFinFormatted }
+      );
+    }
+  
+    // Filtrar por bodega
+    if (bodega) {
+      queryBuilder.andWhere('cre_solicitud_web.bodega = :bodega', { bodega });
+    }
+  
+    // Filtrar por estado
+    if (estado !== undefined) {
+      queryBuilder.andWhere('cre_solicitud_web.estado = :estado', { estado });
+    }
+  
+    const totalCount = await queryBuilder.getCount();
+    queryBuilder.skip(offset).take(limit);
+    const creSolicitudWeb = await queryBuilder.getMany();
+  
+    return {
+      data: creSolicitudWeb,
+      total: totalCount,
+    };
+  }
+  
+  
+  
+  
+  
+
+
+  /*async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0, Filtro = '' } = paginationDto;
 
     let creSolicitudWeb: CreSolicitudWeb[];
@@ -192,7 +246,9 @@ export class CreSolicitudWebService {
       data: creSolicitudWeb,
       total: totalCount, // Total de registros sin paginación
     };
-  }
+  }*/
+
+    
 
   findOne(id: number) {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
