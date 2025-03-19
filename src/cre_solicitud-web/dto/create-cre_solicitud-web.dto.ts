@@ -28,7 +28,8 @@
 import {
     IsNotEmpty, IsString, IsNumber, IsBoolean, IsDate, IsOptional, isNumber, Min,
     MinLength,
-    IsPositive
+    IsPositive,
+    isString
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -127,5 +128,10 @@ export class CreateCreSolicitudWebDto {
     @IsPositive()
     @IsOptional()
     idTipoCliente?: number;
+
+    @IsString()
+    @MinLength(2)
+    @IsOptional()
+    otp_code: string;
 
 }
