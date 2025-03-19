@@ -28,6 +28,9 @@ export class DocumentosSolicitudService {
     const observacion = createDocumentosSolicitudDto.Observacion;
     const idCresolicitud = createDocumentosSolicitudDto.idCre_SolicitudWeb;
     const idTipoDocumentoWEB = createDocumentosSolicitudDto.idTipoDocumentoWEB;
+    const usuario = createDocumentosSolicitudDto.Usuario;
+    const IdUsuario = createDocumentosSolicitudDto.IdUsuario;
+   
 
     const savedDocumento = await this.documentosSolicitudRepository.save(documento);
     const idDocumentosSolicitudWeb = savedDocumento.idDocumentosSolicitudWeb;
@@ -42,7 +45,9 @@ export class DocumentosSolicitudService {
       Observacion: observacion,
       Fecha: new Date(),
       TipoUsuario: 1, // Puedes cambiarlo según sea necesario
-      idTipoDocumentoWEB: idTipoDocumentoWEB
+      idTipoDocumentoWEB: idTipoDocumentoWEB,
+      Usuario: usuario,
+      idUsuario: IdUsuario
     });
     }
 
@@ -116,5 +121,17 @@ export class DocumentosSolicitudService {
 
     await this.documentosSolicitudRepository.save(documentos);
 }
+
+
+async getObservaciones(idSolicitud: number, idTipoDocumento: number): Promise<HistorialObservaciones[]> {
+  return await this.historialObservacionesRepository.find({
+    where: { 
+      idCre_SolicitudWeb: idSolicitud,
+      idTipoDocumentoWEB: idTipoDocumento
+    },
+    order: { Fecha: 'DESC' }, // Ordena las observaciones por fecha descendente
+  });
+}
+
 
 }
