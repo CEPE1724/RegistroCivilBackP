@@ -3,7 +3,7 @@ import { CreSolicitudWebService } from './cre_solicitud-web.service';
 import { CreateCreSolicitudWebDto } from './dto/create-cre_solicitud-web.dto';
 import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
-
+import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
 @Controller('cre-solicitud-web')
 export class CreSolicitudWebController {
   constructor(private readonly creSolicitudWebService: CreSolicitudWebService) {}
@@ -20,6 +20,11 @@ export class CreSolicitudWebController {
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.creSolicitudWebService.findAll(paginationDto);
+  }
+
+  @Get('documentosanalista')
+  findAllFilter(@Query() filterCreSolicitudWebDto: FilterCreSolicitudWebDto) {
+    return this.creSolicitudWebService.findAllFilter(filterCreSolicitudWebDto);
   }
 
   @Get('repositorios')
