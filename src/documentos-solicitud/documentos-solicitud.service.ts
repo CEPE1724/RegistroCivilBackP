@@ -68,6 +68,12 @@ export class DocumentosSolicitudService {
       where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: 1 }, // Filtramos los documentos que pertenezcan a esa solicitud
     });
   }
+
+  async findBySolicitudEstado(idSolicitud: number, estado: number) {
+    return await this.documentosSolicitudRepository.find({
+      where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: estado }, // Filtramos los documentos que pertenezcan a esa solicitud
+    });
+  }
   // Actualizar estado del documento
   async update(id: number, updateDocumentoStatusDto: UpdateDocumentoStatusDto): Promise<DocumentosSolicitud> {
     const documento = await this.documentosSolicitudRepository.findOne({ where: { idDocumentosSolicitudWeb: id } });

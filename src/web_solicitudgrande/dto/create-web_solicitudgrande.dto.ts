@@ -134,6 +134,11 @@ import {
     readonly idActEconomica?: number;
   
     @IsOptional()
+    @IsString()
+    @MinLength(1)
+    readonly ObservacionesActividadEconomica?: string;
+    
+    @IsOptional()
     @IsNumber()
     @IsPositive()
     readonly idProvinciaDomicilio?: number;

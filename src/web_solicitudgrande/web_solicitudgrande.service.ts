@@ -39,9 +39,8 @@ export class WebSolicitudgrandeService {
   }
 
   update(id: number, updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
-    return `This action updates a #${id} webSolicitudgrande`;
+    return this.webSolicitudgrandeRepository.update(id, updateWebSolicitudgrandeDto);
   }
-
   remove(id: number) {
     return `This action removes a #${id} webSolicitudgrande`;
   }

@@ -6,6 +6,7 @@ import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { CreSolicitudWeb } from './entities/cre_solicitud-web.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
+import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
 import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';
 import { EqfxidentificacionconsultadaService } from 'src/eqfxidentificacionconsultada/eqfxidentificacionconsultada.service';
 @Injectable()
@@ -151,7 +152,64 @@ export class CreSolicitudWebService {
     }
   }
 
-  
+
+  async findAllFilter(filterCreSolicitudWebDto: FilterCreSolicitudWebDto) {
+    const { limit = 10, offset = 0, Filtro = '', bodega = 0 } = filterCreSolicitudWebDto;
+    console.log('Filtro:', Filtro);
+    let queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
+
+    // Filtro por bodega
+    if (bodega > 0) {
+      queryBuilder = queryBuilder.andWhere('cre_solicitud_web.Bodega = :bodega', { bodega });
+    }
+
+    // Filtro general por nombre o cualquier otro campo
+    if (Filtro) {
+      queryBuilder = queryBuilder.andWhere(
+        `cre_solicitud_web.NumeroSolicitud LIKE :Filtro OR cre_solicitud_web.PrimerNombre LIKE :Filtro OR cre_solicitud_web.SegundoNombre LIKE :Filtro`,
+        { Filtro: `%${Filtro}%` },
+      );
+    }
+
+    // Para obtener el total count de los registros
+    const totalCountQueryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
+
+    // Reaplicar los mismos filtros sin paginación
+    if (bodega > 0) {
+      totalCountQueryBuilder.andWhere('cre_solicitud_web.Bodega = :bodega', { bodega });
+    }
+    if (Filtro) {
+      totalCountQueryBuilder.andWhere(
+        `cre_solicitud_web.NumeroSolicitud LIKE :Filtro OR cre_solicitud_web.PrimerNombre LIKE :Filtro OR cre_solicitud_web.SegundoNombre LIKE :Filtro`,
+        { Filtro: `%${Filtro}%` },
+      );
+    }
+
+    // Ejecutar la consulta para el total count
+    const totalCount = await totalCountQueryBuilder.getCount();
+
+    // Aplicar paginación a la consulta principal
+    queryBuilder = queryBuilder.skip(offset).take(limit);
+
+    // Ejecutar la consulta para obtener los resultados
+    try {
+      const creSolicitudWeb = await queryBuilder.getMany();
+
+      // Retornar los resultados con el total count
+      return {
+        totalCount,
+        data: creSolicitudWeb,
+      };
+    } catch (error) {
+      throw new Error(`Error al obtener solicitudes: ${error.message}`);
+    }
+  }
+
+
+
+
+
+
   async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0, fechaInicio, fechaFin, bodega, estado } = paginationDto;
   
@@ -249,6 +307,17 @@ export class CreSolicitudWebService {
   }*/
 
     
+
+  async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
+    console.log('anio', anio, 'mes', mes);
+    const anioValue = (anio != null && !isNaN(anio)) ? anio : 'NULL';
+    const mesValue = (mes != null && !isNaN(mes)) ? mes : 'NULL';
+    const query = `EXEC sp_GetSolicitudWebRepositorio @Anio = ${anioValue}, @Mes = ${mesValue}`;
+    console.log('Query a ejecutar:', query);
+
+    const result = await this.creSolicitudWebRepository.query(query);
+    return result;
+  }
 
   findOne(id: number) {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });

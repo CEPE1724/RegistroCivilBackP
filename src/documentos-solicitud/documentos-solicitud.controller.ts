@@ -59,6 +59,11 @@ async checkIfFileExists(
     return await this.documentosSolicitudService.findBySolicitud(Number(idSolicitud));
   }
 
+  @Get(':idSolicitud/:estado')
+  async findBySolicitudEstado(@Param('idSolicitud') idSolicitud: number, @Param('estado') estado: number) {
+    return await this.documentosSolicitudService.findBySolicitudEstado(idSolicitud, estado);
+  }
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateDocumentoStatusDto: UpdateDocumentoStatusDto) {
     return await this.documentosSolicitudService.update(Number(id), updateDocumentoStatusDto);
