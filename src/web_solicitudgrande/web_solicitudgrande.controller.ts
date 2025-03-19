@@ -22,7 +22,7 @@ export class WebSolicitudgrandeController {
     return this.webSolicitudgrandeService.findOne(+id, numerosolicitud);
   }
 
-  @Patch(':id')
+  @Patch('listadosolicitud/:id')
   update(@Param('id') id: string, @Body() updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
     return this.webSolicitudgrandeService.update(+id, updateWebSolicitudgrandeDto);
   }
