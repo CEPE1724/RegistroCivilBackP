@@ -36,6 +36,7 @@ import { Type } from 'class-transformer';
 export class CreateCreSolicitudWebDto {
 
     @IsDate()
+    @IsOptional()
     @Type(() => Date)
     Fecha: Date;
 

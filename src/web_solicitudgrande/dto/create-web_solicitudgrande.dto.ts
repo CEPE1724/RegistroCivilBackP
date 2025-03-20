@@ -185,12 +185,10 @@ import {
   
     @IsOptional()
     @IsString()
-    @MinLength(1)
     readonly TelefonoDomicilio?: string;
   
     @IsOptional()
     @IsString()
-    @MinLength(1)
     readonly TelefonoDomiliarDos?: string;
   
     @IsOptional()
@@ -210,17 +208,14 @@ import {
   
     @IsOptional()
     @IsString()
-    @MinLength(1)
     readonly NombreArrendador?: string;
   
     @IsOptional()
     @IsString()
-    @MinLength(1)
     readonly TelefonoArrendador?: string;
   
     @IsOptional()
     @IsString()
-    @MinLength(1)
     readonly CelularArrendador?: string;
   
     @IsOptional()
@@ -234,7 +229,7 @@ import {
     readonly idCantonInmueble?: number;
   
     @IsOptional()
-    @IsDecimal()
+    @IsNumber()
     readonly ValorInmmueble?: number;
   
     @IsOptional()
