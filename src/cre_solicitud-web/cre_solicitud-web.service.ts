@@ -206,46 +206,31 @@ export class CreSolicitudWebService {
   }
 
 
-
-
-
-
   async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0, fechaInicio, fechaFin, bodega, estado } = paginationDto;
-  
+
+    console.log('bodega', bodega, 'estado', estado, 'fechaInicio', fechaInicio, 'fechaFin', fechaFin);
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
-  
-    // Convertir las fechas de solo fecha (sin hora) a fechas completas
-    let fechaInicioFormatted = fechaInicio ? new Date(fechaInicio) : null;
-    let fechaFinFormatted = fechaFin ? new Date(fechaFin) : null;
-  
-    // Si se pasa una fecha de inicio, ajustamos la hora a las 00:00:00
-    if (fechaInicioFormatted) {
-      fechaInicioFormatted.setHours(0, 0, 0, 0); // Hora 00:00:00
-    }
-  
-    // Si se pasa una fecha de fin, ajustamos la hora a las 23:59:59
-    if (fechaFinFormatted) {
-      fechaFinFormatted.setHours(23, 59, 59, 999); // Hora 23:59:59
-    }
-  
     // Aplicar los filtros de fechas con las horas ajustadas
-    if (fechaInicioFormatted && fechaFinFormatted) {
+    if (fechaInicio && fechaFin) {
+      // Convertir fechas a formato 'YYYY-MM-DD'
+      const fechaInicioStr = fechaInicio.toISOString().split('T')[0] 
+      const fechaFinStr = fechaFin.toISOString().split('T')[0];
+      console.log('Fechas formateadas:', fechaInicioStr, fechaFinStr);
+  
       queryBuilder.andWhere(
-        'cre_solicitud_web.FechaSistema BETWEEN :fechaInicio AND :fechaFin',
-        { fechaInicio: fechaInicioFormatted, fechaFin: fechaFinFormatted }
+          'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin) ' +
+          'AND (cre_solicitud_web.bodega = :bodega OR 0 = :bodega)'+
+          'AND (cre_solicitud_web.estado = :estado OR 0 = :estado)',
+          { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr, bodega , estado }
       );
-    }
   
-    // Filtrar por bodega
-    if (bodega) {
-      queryBuilder.andWhere('cre_solicitud_web.bodega = :bodega', { bodega });
-    }
+      console.log('Consulta generada:', queryBuilder.getSql());
+      console.log('Parámetros:', queryBuilder.getParameters());
+  }
   
-    // Filtrar por estado
-    if (estado !== undefined) {
-      queryBuilder.andWhere('cre_solicitud_web.estado = :estado', { estado });
-    }
+  
+
   
     const totalCount = await queryBuilder.getCount();
     queryBuilder.skip(offset).take(limit);
