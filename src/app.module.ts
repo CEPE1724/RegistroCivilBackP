@@ -73,6 +73,7 @@ import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverific
 import { AnalistacreditoModule } from './analistacredito/analistacredito.module';
 import { FechaAnalistaModule } from './fecha-analista/fecha-analista.module';
 import { HorariosanalistasModule } from './horariosanalistas/horariosanalistas.module';
+import { HistorialObservacionesModule } from './historial-observaciones/historial-observaciones.module';
 
 
 
@@ -190,6 +191,7 @@ import { HorariosanalistasModule } from './horariosanalistas/horariosanalistas.m
     AnalistacreditoModule,
     FechaAnalistaModule,
     HorariosanalistasModule,
+    HistorialObservacionesModule,
 
 
 
