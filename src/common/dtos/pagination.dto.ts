@@ -20,8 +20,7 @@ export class PaginationDto {
   estado?: number;
 
 @IsOptional()
-  @IsInt()
- @Transform(({ value }) => parseInt(value)) // Converts value to an integer
+@Type(() => Number)
  bodega?: number;
 
 
