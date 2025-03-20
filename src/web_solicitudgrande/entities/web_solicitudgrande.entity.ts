@@ -1,5 +1,5 @@
 
-import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert  } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert } from "typeorm";
 
 @Entity('Web_SolicitudGrande')
 export class WebSolicitudgrande {
@@ -11,812 +11,813 @@ export class WebSolicitudgrande {
         default: 0
     })
     idCre_SolicitudWeb: number;
-    
-    @Column('int',{
+
+    @Column('int', {
         default: 0
     })
     idCognoSolicitudCredito: number;
 
-    @Column('datetime',{
+    @Column('datetime', {
         default: () => 'GETDATE()'
     })
     Fecha: Date;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idTipoDoc: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     Cedula: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     ApellidoPaterno: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     ApellidoMaterno: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     PrimerNombre: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     SegundoNombre: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idEntidadFinanciera: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     NumeroSolicitud: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     Bodega: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
     Garante: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 54
     })
 
     idNacionalidad: number;
 
-    @Column('date',{
+    @Column('date', {
         nullable: true
     })
 
     FechaNacimiento: Date;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idGenero: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idProvinciaNacimiento: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idCantonNacimiento: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 3
     })
 
     idEdoCivil: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
     NumeroHijos: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idNivelEducacion: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 8
     })
     idProfesion: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 3
     })
     idSituacionLaboral: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idActEconomica: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     ObservacionesActividadEconomica: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idProvinciaDomicilio: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idCantonDomicilio: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idParroquiaDomicilio: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
     idBarrioDomicilio: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     Email: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
     CallePrincipal: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NumeroCasa: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CalleSecundaria: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     ReferenciaUbicacion: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     TelefonoDomicilio: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     TelefonoDomiliarDos: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     Celular: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idTipoVivienda: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idCre_Tiempo: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NombreArrendador: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     TelefonoArrendador: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CelularArrendador: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idInmueble: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idCantonInmueble: number;
 
-    @Column('decimal',{
-        default: 0
+    @Column('decimal', {
+        precision: 10,   // Número máximo de dígitos en total (antes y después del punto decimal)
+        scale: 2,        // Número de dígitos después del punto decimal
+        default: 0,      // Valor por defecto si no se pasa nada
     })
-
     ValorInmmueble: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idTipoDocConyuge: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CedulaConyuge: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     ApellidoPaternoConyuge: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     PrimerNombreConyuge: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     SegundoNombreConyuge: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 54
     })
 
     idNacionalidadConyuge: number;
 
-    @Column('date',{
+    @Column('date', {
         nullable: true
     })
 
     FechaNacimientoConyuge: Date;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idGeneroConyuge: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idNivelEducacionConyuge: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 8
     })
 
     idProfesionConyuge: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idCre_ReferenciasClientes: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NombreNegocio: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idCre_TiempoNegocio: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     MetrosCuadrados: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idProvinciaNegocio: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idCantonNegocio: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idParroquiaNegocio: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 1
     })
 
     idBarrioNegocio: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CallePrincipalNegocio: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NumeroCasaNegocio: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CalleSecundariaNegocio: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     ReferenciaUbicacionNegocio: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     TelefonoNegocio: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CelularNegocio: string;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     IngresosNegosio: number;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     EgresosNegocio: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     ActividadEconomicaNegocio: string;
 
-    @Column('bit',{
+    @Column('bit', {
         default: false
     })
 
     AfiliadoTributario: boolean;
 
-    @Column('bit',{
+    @Column('bit', {
         default: false
     })
 
     OblidagoLlevarContabilidad: boolean;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NombreEmpresa: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idTipoEmpresa: number;
 
-    @Column('date',{
+    @Column('date', {
         nullable: true
     })
 
     FechaIngresoEmpresa: Date;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     IngresosTrabajo: number;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     EgresosTrabajo: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idTipoContrato: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idTipoSueldo: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     Departaento: string;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idCargo: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     DiaPago: number;
 
-    @Column('bit',{
+    @Column('bit', {
         default: false
     })
 
     AfiliadoIESS: boolean;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idProvinciaTrabajo: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idCantonTrabajo: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idParroquiaTrabajo: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idBarrioTrabajo: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CallePrincipalTrabajo: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NumeroCasaTrabajo: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CalleSecundariaTrabajo: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     ReferenciaUbicacionTrabajo: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     TelefonoTrabajo: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     CelularTrabajo: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     Ext: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     RangoIngresos: string;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     CapacidadPago: number;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     TotalVencido: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     ResultadoEquifax: string;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     CarteraCastigada: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     SegmentacionEquifax: string;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     Score: number;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     ScoreInclusion: number;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     ScoreSobreendeudamiento: number;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaSoliciudCompleta: Date;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idTipoCliente: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idDetalleTipoCliente: number;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     CuotaAsignada: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idEstadoSolicitud: number;
 
-    @Column('decimal',{
+    @Column('decimal', {
         default: 0
     })
 
     Cupo: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idTipoCalificacion: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idSituacionLaboralFactores: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     idNegadoPendiente: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     Observaciones: string;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaInicioVerificacionTelefonica: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaFinVerificacionTelefonica: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaPausaVerificacionTelefonica: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaReanudacionVerificacionTelefonica: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaInicioVerificacionDocumental: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaFinVerificacionDocumental: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaPausaVerificacionDocumental: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaReanudacionVerificacionDocumental: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaInicioVerificacionTerrena: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaFinVerificacionTerrena: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaPausaVerificacionTerrena: Date;
 
-    @Column('datetime',{
+    @Column('datetime', {
         nullable: true
     })
 
     FechaReanudacionVerificacionTerrena: Date;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     EstadoVerificacionTelefonica: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     EstadoVerificacionDocumental: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     EstadoVerificacionTerrena: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     EstadoPausaVerificacionTelefonica: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     EstadoPausaVerificacionDocumental: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
     EstadoPausaVerificacionTerrena: number;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NotasVerificacionTelefonica: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NotasVerificacionDocumental: string;
 
-    @Column('varchar',{
+    @Column('varchar', {
         default: ''
     })
 
     NotasVerificacionTerrena: string;
 
-    @Column('int',{
+    @Column('int', {
         nullable: true
     })
 
     TiempoTotalVerificacionTelefonica: number;
 
-    @Column('int',{
+    @Column('int', {
         nullable: true
     })
 
     TiempoTotalVerificacionDocumental: number;
 
-    @Column('int',{
+    @Column('int', {
         nullable: true
     })
 
     TiempoTotalVerificacionTerrena: number;
 
-    @Column('int',{
+    @Column('int', {
         default: 0
     })
 
