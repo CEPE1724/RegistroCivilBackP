@@ -70,4 +70,7 @@ export class CreSolicitudverificaciontelefonica {
 
     @Column({ type: 'bit', nullable: true })
     Nuevo: boolean;
+
+    @Column({ type: 'int', nullable: true })
+    idCre_VerificacionTelefonicaMaestro: number;
 }

@@ -75,6 +75,7 @@ import { FechaAnalistaModule } from './fecha-analista/fecha-analista.module';
 import { HorariosanalistasModule } from './horariosanalistas/horariosanalistas.module';
 import { HistorialObservacionesModule } from './historial-observaciones/historial-observaciones.module';
 import { CreSituacionlaboralModule } from './cre-situacionlaboral/cre-situacionlaboral.module';
+import { CreVerificacionTelefonicaMaestroModule } from './cre_verificacion-telefonica-maestro/cre_verificacion-telefonica-maestro.module';
 
 
 
@@ -194,6 +195,7 @@ import { CreSituacionlaboralModule } from './cre-situacionlaboral/cre-situacionl
     HorariosanalistasModule,
     HistorialObservacionesModule,
     CreSituacionlaboralModule,
+    CreVerificacionTelefonicaMaestroModule,
 
 
 
