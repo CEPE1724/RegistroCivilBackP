@@ -81,4 +81,8 @@ export class CreateCreSolicitudverificaciontelefonicaDto {
 
     @IsBoolean()
     Nuevo: boolean;
+
+    @IsNumber()
+    @IsPositive()
+    idCre_VerificacionTelefonicaMaestro: number;
 }
