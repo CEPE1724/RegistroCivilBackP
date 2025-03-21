@@ -74,6 +74,7 @@ import { AnalistacreditoModule } from './analistacredito/analistacredito.module'
 import { FechaAnalistaModule } from './fecha-analista/fecha-analista.module';
 import { HorariosanalistasModule } from './horariosanalistas/horariosanalistas.module';
 import { HistorialObservacionesModule } from './historial-observaciones/historial-observaciones.module';
+import { CreSituacionlaboralModule } from './cre-situacionlaboral/cre-situacionlaboral.module';
 
 
 
@@ -192,6 +193,7 @@ import { HistorialObservacionesModule } from './historial-observaciones/historia
     FechaAnalistaModule,
     HorariosanalistasModule,
     HistorialObservacionesModule,
+    CreSituacionlaboralModule,
 
 
 

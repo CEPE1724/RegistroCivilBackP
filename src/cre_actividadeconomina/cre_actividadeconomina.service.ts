@@ -13,7 +13,9 @@ export class CreActividadeconominaService {
     ) { }
 
   findAll(Tipo: number) {
-    return this.creActividadeconominaReposiroty.find({ where: { Tipo } });
+    let itipo = Tipo;
+    if (Tipo === 5)  itipo = 2;
+    return this.creActividadeconominaReposiroty.find({ where: { Tipo: itipo } });
   }
 
   private handleDBExceptions(error: any) {
