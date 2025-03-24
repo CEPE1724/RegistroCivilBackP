@@ -1,4 +1,4 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateHorariosanalistaDto } from './dto/create-horariosanalista.dto';
 import { UpdateHorariosanalistaDto } from './dto/update-horariosanalista.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -42,6 +42,27 @@ export class HorariosanalistasService {
   findOne(id: number) {
     return `This action returns a #${id} horariosanalista`;
   }
+
+  async getFechaAnalista(
+	idAnalistaCredito: number,
+	idFechaAnalista: number
+  ): Promise<any> {
+	const query = `
+	  EXEC spWEBObtenerFechaAnalista 
+		@idAnalistaCredito = ${idAnalistaCredito}, 
+		@idFechaAnalista = ${idFechaAnalista}
+	`;
+  
+	const result = await this.horariosanalistaRepository.query(query);
+  
+	if (!result || result.length === 0) {
+	  throw new NotFoundException(
+		`No se encontró información para idAnalistaCredito ${idAnalistaCredito} y idFechaAnalista ${idFechaAnalista}`
+	  );
+	}
+	return result;
+  }
+  
 
   update(id: number, updateHorariosanalistaDto: UpdateHorariosanalistaDto) {
     return `This action updates a #${id} horariosanalista`;
