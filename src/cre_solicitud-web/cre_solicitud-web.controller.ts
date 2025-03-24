@@ -49,6 +49,11 @@ export class CreSolicitudWebController {
     return this.creSolicitudWebService.update(idCre_SolicitudWeb, updateCreSolicitudWebDto);
   }
 
+  @Patch('updatetelefonica/:idCre_SolicitudWeb')
+  async updateTelefonica(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number, @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+    return this.creSolicitudWebService.updateTelefonica(idCre_SolicitudWeb, updateCreSolicitudWebDto);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.creSolicitudWebService.remove(+id);

@@ -83,6 +83,10 @@ export class CreSolicitudWeb {
 	@Column('varchar')
 	otp_code: string;
 
+
+    @Column('int')
+    idEstadoVerificacionDocumental: number;
+
     @BeforeInsert()
     upperApellidos() {
         if (this.ApellidoMaterno) {
