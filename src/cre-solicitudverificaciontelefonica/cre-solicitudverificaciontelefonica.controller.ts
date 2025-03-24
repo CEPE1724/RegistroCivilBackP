@@ -2,24 +2,29 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CreSolicitudverificaciontelefonicaService } from './cre-solicitudverificaciontelefonica.service';
 import { CreateCreSolicitudverificaciontelefonicaDto } from './dto/create-cre-solicitudverificaciontelefonica.dto';
 import { UpdateCreSolicitudverificaciontelefonicaDto } from './dto/update-cre-solicitudverificaciontelefonica.dto';
+import { Query } from '@nestjs/common';
 
 @Controller('cre-solicitudverificaciontelefonica')
 export class CreSolicitudverificaciontelefonicaController {
   constructor(private readonly creSolicitudverificaciontelefonicaService: CreSolicitudverificaciontelefonicaService) {}
+
 
   @Post()
   create(@Body() createCreSolicitudverificaciontelefonicaDto: CreateCreSolicitudverificaciontelefonicaDto) {
     return this.creSolicitudverificaciontelefonicaService.create(createCreSolicitudverificaciontelefonicaDto);
   }
   
-  @Get()
-  findAll() {
-    return this.creSolicitudverificaciontelefonicaService.findAll();
-  }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.creSolicitudverificaciontelefonicaService.findOne(+id);
+
+
+
+
+  @Get('search')
+  search(
+    @Query('idCre_SolicitudWeb') idCre_SolicitudWeb: number, 
+    @Query('idCre_VerificacionTelefonicaMaestro') idCre_VerificacionTelefonicaMaestro: number
+  ) {
+    return this.creSolicitudverificaciontelefonicaService.search(idCre_SolicitudWeb, idCre_VerificacionTelefonicaMaestro);
   }
 
   @Patch(':id')
