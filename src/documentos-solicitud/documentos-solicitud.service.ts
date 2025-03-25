@@ -1,7 +1,7 @@
 
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { DocumentosSolicitud } from './entities/documentos-solicitud.entity';
 import { CreateDocumentosSolicitudDto } from './dto/create-documentos-solicitud.dto';
 import { UpdateDocumentoStatusDto } from './dto/update-documentos-solicitud.dto';
@@ -65,7 +65,8 @@ export class DocumentosSolicitudService {
   // Buscar documentos por solicitud
   async findBySolicitud(idSolicitud: number) {
     return await this.documentosSolicitudRepository.find({
-      where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: 1 }, // Filtramos los documentos que pertenezcan a esa solicitud
+      where: { idCre_SolicitudWeb: idSolicitud, 
+        idEstadoDocumento: In([1,  4]) }
     });
   }
 

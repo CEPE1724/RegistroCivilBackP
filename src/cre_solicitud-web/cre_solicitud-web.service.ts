@@ -326,6 +326,12 @@ export class CreSolicitudWebService {
     }
   }
 
+  async updateTelefonica(idCre_SolicitudWeb: number, idEstadoVerificacionDocumental: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+    return this.creSolicitudWebRepository.update(idCre_SolicitudWeb, { 
+      idEstadoVerificacionDocumental: idEstadoVerificacionDocumental
+     });
+  }
+
   remove(id: number) {
     return `This action removes a #${id} creSolicitudWeb`;
   }

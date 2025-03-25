@@ -135,4 +135,9 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     otp_code: string;
 
+
+    @IsNumber()
+    @IsPositive()
+    idEstadoVerificacionDocumental?: number;
+
 }

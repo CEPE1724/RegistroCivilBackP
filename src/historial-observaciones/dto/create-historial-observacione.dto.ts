@@ -13,17 +13,15 @@ CREATE TABLE [dbo].[HistorialObservaciones](
 	[idTipoDocumentoWEB] [int] NULL,
 */
 
-import { IsNotEmpty, IsString, IsNumber, IsDate, IsOptional, IsInt } from 'class-validator';
+import { IsNotEmpty, IsString, IsNumber, IsDate, IsOptional, IsInt, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateHistorialObservacioneDto {
 
     @IsNumber()
-    @IsOptional()
     idCre_SolicitudWeb: number;
 
     @IsNumber()
-    @IsOptional()
     idDocumentosSolicitudWeb: number;
 
     @IsNumber()
@@ -31,6 +29,7 @@ export class CreateHistorialObservacioneDto {
     idUsuario: number;
 
     @IsString()
+    @MinLength(10)
     Observacion: string;
 
     @IsDate()
@@ -50,6 +49,5 @@ export class CreateHistorialObservacioneDto {
     Usuario: string;
 
     @IsNumber()
-    @IsOptional()
     idTipoDocumentoWEB: number;
 }

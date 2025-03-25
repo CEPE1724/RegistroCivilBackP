@@ -322,6 +322,11 @@ import {
     @IsNumber()
     @IsPositive()
     readonly idTipoEmpresa?: number;
+
+    @IsOptional()
+    @IsDate()
+    @Type(() => Date)
+    readonly FechaIngresoEmpresa?: Date;
   
     @IsOptional()
     @IsDecimal()
@@ -395,6 +400,34 @@ import {
     @IsOptional()
     @IsDecimal()
     readonly Score?: number;
+
+    @IsOptional()
+    @IsString()
+    readonly CallePrincipalTrabajo?: string;
+
+    @IsOptional()
+    @IsString()
+    readonly NumeroCasaTrabajo?: string;
+
+    @IsOptional()
+    @IsString()
+    readonly CalleSecundariaTrabajo?: string;
+
+    @IsOptional()
+    @IsString()
+    readonly TelefonoTrabajo?: string;
+
+    @IsOptional()
+    @IsString()
+    readonly Ext?: string;
+
+    @IsOptional()
+    @IsString()
+    readonly CelularTrabajo?: string;
+
+    @IsOptional()
+    @IsString()
+    readonly ReferenciaUbicacionTrabajo?: string;
   
     @IsOptional()
     @IsDecimal()

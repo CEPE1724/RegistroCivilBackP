@@ -20,25 +20,25 @@ export class HistorialObservaciones {
     @PrimaryGeneratedColumn()
     idHistorialObservaciones: number;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ type: 'int' })
     idCre_SolicitudWeb: number;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ type: 'int' })
     idDocumentosSolicitudWeb: number;
 
     @Column({ type: 'int', nullable: true })
     idUsuario: number;
 
-    @Column({ type: 'text', nullable: true })
+    @Column({ type: 'text' })
     Observacion: string;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'datetime' })
     Fecha: Date;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ type: 'int' })
     TipoUsuario: number;
 
-    @Column({ type: 'datetime', nullable: true })
+    @Column({ type: 'datetime' })
     FechaSistema: Date;
 
     @Column({ type: 'varchar', length: 50, nullable: true })
@@ -47,6 +47,6 @@ export class HistorialObservaciones {
     @Column({ type: 'varchar', length: 50, nullable: true })
     Usuario: string;
 
-    @Column({ type: 'int', nullable: true })
+    @Column({ type: 'int' })
     idTipoDocumentoWEB: number;
 }

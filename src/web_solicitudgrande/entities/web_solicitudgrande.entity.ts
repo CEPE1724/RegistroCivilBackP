@@ -446,15 +446,17 @@ export class WebSolicitudgrande {
     FechaIngresoEmpresa: Date;
 
     @Column('decimal', {
-        default: 0
+        precision: 10,   // Número máximo de dígitos en total (antes y después del punto decimal)
+        scale: 2,        // Número de dígitos después del punto decimal
+        default: 0,      // Valor por defecto si no se pasa nada
     })
-
     IngresosTrabajo: number;
 
     @Column('decimal', {
-        default: 0
+        precision: 10,   // Número máximo de dígitos en total (antes y después del punto decimal)
+        scale: 2,        // Número de dígitos después del punto decimal
+        default: 0,      // Valor por defecto si no se pasa nada
     })
-
     EgresosTrabajo: number;
 
     @Column('int', {
