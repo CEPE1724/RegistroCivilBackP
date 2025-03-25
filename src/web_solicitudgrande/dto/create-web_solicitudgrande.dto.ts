@@ -609,5 +609,46 @@ import {
     @IsDate()
     @Type(() => Date)
     readonly FechaCalificacionFinal?: Date;
+
+    @IsOptional()
+    @IsNumber()
+    readonly MetrosCuadrados?: number;
+
+    @IsOptional()
+    @IsNumber()
+    readonly idProvinciaNegocio?: number;
+
+    @IsOptional()
+    @IsNumber()
+    readonly idCantonNegocio?: number;
+
+    @IsOptional()
+    @IsNumber()
+    readonly idParroquiaNegocio?: number;
+
+    @IsOptional()
+    @IsNumber()
+    readonly idBarrioNegocio?: number;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    readonly CallePrincipalNegocio?: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    readonly NumeroCasaNegocio?: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    readonly CalleSecundariaNegocio?: string;
+
+    @IsOptional()
+    @IsString()
+    @MinLength(1)
+    readonly ReferenciaUbicacionNegocio?: string;
+
   }
   
