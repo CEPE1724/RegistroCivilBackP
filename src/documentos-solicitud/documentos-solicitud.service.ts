@@ -63,11 +63,21 @@ export class DocumentosSolicitudService {
 
 
   // Buscar documentos por solicitud
-  async findBySolicitud(idSolicitud: number) {
-    return await this.documentosSolicitudRepository.find({
-      where: { idCre_SolicitudWeb: idSolicitud, 
-        idEstadoDocumento: In([1,  4]) }
-    });
+  async findBySolicitud(idSolicitud: number, idEstadoVerificacionDocumental: number) {
+    /// si idEstadoVerificacionDocumental == 1 buscamos por estado 1 y 2
+    console.log('idEstadoVerificacionDocumental', idEstadoVerificacionDocumental);
+    if (idEstadoVerificacionDocumental == 1) {
+      return await this.documentosSolicitudRepository.find({
+        where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: In([1,4]) }
+      });
+    }
+
+    if (idEstadoVerificacionDocumental == 3) {
+      return await this.documentosSolicitudRepository.find({
+        where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: In([5,4,1]) }
+      });
+    }
+    
   }
 
   async findBySolicitudEstado(idSolicitud: number, estado: number) {
