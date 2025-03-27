@@ -54,7 +54,7 @@ async checkIfFileExists(
   
    
 
-  @Get(':idSolicitud/:idEstadoVerificacionDocumental')
+  @Get('documentos/:idSolicitud/:idEstadoVerificacionDocumental')
   async findBySolicitud(
     @Param('idSolicitud') idSolicitud: string,
     @Param('idEstadoVerificacionDocumental') idEstadoVerificacionDocumental: string

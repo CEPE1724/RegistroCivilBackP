@@ -1,4 +1,5 @@
 
+import { Col } from "sequelize/types/utils";
 import { BeforeInsert, Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('Cre_SolicitudWeb')
@@ -49,6 +50,9 @@ export class CreSolicitudWeb {
 
     @Column('int')
     idActEconomina: number;
+
+    @Column('int')
+    idSituacionLaboral: number;
 
     @Column('int')
     idCre_Tiempo: number;

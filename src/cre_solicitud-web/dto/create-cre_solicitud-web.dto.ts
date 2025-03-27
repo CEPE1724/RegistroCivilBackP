@@ -91,6 +91,10 @@ export class CreateCreSolicitudWebDto {
 
     @IsNumber()
     @IsPositive()
+    idSituacionLaboral: number;
+
+    @IsNumber()
+    @IsPositive()
     idActEconomina: number;
 
     @IsNumber()
