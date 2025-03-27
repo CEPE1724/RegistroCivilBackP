@@ -99,6 +99,39 @@ export class DocumentosSolicitudService {
     return await this.documentosSolicitudRepository.save(documento);
   }
 
+
+   // Método para cancelar documentos con estado 5 o 4
+   async updateCancelados(idSolicitud: number): Promise<void> {
+    const documentos = await this.documentosSolicitudRepository.find({
+      where: {
+        idCre_SolicitudWeb: idSolicitud,  // Filtrar por solicitud
+        idEstadoDocumento: In([5, 4]),    // Filtrar por estados 5 o 4
+      },
+    });
+  
+    if (!documentos.length) {
+      // Si no se encuentran documentos, log de advertencia y lanzar error
+      this.logger.warn(`No se encontraron documentos con estado 5 o 4 para la solicitud ${idSolicitud}`);
+      throw new Error(`No se encontraron documentos con estado 5 o 4 para la solicitud ${idSolicitud}`);
+    }
+  
+    // Actualizar todos los documentos encontrados a estado 6
+    try {
+      await this.documentosSolicitudRepository.update(
+        { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: In([5, 4]) },
+        { idEstadoDocumento: 6 }
+      );
+      this.logger.log(`Documentos cancelados correctamente para la solicitud ${idSolicitud}`);
+    } catch (error) {
+      this.logger.error(`Error al cancelar documentos para la solicitud ${idSolicitud}: ${error.message}`);
+      throw new Error(`Hubo un error al cancelar documentos para la solicitud ${idSolicitud}`);
+    }
+  }
+  
+
+
+
+
   // Verifica si ya existe un archivo con el idCreSolicitudWeb y tipoDocumento con estado 1
 
   async checkIfFileExists(idCreSolicitudWeb: number, tipoDocumento: number): Promise<boolean> {
