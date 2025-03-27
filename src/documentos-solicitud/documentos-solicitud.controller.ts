@@ -26,6 +26,11 @@ async getObservaciones(
   );
 }
 
+@Patch('update-cancelados/:idSolicitud')
+async updateCancelados(@Param('idSolicitud') id: string, @Body() updateDocumentoStatusDto: UpdateDocumentoStatusDto) {
+  await this.documentosSolicitudService.updateCancelados(Number(id));
+  return { message: 'Documentos cancelados correctamente.' };
+}
 
 
 @Get('check')
@@ -51,8 +56,8 @@ async checkIfFileExists(
 }
 
 
-  
-   
+
+
 
   @Get('documentos/:idSolicitud/:idEstadoVerificacionDocumental')
   async findBySolicitud(
@@ -62,15 +67,23 @@ async checkIfFileExists(
     return await this.documentosSolicitudService.findBySolicitud(Number(idSolicitud), Number(idEstadoVerificacionDocumental));
   }
 
+  
+
   @Get(':idSolicitud/:estado')
   async findBySolicitudEstado(@Param('idSolicitud') idSolicitud: number, @Param('estado') estado: number) {
     return await this.documentosSolicitudService.findBySolicitudEstado(idSolicitud, estado);
   }
 
+ 
+
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() updateDocumentoStatusDto: UpdateDocumentoStatusDto) {
     return await this.documentosSolicitudService.update(Number(id), updateDocumentoStatusDto);
   }
+
+
+  
 
 
   @Patch('updateEstado/:idSolicitud')
