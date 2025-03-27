@@ -8,6 +8,9 @@ export class Coordenadasprefactura {
     @PrimaryGeneratedColumn('increment') /// llave primaria o primary key
     idCoordenadasPrefactura: number;
 
+	@Column('int')
+    id: number;
+
     @Column('varchar', {
         length: 20
     })
@@ -30,6 +33,10 @@ export class Coordenadasprefactura {
     })
     direccion: string;
 
+	@Column({ type: 'varchar', length: 50, nullable: true })
+	ip: string;
+
+
     @Column('int')
     iEstado: number;
 
@@ -39,7 +46,7 @@ export class Coordenadasprefactura {
     @Column('int')
     Tipo: number;
 
-    @Column('varchar')
-    UrlImagen: string;
+	@Column({ type: 'simple-json', nullable: true })
+	UrlImagen: string[];
 
 }

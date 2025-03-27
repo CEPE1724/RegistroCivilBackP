@@ -12,5 +12,22 @@ export class CoordenadasprefacturaController {
     return this.coordenadasprefacturaService.findAll(paginationGeoreferenciaDto);
   }
 
+  @Post('insert')
+  async insert(
+    @Body() createCoordenadasPrefacturaDto: CreateCoordenadasprefacturaDto,
+  ) {
+    if (createCoordenadasPrefacturaDto.iEstado == null) {
+      createCoordenadasPrefacturaDto.iEstado = 0;
+    }
+    
+    if (!createCoordenadasPrefacturaDto.FechaSistema) {
+      createCoordenadasPrefacturaDto.FechaSistema = new Date();
+    }
+	
+    return await this.coordenadasprefacturaService.create(
+      createCoordenadasPrefacturaDto,
+    );
+  }
+
 }
 
