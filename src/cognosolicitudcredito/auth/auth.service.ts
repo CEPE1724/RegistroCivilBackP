@@ -566,8 +566,8 @@ export class AuthService {
                     existingRecord.frecuenciaIngreso = trabajoData.personaIngreso.frecuenciaIngreso || '';
                     existingRecord.valorRango = trabajoData.personaIngreso.valorRango || '';
                     
-                    existingRecord.idCargo = trabajoData.cargo.idCargo || 0;
-                    existingRecord.nombreCargo = trabajoData.cargo.nombre || '';
+                    existingRecord.idCargo = (trabajoData.cargo && trabajoData.cargo.idCargo !== null) ? trabajoData.cargo.idCargo : 0;
+                    existingRecord.nombreCargo = (trabajoData.cargo && trabajoData.cargo.nombre) || '';
                     
                     existingRecord.tipoAfiliado = trabajoData.tipoAfiliado || '';
                     existingRecord.telefonoOfi = trabajoData.telefonoOfi || '';

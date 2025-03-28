@@ -17,6 +17,12 @@ export class TiemposolicitudeswebController {
     return this.tiemposolicitudeswebService.findAll(idCre_SolicitudWeb);
   }
 
+  @Get('all/estado/:idCre_SolicitudWeb/:tipo')
+  findAllEstado(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
+  @Param('tipo') tipo: number) {
+    return this.tiemposolicitudeswebService.findAllTipo(idCre_SolicitudWeb, tipo);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.tiemposolicitudeswebService.findOne(+id);

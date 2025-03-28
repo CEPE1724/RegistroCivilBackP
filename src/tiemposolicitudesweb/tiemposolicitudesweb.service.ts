@@ -18,6 +18,19 @@ export class TiemposolicitudeswebService {
     return this.tiemposolicitudeswebRepository.save(createTiemposolicitudeswebDto);
   }
 
+
+  findAllTipo(idCre_SolicitudWeb: number, tipo: number) {
+    return this.tiemposolicitudeswebRepository.find({
+      where: {
+        idCre_SolicitudWeb: idCre_SolicitudWeb,
+        Tipo: tipo
+      },
+      order: {
+        FechaSistema: 'DESC'
+      }
+    });
+  }
+
   findAll(idCre_SolicitudWeb: number) {
     return this.tiemposolicitudeswebRepository.find({
       where: {
@@ -28,6 +41,8 @@ export class TiemposolicitudeswebService {
       }
     });
   }
+
+  
 
   findOne(id: number) {
     return `This action returns a #${id} tiemposolicitudesweb`;

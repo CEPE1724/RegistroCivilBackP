@@ -6,6 +6,7 @@ CREATE TABLE [dbo].[TiempoSolicitudesWeb](
 	[Tipo] [int] NULL,
 	[Usuario] [varchar](50) NULL,
 	[FechaSistema] [datetime] NULL,*/
+import { col } from "sequelize";
 import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert } from "typeorm";
 
 @Entity('TiempoSolicitudesWeb')  // Explicitly setting the table name
@@ -28,4 +29,7 @@ export class TiempoSolicitudesWeb {
 
     @Column({ name: 'FechaSistema', type: 'datetime', nullable: true })
     FechaSistema: Date;
+
+    @Column({name: 'Telefono', type:'varchar', length: 100, nullable: true})
+    Telefono: string;
 }
