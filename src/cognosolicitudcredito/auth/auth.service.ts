@@ -502,7 +502,7 @@ export class AuthService {
     }
 
     async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
-       console.log('apiData', apiData);
+       console.log('apiDataentra aqui', apiData);
 
         try {
             if (!apiData?.trabajos || !Array.isArray(apiData.trabajos) || apiData.trabajos.length === 0) {

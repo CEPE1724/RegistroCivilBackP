@@ -100,7 +100,6 @@ export class CreSolicitudWebService {
       // Lógica adicional para manejar los datos obtenidos
       const apiDataTrabajo = await this.authService.getApiDataTrabajo(token, cedula);
       let bApiDataTrabajo = false;
-
       if (apiDataTrabajo.trabajos) {
         bApiDataTrabajo = apiDataTrabajo.trabajos.length > 0;
       }
@@ -132,10 +131,11 @@ export class CreSolicitudWebService {
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
-
-      if (bApiDataTrabajo && apiDataTrabajo.trabajos.personaPatrono && apiDataTrabajo.trabajos.personaPatrono.identificacion) {
-        await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
-      }
+     console.log('bApiDataTrabajo', bApiDataTrabajo, 'apiDataTrabajo', apiDataTrabajo);
+     if (bApiDataTrabajo && apiDataTrabajo.trabajos && apiDataTrabajo.trabajos.length > 0 && apiDataTrabajo.trabajos[0].fechaActualizacion) {
+      // Si tiene datos, se guarda la información
+      await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
+  }
 
 
       // validar tipo cliente

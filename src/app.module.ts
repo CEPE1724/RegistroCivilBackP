@@ -77,6 +77,8 @@ import { HistorialObservacionesModule } from './historial-observaciones/historia
 import { CreSituacionlaboralModule } from './cre-situacionlaboral/cre-situacionlaboral.module';
 import { CreVerificacionTelefonicaMaestroModule } from './cre_verificacion-telefonica-maestro/cre_verificacion-telefonica-maestro.module';
 import { CreReferenciasclienteswebModule } from './cre-referenciasclientesweb/cre-referenciasclientesweb.module';
+import { CognotrabajocargoModule } from './cognotrabajocargo/cognotrabajocargo.module';
+import { TiemposolicitudeswebModule } from './tiemposolicitudesweb/tiemposolicitudesweb.module';
 
 
 
@@ -198,6 +200,8 @@ import { CreReferenciasclienteswebModule } from './cre-referenciasclientesweb/cr
     CreSituacionlaboralModule,
     CreVerificacionTelefonicaMaestroModule,
     CreReferenciasclienteswebModule,
+    CognotrabajocargoModule,
+    TiemposolicitudeswebModule,
 
 
 
