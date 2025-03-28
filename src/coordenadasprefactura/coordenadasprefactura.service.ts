@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Coordenadasprefactura } from './entities/coordenadasprefactura.entity';
 import { Repository } from 'typeorm';
 import { PaginationGeoreferenciaDto } from 'src/common/dtos/paginationgeoreferencia.dto';
+import { CreateCoordenadasprefacturaDto } from './dto/create-coordenadasprefactura.dto';
 
 @Injectable()
 export class CoordenadasprefacturaService {
@@ -13,6 +14,12 @@ export class CoordenadasprefacturaService {
     @InjectRepository(Coordenadasprefactura)
     private readonly coordenadasprefacturaRepository: Repository<Coordenadasprefactura>
   ) { }
+
+  async create(createDto: CreateCoordenadasprefacturaDto): Promise<Coordenadasprefactura> {
+	console.log(createDto);
+    const nuevaCoordenada = this.coordenadasprefacturaRepository.create(createDto);
+    return await this.coordenadasprefacturaRepository.save(nuevaCoordenada);
+  }
 
   async findAll(paginationGeoreferenciaDto: PaginationGeoreferenciaDto) {
     const {
