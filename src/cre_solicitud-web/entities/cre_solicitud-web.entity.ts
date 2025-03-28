@@ -91,6 +91,15 @@ export class CreSolicitudWeb {
     @Column('int')
     idEstadoVerificacionDocumental: number;
 
+    @Column('int')
+    idEstadoVerificacionSolicitud: number;
+
+    @Column('int')
+    idEstadoVerificacionTelefonica : number;
+    
+    @Column('int')
+    idEstadoVerificacionTerrena: number;
+
     @BeforeInsert()
     upperApellidos() {
         if (this.ApellidoMaterno) {
