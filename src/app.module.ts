@@ -79,6 +79,8 @@ import { CreVerificacionTelefonicaMaestroModule } from './cre_verificacion-telef
 import { CreReferenciasclienteswebModule } from './cre-referenciasclientesweb/cre-referenciasclientesweb.module';
 import { CognotrabajocargoModule } from './cognotrabajocargo/cognotrabajocargo.module';
 import { TiemposolicitudeswebModule } from './tiemposolicitudesweb/tiemposolicitudesweb.module';
+import { IngresoCobradorModule } from './ingreso-cobrador/ingreso-cobrador.module';
+import { ClientesVerificacionTerrenaModule } from './clientes-verificacion-terrena/clientes-verificacion-terrena.module';
 
 
 
@@ -202,6 +204,8 @@ import { TiemposolicitudeswebModule } from './tiemposolicitudesweb/tiemposolicit
     CreReferenciasclienteswebModule,
     CognotrabajocargoModule,
     TiemposolicitudeswebModule,
+    IngresoCobradorModule,
+    ClientesVerificacionTerrenaModule,
 
 
 
