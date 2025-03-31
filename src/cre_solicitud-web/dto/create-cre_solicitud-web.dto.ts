@@ -141,20 +141,37 @@ export class CreateCreSolicitudWebDto {
 
 
     @IsNumber()
-    @IsPositive()
+    @IsOptional()
     idEstadoVerificacionDocumental?: number;
 
     @IsNumber()
-    @IsPositive()
+    @IsOptional()
     idEstadoVerificacionSolicitud?: number;
 
     @IsNumber()
-    @IsPositive()
+    @IsOptional()
     idEstadoVerificacionTelefonica?: number;
 
     @IsNumber()
-    @IsPositive()
+    @IsOptional()
     idEstadoVerificacionTerrena?: number;
+
+    @IsNumber()
+    @IsOptional()
+    Resultado: number;
+
+    @IsNumber()
+    @IsOptional()
+    Entrada: number;
+
+    @IsNumber()
+    @IsOptional()
+    TerrenoDomicilio: number;
+
+    @IsNumber()
+    @IsOptional()
+    TerrenoLaboral: number;
+
 
     
 

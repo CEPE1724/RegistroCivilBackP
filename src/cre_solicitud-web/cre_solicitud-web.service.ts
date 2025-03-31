@@ -142,9 +142,10 @@ export class CreSolicitudWebService {
 
       const storedProcedureResult = await this.callStoredProcedureRetornaTipoCliente(cedula, idSolicitud);
       const tipoCliente = storedProcedureResult[0].TipoCliente;
+      const Resultado = storedProcedureResult[0].Resultado;
 
       // actualizar el tipo de cliente en la tabla cre_solicitud_web
-      const estado = tipoCliente === 0 ? 5 : 1;
+      const estado = Resultado === 0 ? 5 : 1;
       await this.creSolicitudWebRepository.update(idSolicitud, { idTipoCliente: tipoCliente ? tipoCliente : 0, Estado: estado });
 
       return creSolicitudWeb;

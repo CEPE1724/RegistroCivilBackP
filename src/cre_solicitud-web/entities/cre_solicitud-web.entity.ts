@@ -100,6 +100,19 @@ export class CreSolicitudWeb {
     @Column('int')
     idEstadoVerificacionTerrena: number;
 
+    @Column('int')
+    Resultado: number;
+
+    @Column('decimal', { precision: 10, scale: 2 })
+    Entrada: number;
+
+    @Column('int')
+    TerrenoDomicilio: number;
+
+    @Column('int')
+    TerrenoLaboral: number;
+
+
     @BeforeInsert()
     upperApellidos() {
         if (this.ApellidoMaterno) {
