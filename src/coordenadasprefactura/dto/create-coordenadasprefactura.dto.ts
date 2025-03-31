@@ -39,4 +39,18 @@ export class CreateCoordenadasprefacturaDto {
   @IsArray()
   @IsString({ each: true })
   UrlImagen?: string[];
+
+  @IsNumber()
+  @IsOptional()
+  @Type(() => Number)
+  Tipo: number;
+
+	@IsOptional()
+	@IsString()
+	Usuario ?: string;
+
+	@IsOptional()
+	@IsNumber()
+	@Type(() => Number)
+	web ?: number;
 }

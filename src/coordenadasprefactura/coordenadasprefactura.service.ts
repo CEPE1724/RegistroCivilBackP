@@ -16,9 +16,34 @@ export class CoordenadasprefacturaService {
   ) { }
 
   async create(createDto: CreateCoordenadasprefacturaDto): Promise<Coordenadasprefactura> {
-	console.log(createDto);
-    const nuevaCoordenada = this.coordenadasprefacturaRepository.create(createDto);
-    return await this.coordenadasprefacturaRepository.save(nuevaCoordenada);
+    console.log(createDto);
+
+    const existingCoordenada = await this.coordenadasprefacturaRepository.findOne({
+      where: { id: createDto.id,
+        web: 1,
+        Tipo: createDto.Tipo,
+       }, // Assuming `id` is the unique identifier
+    });
+    
+
+    if (existingCoordenada) {
+      // Update the existing record
+      const updatedCoordenada = this.coordenadasprefacturaRepository.merge(existingCoordenada, createDto);
+      return await this.coordenadasprefacturaRepository.save(updatedCoordenada);
+    } else {
+      // Create a new record
+      const nuevaCoordenada = this.coordenadasprefacturaRepository.create(createDto);
+      return await this.coordenadasprefacturaRepository.save(nuevaCoordenada);
+    }
+  }
+
+  async existsAndCount(id: number, Tipo: number): Promise<{ exists: boolean; count: number }> {
+    console.log('ID:', id);
+    console.log('Tipo:', Tipo);
+    const count = await this.coordenadasprefacturaRepository.count({
+      where: { id, Tipo, web: 1 }, // Assuming `id` is the unique identifier
+    });
+    return { exists: count > 0, count };
   }
 
   async findAll(paginationGeoreferenciaDto: PaginationGeoreferenciaDto) {

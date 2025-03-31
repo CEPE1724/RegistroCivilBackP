@@ -33,6 +33,11 @@ export class Coordenadasprefactura {
     })
     direccion: string;
 
+    @Column('varchar', {
+        length: 50
+    })
+    Usuario: string;
+
 	@Column({ type: 'varchar', length: 50, nullable: true })
 	ip: string;
 
@@ -48,5 +53,8 @@ export class Coordenadasprefactura {
 
 	@Column({ type: 'simple-json', nullable: true })
 	UrlImagen: string[];
+
+    @Column('int', )
+    web : number;
 
 }

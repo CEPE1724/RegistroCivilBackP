@@ -17,6 +17,11 @@ export class CreReferenciasclienteswebController {
     return this.creReferenciasclienteswebService.findAll(idsolicitud);
   }
 
+  @Get('all/count/:idsolicitud')
+  findAllCount(@Param('idsolicitud') idsolicitud: number) {
+    return this.creReferenciasclienteswebService.findAllCount(idsolicitud);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.creReferenciasclienteswebService.findOne(+id);

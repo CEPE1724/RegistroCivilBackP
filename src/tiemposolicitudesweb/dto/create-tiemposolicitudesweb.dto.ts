@@ -24,6 +24,7 @@ export class CreateTiemposolicitudeswebDto {
     Usuario?: string;
 
     @IsString()
+    @IsOptional()
     Telefono?: string;
 
 }

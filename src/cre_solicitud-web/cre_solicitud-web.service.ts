@@ -144,7 +144,8 @@ export class CreSolicitudWebService {
       const tipoCliente = storedProcedureResult[0].TipoCliente;
 
       // actualizar el tipo de cliente en la tabla cre_solicitud_web
-      await this.creSolicitudWebRepository.update(idSolicitud, { idTipoCliente: tipoCliente ? tipoCliente : 0 });
+      const estado = tipoCliente === 0 ? 5 : 1;
+      await this.creSolicitudWebRepository.update(idSolicitud, { idTipoCliente: tipoCliente ? tipoCliente : 0, Estado: estado });
 
       return creSolicitudWeb;
     } catch (error) {
@@ -331,6 +332,21 @@ export class CreSolicitudWebService {
       idEstadoVerificacionDocumental: idEstadoVerificacionDocumental
      });
   }
+
+  async updateSolicitud(idCre_SolicitudWeb: number,  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
+    if (!creSolicitudWeb) {
+      throw new NotFoundException('Registro no encontrado');
+    }
+    try {
+      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+      await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      return creSolicitudWeb;
+    } catch (error) {
+      this.handleDBException(error);
+    }
+  }
+   
 
   remove(id: number) {
     return `This action removes a #${id} creSolicitudWeb`;

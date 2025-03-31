@@ -29,6 +29,17 @@ export class CreReferenciasclienteswebService {
     );
   }
 
+  async findAllCount(idsolicitud: number) {
+    const count = await this.creReferenciasclienteswebRepository.count(
+      {
+        where: {
+          idCre_SolicitudWeb: idsolicitud,
+        }
+      }
+    );
+    return count || 0;
+  }
+
 
   findOne(id: number) {
     return this.creReferenciasclienteswebRepository.findOne(

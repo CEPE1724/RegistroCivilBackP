@@ -144,4 +144,18 @@ export class CreateCreSolicitudWebDto {
     @IsPositive()
     idEstadoVerificacionDocumental?: number;
 
+    @IsNumber()
+    @IsPositive()
+    idEstadoVerificacionSolicitud?: number;
+
+    @IsNumber()
+    @IsPositive()
+    idEstadoVerificacionTelefonica?: number;
+
+    @IsNumber()
+    @IsPositive()
+    idEstadoVerificacionTerrena?: number;
+
+    
+
 }
