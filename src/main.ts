@@ -20,7 +20,7 @@ async function bootstrap() {
  app.useGlobalPipes(    new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true,   }) );
  
   await app.listen(process.env.PORT || 3025);
-  console.log(`Application is running on: ${process.env.PORT }`);
+  console.log(`Application is running on: ${process.env.PORT}`);
 }
 bootstrap();
 /* ANTES DE SUBIR A PRODUCCION HACER UN NPM RUN START Y DESPUES UN NPM RUN BUILD*/
