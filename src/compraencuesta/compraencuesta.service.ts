@@ -17,6 +17,9 @@ export class CompraencuestaService {
     return this.compraencuestaReposiroty.find({ where: { Estado } });
   }
   
+  findOne(id: number) {
+    return this.compraencuestaReposiroty.findOne({ where: { idCompraEncuesta: id } });
+  }
 
   private handleDBExceptions(error: any) {
     if (error.code === '23505') {
