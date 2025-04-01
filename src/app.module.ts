@@ -81,6 +81,7 @@ import { CognotrabajocargoModule } from './cognotrabajocargo/cognotrabajocargo.m
 import { TiemposolicitudeswebModule } from './tiemposolicitudesweb/tiemposolicitudesweb.module';
 import { IngresoCobradorModule } from './ingreso-cobrador/ingreso-cobrador.module';
 import { ClientesVerificacionTerrenaModule } from './clientes-verificacion-terrena/clientes-verificacion-terrena.module';
+import { TerrenaGestionDomicilioModule } from './terrena-gestion-domicilio/terrena-gestion-domicilio.module';
 
 
 
@@ -206,6 +207,7 @@ import { ClientesVerificacionTerrenaModule } from './clientes-verificacion-terre
     TiemposolicitudeswebModule,
     IngresoCobradorModule,
     ClientesVerificacionTerrenaModule,
+    TerrenaGestionDomicilioModule,
 
 
 
