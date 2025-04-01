@@ -46,10 +46,12 @@ export class ClientesVerificacionTerrenaService {
     return `This action returns all clientesVerificacionTerrena`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} clientesVerificacionTerrena`;
+  async findOne(idCreSolicitud: number) {
+    return await this.clientesVerificacionTerrenaRepository.findOne({
+      where: { idCre_solicitud: idCreSolicitud, Web: 1 }, 
+      select: ['idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
+    });
   }
-
   update(id: number, updateClientesVerificacionTerrenaDto: UpdateClientesVerificacionTerrenaDto) {
     return `This action updates a #${id} clientesVerificacionTerrena`;
   }

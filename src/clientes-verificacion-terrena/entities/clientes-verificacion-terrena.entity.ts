@@ -100,4 +100,7 @@ export class ClientesVerificacionTerrena {
 
   @Column({ type: 'varchar', nullable: true })
   UrlPhoto?: string;
+
+  @Column({ type: 'int', nullable: true })
+  Web?: number;
 }
