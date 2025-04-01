@@ -16,7 +16,11 @@ export class CrectaedogestionService {
     { } 
 
   findAll() {
-    return this.crectaedogestionRepository.find();
+    return this.crectaedogestionRepository.find(
+      {
+        where: { activo: 1 }
+      },
+    );
   }
 
   private handleDBExceptions(error: any) {

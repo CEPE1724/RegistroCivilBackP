@@ -87,6 +87,9 @@ export class CreSolicitudWeb {
 	@Column('varchar')
 	otp_code: string;
 
+    @Column('varchar')
+    Usuario: string;
+
 
     @Column('int')
     idEstadoVerificacionDocumental: number;

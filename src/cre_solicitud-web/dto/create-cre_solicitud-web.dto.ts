@@ -172,6 +172,10 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     TerrenoLaboral: number;
 
+    @IsString()
+    @IsOptional()
+    Usuario: string;
+
 
     
 

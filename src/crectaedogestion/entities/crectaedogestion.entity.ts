@@ -17,4 +17,7 @@ export class Crectaedogestion {
 })
 DESCRIPCION: string;
 
+@Column('int')
+activo: number;
+
 }
