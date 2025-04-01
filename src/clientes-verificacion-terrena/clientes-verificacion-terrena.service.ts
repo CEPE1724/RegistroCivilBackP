@@ -4,6 +4,7 @@ import { UpdateClientesVerificacionTerrenaDto } from './dto/update-clientes-veri
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClientesVerificacionTerrena } from './entities/clientes-verificacion-terrena.entity';
+import { TerrenaGestionDomicilio } from '../terrena-gestion-domicilio/entities/terrena-gestion-domicilio.entity';
 
 @Injectable()
 export class ClientesVerificacionTerrenaService {
@@ -13,6 +14,9 @@ export class ClientesVerificacionTerrenaService {
 	constructor(
 			@InjectRepository(ClientesVerificacionTerrena)
 			private readonly clientesVerificacionTerrenaRepository: Repository<ClientesVerificacionTerrena>,
+
+			@InjectRepository(TerrenaGestionDomicilio)
+			private readonly terrenaGestionDomicilioRepository: Repository<TerrenaGestionDomicilio>,
 	) {}
 
   create(createClientesVerificacionTerrenaDto: CreateClientesVerificacionTerrenaDto) {
@@ -52,6 +56,33 @@ export class ClientesVerificacionTerrenaService {
       select: ['idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
     });
   }
+
+  async getGestionDomicilioPorSolicitud(idCreSolicitud: number): Promise<TerrenaGestionDomicilio> {
+	try {
+	  const cliente = await this.clientesVerificacionTerrenaRepository.findOne({
+		where: { idCre_solicitud: idCreSolicitud, Web: 1 },
+		select: ['idTerrenaGestionDomicilio'],
+	  });
+  
+	  if (!cliente || !cliente.idTerrenaGestionDomicilio) {
+		throw new BadRequestException('No se encontró verificación de domicilio registrada para esta solicitud.');
+	  }
+  
+	  const gestionDomicilio = await this.terrenaGestionDomicilioRepository.findOne({
+		where: { idTerrenaGestionDomicilio: cliente.idTerrenaGestionDomicilio },
+	  });
+  
+	  if (!gestionDomicilio) {
+		throw new BadRequestException('No se encontró información en TerrenaGestionDomicilio.');
+	  }
+  
+	  return gestionDomicilio;
+	} catch (error) {
+	  this.handleDBException(error);
+	}
+  }
+  
+  
   update(id: number, updateClientesVerificacionTerrenaDto: UpdateClientesVerificacionTerrenaDto) {
     return `This action updates a #${id} clientesVerificacionTerrena`;
   }

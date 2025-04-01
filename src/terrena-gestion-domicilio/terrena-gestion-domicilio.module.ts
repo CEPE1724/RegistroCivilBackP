@@ -8,6 +8,7 @@ import { TerrenaGestionDomicilio } from './entities/terrena-gestion-domicilio.en
 @Module({
   controllers: [TerrenaGestionDomicilioController],
   providers: [TerrenaGestionDomicilioService],
-  imports:[TypeOrmModule.forFeature([TerrenaGestionDomicilio])]
+  imports:[TypeOrmModule.forFeature([TerrenaGestionDomicilio])], 
+  exports:[TypeOrmModule]
 })
 export class TerrenaGestionDomicilioModule {}
