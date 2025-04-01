@@ -15,4 +15,11 @@ export class CompraencuestaController {
     return this.compraencuestaService.findAll(Estado);
   }
 
+  //obtener por id
+  @Get('tipo/:id')
+  findOne(@Param('id',ParseIntPipe) id: number) {
+    return this.compraencuestaService.findOne(id);
+  }
+
+
 }
