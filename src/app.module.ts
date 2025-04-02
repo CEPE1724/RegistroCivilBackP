@@ -82,6 +82,7 @@ import { TiemposolicitudeswebModule } from './tiemposolicitudesweb/tiemposolicit
 import { IngresoCobradorModule } from './ingreso-cobrador/ingreso-cobrador.module';
 import { ClientesVerificacionTerrenaModule } from './clientes-verificacion-terrena/clientes-verificacion-terrena.module';
 import { TerrenaGestionDomicilioModule } from './terrena-gestion-domicilio/terrena-gestion-domicilio.module';
+import { TerrenaGestionTrabajoModule } from './terrena-gestion-trabajo/terrena-gestion-trabajo.module';
 
 
 
@@ -208,6 +209,7 @@ import { TerrenaGestionDomicilioModule } from './terrena-gestion-domicilio/terre
     IngresoCobradorModule,
     ClientesVerificacionTerrenaModule,
     TerrenaGestionDomicilioModule,
+    TerrenaGestionTrabajoModule,
 
 
 
