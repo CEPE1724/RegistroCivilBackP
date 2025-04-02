@@ -31,9 +31,9 @@ export class ClientesVerificacionTerrenaController {
     return this.clientesVerificacionTerrenaService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.clientesVerificacionTerrenaService.findOne(+id);
+  @Get(':id/:Tipo')
+  findOne(@Param('id') id: number, @Param('Tipo') Tipo: number) {
+    return this.clientesVerificacionTerrenaService.findOne(id, Tipo);
   }
 
   @Get('domicilio/:id')
