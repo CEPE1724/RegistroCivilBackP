@@ -38,6 +38,7 @@ export class MenuItemRoleService {
       .innerJoin('menu_items_access_user', 'us', 'us.idmenu_items_access = n.idmenu_items_access')
       .where('n.idmenu_items = :idmenu_items', { idmenu_items })
       .andWhere('u.idUsuario = :idUsuario', { idUsuario })
+      .andWhere('us.idUsuario = :idUsuario', { idUsuario })
       .select(['n.idmenu_items', 'n.Permisos', 'us.Activo']);
 
     const result = await queryBuilder.getRawMany();
