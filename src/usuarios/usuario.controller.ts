@@ -17,6 +17,12 @@ export class UsuarioController {
     return this.usuarioService.findAll();
   }
 
+  @Get('rol/:idGrupo')
+async findUsuariosByGrupo(@Param('idGrupo') idGrupo: number): Promise<Partial<Usuario>[]> {
+  return this.usuarioService.findByGrupoId(idGrupo);
+}
+
+
   @Get('analistas')
   async findAnalistas(@Query('Filtro') Filtro: string): Promise<Usuario[]> {
     return this.usuarioService.findAllAnalistas(Filtro);
