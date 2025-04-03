@@ -10,7 +10,7 @@ import {
     IsDecimal,
     IsBoolean,
   } from 'class-validator';
-  import { Type } from 'class-transformer';
+  import { Type, Transform  } from 'class-transformer';
   
   export class CreateWebSolicitudgrandeDto {
   
@@ -228,9 +228,13 @@ import {
     @IsPositive()
     readonly idCantonInmueble?: number;
   
-    @IsOptional()
-    @IsNumber()
-    readonly ValorInmmueble?: number;
+	@IsOptional()
+	@IsDecimal({ decimal_digits: '0,2' }, {
+	message: 'ValorInmmueble debe ser un número decimal válido con hasta 2 decimales',
+	})
+	readonly ValorInmmueble?: string;
+
+
   
     @IsOptional()
     @IsNumber()

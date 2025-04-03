@@ -3,10 +3,14 @@ import { ClientesVerificacionTerrenaService } from './clientes-verificacion-terr
 import { ClientesVerificacionTerrenaController } from './clientes-verificacion-terrena.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ClientesVerificacionTerrena } from './entities/clientes-verificacion-terrena.entity';
+import { TerrenaGestionDomicilioModule } from '../terrena-gestion-domicilio/terrena-gestion-domicilio.module';
 
 @Module({
   controllers: [ClientesVerificacionTerrenaController],
   providers: [ClientesVerificacionTerrenaService],
-  imports: [TypeOrmModule.forFeature([ClientesVerificacionTerrena])],
+  imports: [
+	TypeOrmModule.forFeature([ClientesVerificacionTerrena]),
+	TerrenaGestionDomicilioModule
+  ],
 })
 export class ClientesVerificacionTerrenaModule {}

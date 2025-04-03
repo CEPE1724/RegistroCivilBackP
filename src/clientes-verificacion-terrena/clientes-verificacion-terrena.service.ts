@@ -4,6 +4,7 @@ import { UpdateClientesVerificacionTerrenaDto } from './dto/update-clientes-veri
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClientesVerificacionTerrena } from './entities/clientes-verificacion-terrena.entity';
+import { TerrenaGestionDomicilio } from '../terrena-gestion-domicilio/entities/terrena-gestion-domicilio.entity';
 
 @Injectable()
 export class ClientesVerificacionTerrenaService {
