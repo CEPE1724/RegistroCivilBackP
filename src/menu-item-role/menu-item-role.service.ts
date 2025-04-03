@@ -14,7 +14,7 @@ export class MenuItemRoleService {
     private readonly menuItemRoleRepository: Repository<MenuItemRole>,
     @InjectRepository(MenuItems)
     private readonly menuItemsRepository: Repository<MenuItems>,
-  ) {}
+  ) { }
 
   async getUserMenuItems(userId: number) {
     // Consulta ajustada
@@ -22,14 +22,27 @@ export class MenuItemRoleService {
       .innerJoinAndSelect('u.menuItemRoles', 'm') // Relación con 'menu_item_roles'
       .innerJoinAndSelect('m.MenuItem', 'i') // Relación con 'menu_items'
       .where('u.idUsuario = :userId', { userId }) // Filtro por idUsuario
-      .select(['u.idUsuario', 'u.Nombre', 'u.idGrupo', 'u.Activo', 
+      .select(['u.idUsuario', 'u.Nombre', 'u.idGrupo', 'u.Activo',
         'i.idmenu_items', 'i.name', 'i.route', 'i.icon', 'i.parent_id', 'i.active', 'i.position']); // Campos a seleccionar
 
-       
+
     const result = await queryBuilder.getRawMany();
     return result;
   }
 
+  async getPermissionsComponents(idmenu_items: number, idUsuario: number) {
+    const queryBuilder = this.menuItemsRepository.createQueryBuilder('m')
+      .innerJoin('menu_items_access', 'n', 'm.idmenu_items = n.idmenu_items')
+      .innerJoin('menu_item_roles', 'r', 'r.idmenu_items = n.idmenu_items')
+      .innerJoin('Usuario', 'u', 'u.idUsuario = r.idUsuario')
+      .innerJoin('menu_items_access_user', 'us', 'us.idmenu_items_access = n.idmenu_items_access')
+      .where('n.idmenu_items = :idmenu_items', { idmenu_items })
+      .andWhere('u.idUsuario = :idUsuario', { idUsuario })
+      .select(['n.idmenu_items', 'n.Permisos', 'us.Activo']);
+
+    const result = await queryBuilder.getRawMany();
+    return result;
+  };
 
 
   findAll() {

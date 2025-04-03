@@ -12,6 +12,13 @@ export class MenuItemRoleController {
     return this.menuItemRoleService.getUserMenuItems(userId);
   }
 
+  @Get('permissionscomponents/:idmenu_items/:idUsuario')
+async getPermissionsComponents(
+           @Param('idmenu_items') idmenu_items: number, 
+           @Param('idUsuario') idUsuario: number) {
+    return this.menuItemRoleService.getPermissionsComponents(idmenu_items, idUsuario);
+  }
+
  
 
   @Get()
