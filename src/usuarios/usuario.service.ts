@@ -48,6 +48,14 @@ export class UsuarioService {
     });
   }
 
+  async findByGrupoId(idGrupo: number): Promise<Partial<Usuario>[]> {
+	return await this.usuarioRepository.find({
+	  select: ['idUsuario', 'Nombre', 'idGrupo'],
+	  where: { idGrupo: idGrupo },
+	});
+  }
+  
+
   async validatePassword(plainTextPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainTextPassword, hashedPassword);
   }
