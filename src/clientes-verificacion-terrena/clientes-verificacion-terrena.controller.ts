@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, BadRequestException } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ClientesVerificacionTerrenaService } from './clientes-verificacion-terrena.service';
 import { CreateClientesVerificacionTerrenaDto } from './dto/create-clientes-verificacion-terrena.dto';
 import { UpdateClientesVerificacionTerrenaDto } from './dto/update-clientes-verificacion-terrena.dto';
@@ -35,18 +35,6 @@ export class ClientesVerificacionTerrenaController {
   findOne(@Param('id') id: number, @Param('Tipo') Tipo: number) {
     return this.clientesVerificacionTerrenaService.findOne(id, Tipo);
   }
-
-  @Get('domicilio/:id')
-async getDomicilioPorSolicitud(@Param('id') id: string) {
-  const idCreSolicitud = parseInt(id, 10);
-
-  if (isNaN(idCreSolicitud)) {
-    throw new BadRequestException('El ID debe ser un número');
-  }
-
-  return this.clientesVerificacionTerrenaService.getGestionDomicilioPorSolicitud(idCreSolicitud);
-}
-
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateClientesVerificacionTerrenaDto: UpdateClientesVerificacionTerrenaDto) {
