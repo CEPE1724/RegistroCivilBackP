@@ -8,6 +8,7 @@ import { MenuItemAccess } from './entities/menu-items-access.entity'; // Agregar
 import { MenuItemAccessUser } from './entities/menu-items-access-user.entity'; // Agregar MenuItemAccessUser aquí
 @Injectable()
 export class MenuItemRoleService {
+
 	constructor(
 		@InjectRepository(Usuario)
 		private readonly usuarioRepository: Repository<Usuario>,
@@ -171,3 +172,4 @@ export class MenuItemRoleService {
 		return `This action removes a #${id} menuItemRole`;
 	}
 }
+

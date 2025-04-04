@@ -5,12 +5,15 @@ import { UpdateMenuItemRoleDto } from './dto/update-menu-item-role.dto';
 
 @Controller('menu-item-role')
 export class MenuItemRoleController {
+
 	constructor(private readonly menuItemRoleService: MenuItemRoleService) { }
+
 
 	@Get(':userId/menu')
 	async getUserMenuItems(@Param('userId') userId: number) {
 		return this.menuItemRoleService.getUserMenuItems(userId);
 	}
+
 
 	@Get('permissionscomponents/:idmenu_items/:idUsuario')
 	async getPermissionsComponents(
@@ -31,6 +34,7 @@ export class MenuItemRoleController {
 	) {
 		return this.menuItemRoleService.getMenuItemAccessRoles(idUsuario, idmenu_items);
 	}
+
 
 	@Post('accessroles/create/:idUsuario/:idmenu_items_access')
 	async createSingleMenuItemAccess(
