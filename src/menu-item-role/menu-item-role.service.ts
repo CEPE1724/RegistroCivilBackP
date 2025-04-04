@@ -46,6 +46,19 @@ export class MenuItemRoleService {
   };
 
 
+  async getPermissionsMenu(idUsuario: number) {
+    const queryBuilder = this.menuItemsRepository.createQueryBuilder('m')
+      .leftJoin('menu_item_roles', 'mir', 'm.idmenu_items = mir.idmenu_items AND mir.idUsuario = :idUsuario', { idUsuario })
+      .select([
+        'm.idmenu_items',    // Seleccionamos el ID del menú
+        'm.name AS menu_name', // Seleccionamos el nombre del menú
+        'COALESCE(mir.idmenu_item_roles, 0) AS idmenu_item_roles' // Usamos COALESCE para manejar los valores nulos
+      ]);
+  
+    const result = await queryBuilder.getRawMany();
+    return result;
+  }
+  
   findAll() {
     return 'This action returns all menuItemRole';
   }
