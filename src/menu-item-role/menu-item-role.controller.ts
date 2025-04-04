@@ -5,7 +5,7 @@ import { UpdateMenuItemRoleDto } from './dto/update-menu-item-role.dto';
 
 @Controller('menu-item-role')
 export class MenuItemRoleController {
-  constructor(private readonly menuItemRoleService: MenuItemRoleService) {}
+  constructor(private readonly menuItemRoleService: MenuItemRoleService) { }
 
   @Get(':userId/menu')
   async getUserMenuItems(@Param('userId') userId: number) {
@@ -13,18 +13,21 @@ export class MenuItemRoleController {
   }
 
   @Get('permissionscomponents/:idmenu_items/:idUsuario')
-   async getPermissionsComponents(
-           @Param('idmenu_items') idmenu_items: number, 
-           @Param('idUsuario') idUsuario: number) {
+  async getPermissionsComponents(
+    @Param('idmenu_items') idmenu_items: number,
+    @Param('idUsuario') idUsuario: number) {
     return this.menuItemRoleService.getPermissionsComponents(idmenu_items, idUsuario);
   }
 
   @Get('permissionsmenu/:idUsuario')
   async getPermissionsMenu(@Param('idUsuario') idUsuario: number) {
-      return this.menuItemRoleService.getPermissionsMenu(idUsuario);
-    }
+    return this.menuItemRoleService.getPermissionsMenu(idUsuario);
+  }
 
- 
+  @Get('permissionsmenu/:idUsuario/:idmenu_items')
+  async getPermissionsMenuById(@Param('idUsuario') idUsuario: number, @Param('idmenu_items') idmenu_items: number) {
+    return this.menuItemRoleService.getMenuItemAccessRoles(idmenu_items, idUsuario);
+  }
 
   @Get()
   findAll() {

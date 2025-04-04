@@ -4,7 +4,8 @@ import { Repository } from 'typeorm';
 import { Usuario } from './entities/usuarios.entity';
 import { MenuItemRole } from './entities/menu-item-role.entity';
 import { MenuItems } from './entities/menu_items.entity';
-
+import { MenuItemAccess } from './entities/menu-items-access.entity'; // Agregar MenuItemAccess aquí
+import { MenuItemAccessUser } from './entities/menu-items-access-user.entity'; // Agregar MenuItemAccessUser aquí
 @Injectable()
 export class MenuItemRoleService {
   constructor(
@@ -14,6 +15,10 @@ export class MenuItemRoleService {
     private readonly menuItemRoleRepository: Repository<MenuItemRole>,
     @InjectRepository(MenuItems)
     private readonly menuItemsRepository: Repository<MenuItems>,
+    @InjectRepository(MenuItemAccess)
+    private readonly menuItemAccessRepository: Repository<MenuItemAccess>, // Agregar MenuItemAccess aquí
+    @InjectRepository(MenuItemAccessUser)
+    private readonly menuItemAccessUserRepository: Repository<MenuItemAccessUser>, // Agregar MenuItemAccessUser aquí
   ) { }
 
   async getUserMenuItems(userId: number) {
@@ -58,7 +63,25 @@ export class MenuItemRoleService {
     const result = await queryBuilder.getRawMany();
     return result;
   }
-  
+
+  async getMenuItemAccessRoles(idUsuario: number, idmenu_items: number) {
+    console.log('idmenu_items', idmenu_items);
+    console.log('idUsuario', idUsuario);
+    const queryBuilder = this.menuItemAccessRepository.createQueryBuilder('m')
+      .leftJoin('menu_items_access_user', 'u', 'u.idmenu_items_access = m.idmenu_items_access AND u.idUsuario = :idUsuario', { idUsuario })
+      .where('m.idmenu_items = :idmenu_items', { idmenu_items })
+      .select([
+        'm.idmenu_items_access', 
+        'm.idmenu_items', 
+        'u.idUsuario', 
+        'u.Activo',
+        'm.Permisos',
+      ]);
+
+    const result = await queryBuilder.getRawMany();
+    return result;
+  }
+
   findAll() {
     return 'This action returns all menuItemRole';
   }
