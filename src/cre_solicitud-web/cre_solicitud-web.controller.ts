@@ -19,8 +19,8 @@ export class CreSolicitudWebController {
     return { message: 'Prueba OK' };
   }
   @Get()
-  findAll(@Query() paginationDto: PaginationDto) {
-    return this.creSolicitudWebService.findAll(paginationDto);
+  findAll(@Query() paginationDto: PaginationDto, @Query('bodega') bodega: number[]) {
+    return this.creSolicitudWebService.findAll(paginationDto, bodega);
     
   }
 

@@ -212,45 +212,48 @@ export class CreSolicitudWebService {
 
 
 
-  async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0, fechaInicio, fechaFin, bodega, estado, vendedor = 0,
-      analista = 0,
-   } = paginationDto;
-
-    console.log('bodega', bodega, 'estado', estado, 'fechaInicio', fechaInicio, 'fechaFin', fechaFin);
+  async findAll(paginationDto: PaginationDto, bodega: number[]) {
+    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0 } = paginationDto;
+    
+    console.log('estado', estado, 'fechaInicio', fechaInicio, 'fechaFin', fechaFin, 'bodegasIds', bodega);
+    
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
+    
     // Aplicar los filtros de fechas con las horas ajustadas
     if (fechaInicio && fechaFin) {
-      // Convertir fechas a formato 'YYYY-MM-DD'
-      const fechaInicioStr = fechaInicio.toISOString().split('T')[0] 
-      const fechaFinStr = fechaFin.toISOString().split('T')[0];
+      const fechaInicioStr = fechaInicio.toISOString().split('T')[0];  // Formato 'YYYY-MM-DD'
+      const fechaFinStr = fechaFin.toISOString().split('T')[0];  // Formato 'YYYY-MM-DD'
       console.log('Fechas formateadas:', fechaInicioStr, fechaFinStr);
-  
+      
       queryBuilder.andWhere(
-          'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin) ' +
-          'AND (cre_solicitud_web.bodega = :bodega OR 0 = :bodega) ' +
-          'AND (cre_solicitud_web.estado = :estado OR 0 = :estado) ' +
-          'AND (cre_solicitud_web.idVendedor = :vendedor OR 0 = :vendedor) ' +
-          'AND (cre_solicitud_web.idAnalista = :analista OR 0 = :analista)',
-          { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr, bodega, estado, vendedor, analista }
+        'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin) ' +
+        'AND (cre_solicitud_web.estado = :estado OR 0 = :estado) ' +
+        'AND (cre_solicitud_web.idVendedor = :vendedor OR 0 = :vendedor) ' +
+        'AND (cre_solicitud_web.idAnalista = :analista OR 0 = :analista)',
+        { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr, estado, vendedor, analista }
       );
-  
-      console.log('Consulta generada:', queryBuilder.getSql());
-      console.log('Parámetros:', queryBuilder.getParameters());
-  }
-  
-  
-
-  
+    }
+    
+    // Agregar el filtro para bodegas usando IN si el array de bodegasIds no está vacío
+    if (bodega && bodega.length > 0) {
+      queryBuilder.andWhere('cre_solicitud_web.bodega IN (:...bodega)', { bodega });
+    }
+    
+    // Obtener el conteo total de registros
     const totalCount = await queryBuilder.getCount();
+    
+    // Aplicar la paginación
     queryBuilder.skip(offset).take(limit);
+    
+    // Obtener los registros filtrados
     const creSolicitudWeb = await queryBuilder.getMany();
-  
+    
     return {
       data: creSolicitudWeb,
       total: totalCount,
     };
   }
+  
   
   
   
