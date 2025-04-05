@@ -22,6 +22,10 @@ export class CreSolicitudWeb {
     idVendedor: number;
 
     @Column('int')
+    idAnalista: number;
+
+
+    @Column('int')
     idCompraEncuesta: number;
 
     @Column('varchar')

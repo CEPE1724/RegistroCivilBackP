@@ -213,7 +213,9 @@ export class CreSolicitudWebService {
 
 
   async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0, fechaInicio, fechaFin, bodega, estado } = paginationDto;
+    const { limit = 10, offset = 0, fechaInicio, fechaFin, bodega, estado, vendedor = 0,
+      analista = 0,
+   } = paginationDto;
 
     console.log('bodega', bodega, 'estado', estado, 'fechaInicio', fechaInicio, 'fechaFin', fechaFin);
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
@@ -226,9 +228,11 @@ export class CreSolicitudWebService {
   
       queryBuilder.andWhere(
           'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin) ' +
-          'AND (cre_solicitud_web.bodega = :bodega OR 0 = :bodega)'+
-          'AND (cre_solicitud_web.estado = :estado OR 0 = :estado)',
-          { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr, bodega , estado }
+          'AND (cre_solicitud_web.bodega = :bodega OR 0 = :bodega) ' +
+          'AND (cre_solicitud_web.estado = :estado OR 0 = :estado) ' +
+          'AND (cre_solicitud_web.idVendedor = :vendedor OR 0 = :vendedor) ' +
+          'AND (cre_solicitud_web.idAnalista = :analista OR 0 = :analista)',
+          { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr, bodega, estado, vendedor, analista }
       );
   
       console.log('Consulta generada:', queryBuilder.getSql());

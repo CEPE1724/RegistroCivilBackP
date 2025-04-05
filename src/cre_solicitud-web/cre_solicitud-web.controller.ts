@@ -21,6 +21,7 @@ export class CreSolicitudWebController {
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
     return this.creSolicitudWebService.findAll(paginationDto);
+    
   }
 
   @Get('documentosanalista')

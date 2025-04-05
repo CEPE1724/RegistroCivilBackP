@@ -24,6 +24,15 @@ export class PaginationDto {
  bodega?: number;
 
 
+ @IsOptional()
+ @Type(() => Number)
+ vendedor?: number;
+
+ @IsOptional()
+ @Type(() => Number)
+ analista?: number;
+
+
   @IsOptional()
   @IsPositive()
   @Type(() => Number)
