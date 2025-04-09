@@ -119,6 +119,8 @@ export class CreSolicitudWeb {
     @Column('int')
     TerrenoLaboral: number;
 
+    @Column('int')
+    idEstadoVerificacionDomicilio: number;
 
     @BeforeInsert()
     upperApellidos() {
@@ -148,5 +150,5 @@ export class CreSolicitudWeb {
         }
     }
     
-
+    
 }
