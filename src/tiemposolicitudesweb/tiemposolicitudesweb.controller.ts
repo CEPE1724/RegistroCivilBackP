@@ -28,5 +28,13 @@ export class TiemposolicitudeswebController {
     return this.tiemposolicitudeswebService.findOne(+id);
   }
 
+  @Get('tiempo/:tipo/:idCre_SolicitudWeb/:idEstadoVerificacionDocumental')
+  findAllTiempo(@Param('tipo') tipo: number,
+  @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
+  @Param('idEstadoVerificacionDocumental') idEstadoVerificacionDocumental: string) {
+    const idEstados = idEstadoVerificacionDocumental.split(',').map(id => parseInt(id));
+
+    return this.tiemposolicitudeswebService.findAllTiempo(tipo, idCre_SolicitudWeb, idEstados);
+  }
 
 }
