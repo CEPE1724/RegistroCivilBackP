@@ -2,7 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { CreateTiemposolicitudeswebDto } from './dto/create-tiemposolicitudesweb.dto';
 import { UpdateTiemposolicitudeswebDto } from './dto/update-tiemposolicitudesweb.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { TiempoSolicitudesWeb } from './entities/tiemposolicitudesweb.entity';
 @Injectable()
 export class TiemposolicitudeswebService {
@@ -27,6 +27,19 @@ export class TiemposolicitudeswebService {
       },
       order: {
         FechaSistema: 'DESC'
+      }
+    });
+  }
+
+  findAllTiempo(tipo: number, idCre_SolicitudWeb: number, idEstadoVerificacionDocumental: number[]) {
+    return this.tiemposolicitudeswebRepository.find({
+      where: {
+        idCre_SolicitudWeb: idCre_SolicitudWeb,
+        Tipo: tipo,
+        idEstadoVerificacionDocumental: In(idEstadoVerificacionDocumental)
+      },
+      order: {
+        FechaSistema: 'ASC'
       }
     });
   }
