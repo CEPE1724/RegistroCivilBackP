@@ -1,7 +1,7 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Coordenadasprefactura } from './entities/coordenadasprefactura.entity';
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { PaginationGeoreferenciaDto } from 'src/common/dtos/paginationgeoreferencia.dto';
 import { CreateCoordenadasprefacturaDto } from './dto/create-coordenadasprefactura.dto';
 
@@ -38,13 +38,33 @@ export class CoordenadasprefacturaService {
   }
 
   async existsAndCount(id: number, Tipo: number): Promise<{ exists: boolean; count: number }> {
-    console.log('ID:', id);
-    console.log('Tipo:', Tipo);
-    const count = await this.coordenadasprefacturaRepository.count({
-      where: { id, Tipo, web: 1 }, // Assuming `id` is the unique identifier
-    });
-    return { exists: count > 0, count };
+	console.log('ID:', id);
+	console.log('Tipo:', Tipo);
+  
+	const [result, count] = await Promise.all([
+	  this.coordenadasprefacturaRepository.findOne({
+		where: {
+		  id,
+		  Tipo,
+		  web: 1,
+		  latitud: Not(IsNull()),
+		  longitud: Not(IsNull()),
+		},
+	  }),
+	  this.coordenadasprefacturaRepository.count({
+		where: {
+		  id,
+		  Tipo,
+		  web: 1,
+		},
+	  }),
+	]);
+  
+	const exists = !!result && result.latitud !== 0 && result.longitud !== 0;
+  
+	return { exists, count };
   }
+  
 
   async findAll(paginationGeoreferenciaDto: PaginationGeoreferenciaDto) {
     const {
