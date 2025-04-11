@@ -39,8 +39,7 @@ export class WebSolicitudgrandeService {
   }
 
   findOne(id: number, numerosolicitud: string) {
-    console.log("id",id);
-    console.log("numerosolicitud",numerosolicitud);
+
     return this.webSolicitudgrandeRepository.findOne({ where: {  NumeroSolicitud:numerosolicitud } });
   }
 

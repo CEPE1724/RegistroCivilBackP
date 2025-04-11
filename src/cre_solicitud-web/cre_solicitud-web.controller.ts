@@ -10,12 +10,12 @@ export class CreSolicitudWebController {
 
   @Post()
   create(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
-    console.log(createCreSolicitudWebDto);
+
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
   @Get('prueba')
   getPrueba() {
-    console.log('Endpoint de prueba ejecutado');
+
     return { message: 'Prueba OK' };
   }
   @Get()
@@ -34,7 +34,7 @@ export class CreSolicitudWebController {
     @Query('anio') anio?: string,
     @Query('mes') mes?: string,
   ) {
-    console.log('repositorios');
+
     const anioParsed = anio ? parseInt(anio, 10) : undefined;
     const mesParsed = mes ? parseInt(mes, 10) : undefined;
     return await this.creSolicitudWebService.getSolicitudesWebRepositorio(anioParsed, mesParsed);
@@ -62,7 +62,7 @@ export class CreSolicitudWebController {
   async updateSolicitud(
     @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-    console.log('updateSolicitud', idCre_SolicitudWeb);
+
    return this.creSolicitudWebService.updateSolicitud(idCre_SolicitudWeb, updateCreSolicitudWebDto);
   }
   @Delete(':id')

@@ -17,7 +17,6 @@ export class FileUploadService {
 
     // Asegúrate de que la ruta se resuelva correctamente
     const resolvedPath = path.resolve(__dirname, keyFilePath);
-    console.log('Resolved Key file path:', resolvedPath); // Verifica la ruta resuelta
 
     this.storage = new Storage({
       keyFilename: resolvedPath,
@@ -34,7 +33,7 @@ export class FileUploadService {
     const Month = new Date().toLocaleString('default', { month: 'long' }).toUpperCase();
     const Day = new Date().toLocaleString('default', { day: '2-digit' });
     const nombre_del_archivo = new Date().getTime();
-    console.log('Fecha:', Year, Month, Day);
+
     // Definir el directorio y la ruta dentro del bucket de GCS
 
     const filePath = `CREDIPOINT/${almacen}/${Year}/${Month}/${cedula}/${numerosolicitud}/${Tipo}/${nombre_del_archivo}`;
@@ -43,7 +42,7 @@ export class FileUploadService {
 
     // Guardar temporalmente el archivo en el servidor local
     fs.writeFileSync(tempFilePath, file.buffer);
-    console.log(`${fileName} guardado en el servidor local.`);
+
 
     const gcsFile = bucket.file(filePath);
     const options = {
@@ -56,7 +55,7 @@ export class FileUploadService {
     try {
       // Subir el archivo al bucket
       await bucket.upload(tempFilePath, options);
-      console.log(`${fileName} subido a ${this.bucketName}.`);
+
 
       // Eliminar archivo temporal después de cargarlo
       fs.unlinkSync(tempFilePath);

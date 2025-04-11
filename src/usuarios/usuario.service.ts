@@ -39,7 +39,7 @@ export class UsuarioService {
 
 
   async findAllAnalistas(Filtro: any): Promise<Usuario[]> {
-    console.log('Filtro', Filtro);
+
     return await this.usuarioRepository.find({
       where: {
         Nombre: Like(`%${Filtro}%`),  // Simula el LIKE de SQL

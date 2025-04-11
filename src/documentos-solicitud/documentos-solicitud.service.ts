@@ -23,7 +23,6 @@ export class DocumentosSolicitudService {
 
   // Crear un nuevo documento
   async create(createDocumentosSolicitudDto: CreateDocumentosSolicitudDto): Promise<DocumentosSolicitud> {
-    console.log(createDocumentosSolicitudDto); // Verifica que los datos del documento estén llegando correctamente
     const documento = this.documentosSolicitudRepository.create(createDocumentosSolicitudDto);
     const observacion = createDocumentosSolicitudDto.Observacion;
     const idCresolicitud = createDocumentosSolicitudDto.idCre_SolicitudWeb;
@@ -35,7 +34,6 @@ export class DocumentosSolicitudService {
     const savedDocumento = await this.documentosSolicitudRepository.save(documento);
     const idDocumentosSolicitudWeb = savedDocumento.idDocumentosSolicitudWeb;
 
-    console.log(savedDocumento); // Verifica que el documento se guardó correctamente
 
     if (observacion != undefined && observacion != '' && observacion != null) {
     // Crear y guardar la observación después de guardar el documento
@@ -65,7 +63,6 @@ export class DocumentosSolicitudService {
   // Buscar documentos por solicitud
   async findBySolicitud(idSolicitud: number, idEstadoVerificacionDocumental: number) {
     /// si idEstadoVerificacionDocumental == 1 buscamos por estado 1 y 2
-    console.log('idEstadoVerificacionDocumental', idEstadoVerificacionDocumental);
     if (idEstadoVerificacionDocumental == 1) {
       return await this.documentosSolicitudRepository.find({
         where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: In([1,4]) }
@@ -135,8 +132,7 @@ export class DocumentosSolicitudService {
   // Verifica si ya existe un archivo con el idCreSolicitudWeb y tipoDocumento con estado 1
 
   async checkIfFileExists(idCreSolicitudWeb: number, tipoDocumento: number): Promise<boolean> {
-    console.log('Consultando en la base de datos con:', idCreSolicitudWeb, tipoDocumento);
-  
+
     const result = await this.documentosSolicitudRepository.find({
       where: {
         idCre_SolicitudWeb: idCreSolicitudWeb,
@@ -145,7 +141,7 @@ export class DocumentosSolicitudService {
       }
     });
   
-    console.log('Resultado de la consulta:', result);
+
     return result.length > 0; // Si hay resultados, devuelve true, si no, false
   }
   

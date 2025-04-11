@@ -324,7 +324,7 @@ export class AuthService {
 
     async createLugarNacimiento(apiData: any, idCognoSolicitudCredito: number, Tipo: number): Promise<CognoSolicitudLugarNacimiento> {
         try {
-            //console.log('apiData', apiData);
+
             /// veirificar si existe la persona natural
             const existingRecord = await this.cognoSolicitudLugarNacimientoRepository.findOne({
                 where: { idCognoSolicitudCredito: idCognoSolicitudCredito, Tipo: Tipo },
@@ -502,7 +502,7 @@ export class AuthService {
     }
 
     async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
-       console.log('apiDataentra aqui', apiData);
+
 
         try {
             if (!apiData?.trabajos || !Array.isArray(apiData.trabajos) || apiData.trabajos.length === 0) {
@@ -515,9 +515,8 @@ export class AuthService {
                 const existingRecord = await this.cognoTrabajoRepository.findOne({
                     where: { idCognoSolicitudCredito: idCognoSolicitudCredito, identificacionPersonaPatrono: trabajoData.personaPatrono.identificacion },
                 });
-                console.log('trabajoData', existingRecord);
+
                 if (existingRecord) {
-                    console.log('si existe aqui', trabajoData);
                     existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || 0;
                     existingRecord.fechaActualizacion = trabajoData.fechaActualizacion || 0;
                     existingRecord.fechaIngreso = trabajoData.fechaIngreso || 0;
@@ -577,7 +576,7 @@ export class AuthService {
                     existingRecord.celular = trabajoData.celular || '';
                     existingRecord.baseDate = trabajoData.baseDate || new Date().toISOString();
                 } else {
-                    console.log('entra aqui', trabajoData);
+
                     const createCognoTrabajoDto: CreateCognoTrabajoDto = {
                         idCognoSolicitudCredito: idCognoSolicitudCredito || 0,
                         fechaActualizacion: trabajoData.fechaActualizacion || 0,

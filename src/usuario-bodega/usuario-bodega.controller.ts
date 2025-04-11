@@ -17,10 +17,7 @@ export class UsuarioBodegaController {
   ) {
     // Convertir fecha de string a Date
     const parsedFecha = new Date(fecha);
-    console.log(parsedFecha);
-    console.log(recibeConsignacion);
-    console.log(idTipoFactura);
-    console.log(userId);
+
     // Llamamos al servicio pasando los parámetros obtenidos del request
     return this.usuarioBodegaService.getBodegasByUser(
       +userId, // Convertir el userId a número

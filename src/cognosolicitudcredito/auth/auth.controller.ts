@@ -12,8 +12,6 @@ export class AuthController {
     @Post('cogno/token/:cedula/:numberId')
     async login(@Param('cedula') cedula: string,
         @Param('numberId') numberId: number) {
-        console.log('Cedula recibida:', cedula);
-
         const token = await this.authService.getToken(cedula);
 
 
@@ -39,14 +37,14 @@ export class AuthController {
         if (apiData.personaNaturalConyuge.personaConyuge.identificacion && apiData.personaNaturalConyuge.personaConyuge.nombre) {
             if (apiData.personaNaturalConyuge.personaConyuge.identificacion !== null && apiData.personaNaturalConyuge.personaConyuge.identificacion !== '' &&
                 apiData.personaNaturalConyuge.personaConyuge.nombre !== null && apiData.personaNaturalConyuge.personaConyuge.nombre !== '') {
-                console.log('saveData.idCognoSolicitudCredito', saveData.idCognoSolicitudCredito);
+
                 await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
             }
         }
 
         // crear lugar de nacimiento validar qu eno sea null ytenga datos
         if (apiData.personaNatural.lugarNacimiento !== null && apiData.personaNatural.lugarNacimiento !== '') {
-            console.log('saveData.idCognoSolicitudCredito', saveData.idCognoSolicitudCredito);
+
             await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
         }
 

@@ -35,8 +35,6 @@ export class FileUploadController {
       throw new Error('No numerosolicitud provided');
     }
 
-    // Verificar qué contiene el archivo
-    console.log('File received:', file); // Esto debe mostrar el archivo recibido y su buffer
 
     const { almacen, cedula,  numerosolicitud, Tipo } = body;
 

@@ -16,7 +16,7 @@ export class CoordenadasprefacturaService {
   ) { }
 
   async create(createDto: CreateCoordenadasprefacturaDto): Promise<Coordenadasprefactura> {
-    console.log(createDto);
+
 
     const existingCoordenada = await this.coordenadasprefacturaRepository.findOne({
       where: { id: createDto.id,
@@ -38,9 +38,7 @@ export class CoordenadasprefacturaService {
   }
 
   async existsAndCount(id: number, Tipo: number): Promise<{ exists: boolean; count: number }> {
-	console.log('ID:', id);
-	console.log('Tipo:', Tipo);
-  
+
 	const [result, count] = await Promise.all([
 	  this.coordenadasprefacturaRepository.findOne({
 		where: {
@@ -79,13 +77,7 @@ export class CoordenadasprefacturaService {
       orderDirection = 'asc', // Default order direction
     } = paginationGeoreferenciaDto;
 
-    console.log('FechaInicio:', FechaInicio);
-    console.log('FechaFin:', FechaFin);
-    console.log('Estado:', Estado);
-    console.log('Tipo:', Tipo);
-    console.log('Cedula:', Cedula);
-    console.log('Ordenar por:', orderBy);
-    console.log('Dirección del orden:', orderDirection);
+
 
     // Construimos el filtro de la consulta
     const query = this.coordenadasprefacturaRepository.createQueryBuilder('coordenadas')

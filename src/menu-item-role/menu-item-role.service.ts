@@ -66,8 +66,7 @@ export class MenuItemRoleService {
 	}
 
 	async getMenuItemAccessRoles(idUsuario: number, idmenu_items: number) {
-		console.log('idmenu_items', idmenu_items);
-		console.log('idUsuario', idUsuario);
+
 		const queryBuilder = this.menuItemAccessRepository.createQueryBuilder('m')
 			.leftJoin('menu_items_access_user', 'u', 'u.idmenu_items_access = m.idmenu_items_access AND u.idUsuario = :idUsuario', { idUsuario })
 			.where('m.idmenu_items = :idmenu_items', { idmenu_items })

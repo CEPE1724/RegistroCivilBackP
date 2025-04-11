@@ -131,7 +131,7 @@ export class CreSolicitudWebService {
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
-     console.log('bApiDataTrabajo', bApiDataTrabajo, 'apiDataTrabajo', apiDataTrabajo);
+
      if (bApiDataTrabajo && apiDataTrabajo.trabajos && apiDataTrabajo.trabajos.length > 0 && apiDataTrabajo.trabajos[0].fechaActualizacion) {
       // Si tiene datos, se guarda la información
       await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
@@ -157,7 +157,7 @@ export class CreSolicitudWebService {
 
   async findAllFilter(filterCreSolicitudWebDto: FilterCreSolicitudWebDto) {
     const { limit = 10, offset = 0, Filtro = '', bodega = 0 } = filterCreSolicitudWebDto;
-    console.log('Filtro:', Filtro);
+
     let queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
 
     // Filtro por bodega
@@ -215,15 +215,14 @@ export class CreSolicitudWebService {
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
     const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0 } = paginationDto;
     
-    console.log('estado', estado, 'fechaInicio', fechaInicio, 'fechaFin', fechaFin, 'bodegasIds', bodega);
-    
+
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
     
     // Aplicar los filtros de fechas con las horas ajustadas
     if (fechaInicio && fechaFin) {
       const fechaInicioStr = fechaInicio.toISOString().split('T')[0];  // Formato 'YYYY-MM-DD'
       const fechaFinStr = fechaFin.toISOString().split('T')[0];  // Formato 'YYYY-MM-DD'
-      console.log('Fechas formateadas:', fechaInicioStr, fechaFinStr);
+
       
       queryBuilder.andWhere(
         'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin) ' +
@@ -307,11 +306,11 @@ export class CreSolicitudWebService {
     
 
   async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
-    console.log('anio', anio, 'mes', mes);
+
     const anioValue = (anio != null && !isNaN(anio)) ? anio : 'NULL';
     const mesValue = (mes != null && !isNaN(mes)) ? mes : 'NULL';
     const query = `EXEC sp_GetSolicitudWebRepositorio @Anio = ${anioValue}, @Mes = ${mesValue}`;
-    console.log('Query a ejecutar:', query);
+
 
     const result = await this.creSolicitudWebRepository.query(query);
     return result;

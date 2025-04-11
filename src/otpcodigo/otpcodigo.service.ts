@@ -76,7 +76,7 @@ export class OtpcodigoService {
   
     // Verificamos el estado de la respuesta de la API
 
-      console.log("OTP enviado correctamente.");
+
       return otpCode; // El OTP fue enviado correctamente
     
   }

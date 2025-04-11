@@ -38,19 +38,18 @@ async checkIfFileExists(
   @Query('idCreSolicitudWeb') idCreSolicitudWeb: string,
   @Query('tipoDocumento') tipoDocumento: string
 ) {
-  console.log('Parametros recibidos:', { idCreSolicitudWeb, tipoDocumento });
 
   // Convertir los valores a números
   const idCreSolicitudWebNum = Number(idCreSolicitudWeb);
   const tipoDocumentoNum = Number(tipoDocumento);
 
   if (isNaN(idCreSolicitudWebNum) || isNaN(tipoDocumentoNum)) {
-    console.log('Uno de los parámetros no es un número válido');
+
     return { exists: false }; // Devuelve falso si alguno de los parámetros no es válido
   }
 
   const result = await this.documentosSolicitudService.checkIfFileExists(idCreSolicitudWebNum, tipoDocumentoNum);
-  console.log('Resultado de la consulta:', result);
+
 
   return { exists: result }; // Devuelve el resultado en formato JSON
 }
