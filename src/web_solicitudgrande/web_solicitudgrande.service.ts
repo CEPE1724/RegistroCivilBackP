@@ -6,6 +6,7 @@ import {
 
 import { CreateWebSolicitudgrandeDto } from './dto/create-web_solicitudgrande.dto';
 import { UpdateWebSolicitudgrandeDto } from './dto/update-web_solicitudgrande.dto';
+import { UpdateCuotaYCupoDto } from './dto/update-web_solicitudgrande.dto';
 import { WebSolicitudgrande } from './entities/web_solicitudgrande.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
@@ -57,6 +58,49 @@ export class WebSolicitudgrandeService {
 
 
   }
+
+ //update al campo CuotaAsignada y Cupo
+async updateCuotayCupo(id: number, updateDto: UpdateCuotaYCupoDto) {
+  try {
+    // Verificar si la solicitud existe
+    const exists = await this.webSolicitudgrandeRepository.existsBy({ 
+      idWeb_SolicitudGrande: id 
+    });
+    
+    if (!exists) {
+      throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+    }
+    // Actualizar solo los campos proporcionados
+    const updateData: Partial<WebSolicitudgrande> = {};
+    
+    if (updateDto.CuotaAsignada !== undefined) {
+      updateData.CuotaAsignada = updateDto.CuotaAsignada;
+    }
+    
+    if (updateDto.Cupo !== undefined) {
+      updateData.Cupo = updateDto.Cupo;
+    }
+
+    // Ejecutar la actualización
+    const result = await this.webSolicitudgrandeRepository.update(
+      { idWeb_SolicitudGrande: id },
+      updateData
+    );
+
+    if (result.affected === 0) {
+      throw new NotFoundException(`No se pudo actualizar la solicitud con ID ${id}`);
+    }
+
+    return { success: true, message: 'Actualización exitosa' };
+  } catch (error) {
+    this.logger.error(error.message, error.stack);
+    if (error instanceof NotFoundException) {
+      throw error;
+    }
+    throw new InternalServerErrorException('Error actualizando cuota y cupo');
+  }
+  }
+
   remove(id: number) {
     return `This action removes a #${id} webSolicitudgrande`;
   }
