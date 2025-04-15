@@ -32,6 +32,26 @@ export class PaginationDto {
  @Type(() => Number)
  analista?: number;
 
+ @IsOptional()
+ @Type(() => Number)
+ EstadoSolicitud?: number;
+
+ @IsOptional()
+ @Type(() => Number)
+ EstadoDocumental?: number;
+
+ @IsOptional()
+ @Type(() => Number)
+ EstadoTelefonica?: number;
+
+ @IsOptional()
+  @Type(() => Number)
+  EstadoDomicilio ?: number;
+
+@IsOptional()
+  @Type(() => Number)
+  EstadoLaboral ?: number;
+
 
   @IsOptional()
   @IsPositive()
@@ -42,4 +62,16 @@ export class PaginationDto {
   @Min(0)
   @Type(() => Number)
   offset?: number = 0;
+
+@IsOptional()
+@IsString()
+cedula?: string;
+
+@IsOptional()
+@IsString()
+numeroSolicitud?: string;
+
+@IsOptional()
+@IsString()
+nombres?: string; 
 }

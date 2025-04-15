@@ -213,31 +213,77 @@ export class CreSolicitudWebService {
 
 
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
-    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0 } = paginationDto;
+    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0 , EstadoSolicitud = 0 , EstadoDocumental=0 , EstadoTelefonica = 0 , cedula , nombres , numeroSolicitud} = paginationDto;
     
 
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
     
     // Aplicar los filtros de fechas con las horas ajustadas
     if (fechaInicio && fechaFin) {
-      const fechaInicioStr = fechaInicio.toISOString().split('T')[0];  // Formato 'YYYY-MM-DD'
-      const fechaFinStr = fechaFin.toISOString().split('T')[0];  // Formato 'YYYY-MM-DD'
-
-      
+      const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+      const fechaFinStr = fechaFin.toISOString().split('T')[0];
+    
       queryBuilder.andWhere(
-        'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin) ' +
-        'AND (cre_solicitud_web.estado = :estado OR 0 = :estado) ' +
-        'AND (cre_solicitud_web.idVendedor = :vendedor OR 0 = :vendedor) ' +
-        'AND (cre_solicitud_web.idAnalista = :analista OR 0 = :analista)',
-        { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr, estado, vendedor, analista }
+        'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin)',
+        { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr }
       );
     }
     
+    if (estado !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.estado = :estado OR :estado = 0)', { estado });
+    }
+    
+    if (vendedor !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idVendedor = :vendedor OR :vendedor = 0)', { vendedor });
+    }
+    
+    if (analista !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idAnalista = :analista OR :analista = 0)', { analista });
+    }
+
+    
+    
+    if (EstadoSolicitud !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionSolicitud = :EstadoSolicitud OR :EstadoSolicitud = 0)', { EstadoSolicitud });
+    }
+    
+    if (EstadoDocumental !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionDocumental = :EstadoDocumental OR :EstadoDocumental = 0)', { EstadoDocumental });
+    }
+
+    if (EstadoTelefonica !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionTelefonica = :EstadoTelefonica OR :EstadoTelefonica = 0)', { EstadoTelefonica });
+    }
     // Agregar el filtro para bodegas usando IN si el array de bodegasIds no está vacío
     if (bodega && bodega.length > 0) {
       queryBuilder.andWhere('cre_solicitud_web.bodega IN (:...bodega)', { bodega });
     }
-    
+
+
+    if (cedula) {
+      queryBuilder.andWhere('cre_solicitud_web.Cedula LIKE :cedula', {
+        cedula: `%${cedula}%`,
+      });
+    }
+  
+    // Filtro por número de solicitud
+    if (numeroSolicitud) {
+      queryBuilder.andWhere('cre_solicitud_web.NumeroSolicitud LIKE :numeroSolicitud', {
+        numeroSolicitud: `%${numeroSolicitud}%`,
+      });
+    }
+  
+    // Filtro por nombres y apellidos (búsqueda parcial)
+    if (nombres) {
+      const nombreBusqueda = `%${nombres}%`;
+      queryBuilder.andWhere(
+        `(cre_solicitud_web.PrimerNombre LIKE :nombreBusqueda OR 
+          cre_solicitud_web.SegundoNombre LIKE :nombreBusqueda OR 
+          cre_solicitud_web.ApellidoPaterno LIKE :nombreBusqueda OR 
+          cre_solicitud_web.ApellidoMaterno LIKE :nombreBusqueda)`,
+        { nombreBusqueda }
+      );
+    }
     // Obtener el conteo total de registros
     const totalCount = await queryBuilder.getCount();
     
@@ -255,10 +301,6 @@ export class CreSolicitudWebService {
   
   
   
-  
-  
-  
-
 
   /*async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0, Filtro = '' } = paginationDto;
