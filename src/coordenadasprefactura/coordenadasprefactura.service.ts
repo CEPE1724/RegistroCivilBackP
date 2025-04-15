@@ -1,8 +1,9 @@
 import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Coordenadasprefactura } from './entities/coordenadasprefactura.entity';
-import { Repository } from 'typeorm';
+import { Repository, Not, IsNull } from 'typeorm';
 import { PaginationGeoreferenciaDto } from 'src/common/dtos/paginationgeoreferencia.dto';
+import { CreateCoordenadasprefacturaDto } from './dto/create-coordenadasprefactura.dto';
 
 @Injectable()
 export class CoordenadasprefacturaService {
@@ -13,6 +14,55 @@ export class CoordenadasprefacturaService {
     @InjectRepository(Coordenadasprefactura)
     private readonly coordenadasprefacturaRepository: Repository<Coordenadasprefactura>
   ) { }
+
+  async create(createDto: CreateCoordenadasprefacturaDto): Promise<Coordenadasprefactura> {
+
+
+    const existingCoordenada = await this.coordenadasprefacturaRepository.findOne({
+      where: { id: createDto.id,
+        web: 1,
+        Tipo: createDto.Tipo,
+       }, // Assuming `id` is the unique identifier
+    });
+    
+
+    if (existingCoordenada) {
+      // Update the existing record
+      const updatedCoordenada = this.coordenadasprefacturaRepository.merge(existingCoordenada, createDto);
+      return await this.coordenadasprefacturaRepository.save(updatedCoordenada);
+    } else {
+      // Create a new record
+      const nuevaCoordenada = this.coordenadasprefacturaRepository.create(createDto);
+      return await this.coordenadasprefacturaRepository.save(nuevaCoordenada);
+    }
+  }
+
+  async existsAndCount(id: number, Tipo: number): Promise<{ exists: boolean; count: number }> {
+
+	const [result, count] = await Promise.all([
+	  this.coordenadasprefacturaRepository.findOne({
+		where: {
+		  id,
+		  Tipo,
+		  web: 1,
+		  latitud: Not(IsNull()),
+		  longitud: Not(IsNull()),
+		},
+	  }),
+	  this.coordenadasprefacturaRepository.count({
+		where: {
+		  id,
+		  Tipo,
+		  web: 1,
+		},
+	  }),
+	]);
+  
+	const exists = !!result && result.latitud !== 0 && result.longitud !== 0;
+  
+	return { exists, count };
+  }
+  
 
   async findAll(paginationGeoreferenciaDto: PaginationGeoreferenciaDto) {
     const {
@@ -27,13 +77,7 @@ export class CoordenadasprefacturaService {
       orderDirection = 'asc', // Default order direction
     } = paginationGeoreferenciaDto;
 
-    console.log('FechaInicio:', FechaInicio);
-    console.log('FechaFin:', FechaFin);
-    console.log('Estado:', Estado);
-    console.log('Tipo:', Tipo);
-    console.log('Cedula:', Cedula);
-    console.log('Ordenar por:', orderBy);
-    console.log('Dirección del orden:', orderDirection);
+
 
     // Construimos el filtro de la consulta
     const query = this.coordenadasprefacturaRepository.createQueryBuilder('coordenadas')

@@ -184,7 +184,6 @@ export class CiudadanoService {
   // Método para consultar el registro dactilar
   async consultarDactilar(cedula: string, dactilar: string): Promise<any> {
     const tokenRC = await this.autenticarRegistroCivil();
-    console.log('edison:', tokenRC);
     const dactilarTruncado = dactilar.slice(0, 6);
     const apiUrl = this.configService.get<string>('API_URL_ADC');
   
@@ -211,9 +210,7 @@ export class CiudadanoService {
       Authorization: `Bearer ${tokenRC}`,
     };
   
-    // Mostrar los datos antes de hacer la solicitud
-    console.log('Headers:', requestHeaders);
-    console.log('Body:', requestBody);
+
   
     try {
       const dacResponse: AxiosResponse = await lastValueFrom(

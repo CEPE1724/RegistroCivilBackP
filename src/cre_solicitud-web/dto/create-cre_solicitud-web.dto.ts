@@ -28,13 +28,15 @@
 import {
     IsNotEmpty, IsString, IsNumber, IsBoolean, IsDate, IsOptional, isNumber, Min,
     MinLength,
-    IsPositive
+    IsPositive,
+    isString
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateCreSolicitudWebDto {
 
     @IsDate()
+    @IsOptional()
     @Type(() => Date)
     Fecha: Date;
 
@@ -68,7 +70,7 @@ export class CreateCreSolicitudWebDto {
     ApellidoPaterno: string;
 
     @IsString()
-    @MinLength(3)
+    @IsOptional()
     ApellidoMaterno: string;
 
     @IsString()
@@ -76,8 +78,8 @@ export class CreateCreSolicitudWebDto {
     PrimerNombre: string;
 
     @IsString()
-    @MinLength(3)
-    SegundoNombre: string;
+    @IsOptional()
+    SegundoNombre?: string;
 
     @IsString()
     @MinLength(10)
@@ -86,6 +88,10 @@ export class CreateCreSolicitudWebDto {
     @IsString()
     @MinLength(5)
     Email: string;
+
+    @IsNumber()
+    @IsPositive()
+    idSituacionLaboral: number;
 
     @IsNumber()
     @IsPositive()
@@ -118,5 +124,65 @@ export class CreateCreSolicitudWebDto {
     @IsNumber()
     @IsPositive()
     idProductos: number;
+
+    @IsNumber()
+    @IsPositive()
+    idCre_TiempoVivienda: number;
+
+    @IsNumber()
+    @IsPositive()
+    @IsOptional()
+    idTipoCliente?: number;
+
+    @IsString()
+    @MinLength(2)
+    @IsOptional()
+    otp_code: string;
+
+
+    @IsNumber()
+    @IsOptional()
+    idEstadoVerificacionDocumental?: number;
+
+    @IsNumber()
+    @IsOptional()
+    idEstadoVerificacionSolicitud?: number;
+
+    @IsNumber()
+    @IsOptional()
+    idEstadoVerificacionTelefonica?: number;
+
+    @IsNumber()
+    @IsOptional()
+    idEstadoVerificacionTerrena?: number;
+
+    @IsNumber()
+    @IsOptional()
+    Resultado: number;
+
+    @IsNumber()
+    @IsOptional()
+    Entrada: number;
+
+    @IsNumber()
+    @IsOptional()
+    TerrenoDomicilio: number;
+
+    @IsNumber()
+    @IsOptional()
+    TerrenoLaboral: number;
+
+    @IsString()
+    @IsOptional()
+    Usuario: string;
+
+    @IsNumber()
+    @IsOptional()
+    idEstadoVerificacionDomicilio:number
+
+    
+    
+
+    
 
 }

@@ -9,7 +9,7 @@ export class Usuario {
   @Column({ type: 'nvarchar', length: 50, nullable: true })
   Nombre: string;
 
-  @Column({ type: 'nvarchar', length: 50, nullable: true })
+  @Column({ type: 'nvarchar', length: 50, nullable: true , select: false})
   Clave: string;
 
   @Column({ type: 'int', nullable: true })

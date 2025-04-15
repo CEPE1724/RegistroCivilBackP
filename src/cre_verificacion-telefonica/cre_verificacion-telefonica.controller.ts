@@ -7,7 +7,7 @@ export class CreVerificacionTelefonicaController {
 
   @Get()
   findAll(@Query() paginationDto: PaginationDto) {
-    console.log(paginationDto);
+
     return this.creVerificacionTelefonicaService.findAll(paginationDto);
   }
 }

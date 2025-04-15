@@ -1,34 +1,34 @@
-
-
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('CoordenadasPrefactura')
 export class Coordenadasprefactura {
 
-    @PrimaryGeneratedColumn('increment') /// llave primaria o primary key
+    @PrimaryGeneratedColumn('increment')
     idCoordenadasPrefactura: number;
 
-    @Column('varchar', {
-        length: 20
-    })
+    @Column('int')
+    id: number;
+
+    @Column('varchar', { length: 20 })
     cedula: string;
 
-    @Column('decimal', {
-        precision: 9,
-        scale: 6
-    })
+    @Column('decimal', { precision: 9, scale: 6 })
     latitud: number;
 
-    @Column('decimal', {
-        precision: 9,
-        scale: 6
-    })
+    @Column('decimal', { precision: 9, scale: 6 })
     longitud: number;
 
-    @Column('varchar', {
-        length: 255
-    })
+    @Column('varchar', { length: 255 })
     direccion: string;
+
+    @Column('varchar', { length: 50 })
+    Estacion: string;
+
+    @Column('varchar', { length: 50 })
+    Usuario: string;
+
+    @Column('varchar', { length: 50, nullable: true })
+    ip: string;
 
     @Column('int')
     iEstado: number;
@@ -39,7 +39,9 @@ export class Coordenadasprefactura {
     @Column('int')
     Tipo: number;
 
-    @Column('varchar')
-    UrlImagen: string;
+    @Column({ type: 'simple-json', nullable: true })
+	UrlImagen: string[];
 
+    @Column('int')
+    web: number;
 }

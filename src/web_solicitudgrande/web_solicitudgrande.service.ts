@@ -20,7 +20,13 @@ export class WebSolicitudgrandeService {
 
   create(createWebSolicitudgrandeDto: CreateWebSolicitudgrandeDto) {
     try {
-      const newSolicitud = this.webSolicitudgrandeRepository.create(createWebSolicitudgrandeDto);
+		const dtoTransformado: any = {
+			...createWebSolicitudgrandeDto,
+			ValorInmmueble: createWebSolicitudgrandeDto.ValorInmmueble
+			  ? parseFloat(createWebSolicitudgrandeDto.ValorInmmueble)
+			  : undefined,
+		  };
+      const newSolicitud = this.webSolicitudgrandeRepository.create(dtoTransformado);
       return this.webSolicitudgrandeRepository.save(newSolicitud);
     } catch (error) {
       this.logger.error(error.message, error.stack);
@@ -32,14 +38,25 @@ export class WebSolicitudgrandeService {
     return `This action returns all webSolicitudgrande`;
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} webSolicitudgrande`;
+  findOne(id: number, numerosolicitud: string) {
+
+    return this.webSolicitudgrandeRepository.findOne({ where: {  NumeroSolicitud:numerosolicitud } });
   }
 
   update(id: number, updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
-    return `This action updates a #${id} webSolicitudgrande`;
-  }
+	const dtoTransformado: any = {
+		...updateWebSolicitudgrandeDto,
+		ValorInmmueble: updateWebSolicitudgrandeDto.ValorInmmueble
+		  ? parseFloat(updateWebSolicitudgrandeDto.ValorInmmueble)
+		  : undefined,
+	  };
+    return this.webSolicitudgrandeRepository.update(
+      { idWeb_SolicitudGrande: id },
+      { ...dtoTransformado },
+    );
 
+
+  }
   remove(id: number) {
     return `This action removes a #${id} webSolicitudgrande`;
   }

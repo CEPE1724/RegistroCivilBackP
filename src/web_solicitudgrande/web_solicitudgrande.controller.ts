@@ -17,12 +17,12 @@ export class WebSolicitudgrandeController {
     return this.webSolicitudgrandeService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.webSolicitudgrandeService.findOne(+id);
+  @Get(':id/:numerosolicitud')
+  findOne(@Param('id') id: string, @Param('numerosolicitud') numerosolicitud: string) {
+    return this.webSolicitudgrandeService.findOne(+id, numerosolicitud);
   }
 
-  @Patch(':id')
+  @Patch('listadosolicitud/:id')
   update(@Param('id') id: string, @Body() updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
     return this.webSolicitudgrandeService.update(+id, updateWebSolicitudgrandeDto);
   }

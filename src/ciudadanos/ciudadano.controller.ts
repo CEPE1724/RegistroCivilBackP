@@ -9,7 +9,7 @@ import {
   Get,
   Query,
 } from '@nestjs/common';
-import { JwtAuthGuard } from '../auth/JwtAuthGuard';
+import { RawHeaders, GetUser, Auth } from '../auth/decorators';
 import { CiudadanoService } from './ciudadano.service';
 
 @Controller('dactilar')
@@ -17,7 +17,7 @@ import { CiudadanoService } from './ciudadano.service';
 export class CiudadanoController {
   constructor(private readonly ciudadanoService: CiudadanoService) {}
 
-  @UseGuards(JwtAuthGuard)
+  @Auth() 
   @Post('consulta')
   async consultarDactilar(
     @Body() body: { cedula: string; dactilar: string },
@@ -59,7 +59,7 @@ export class CiudadanoController {
     }
   }
 
-  @UseGuards(JwtAuthGuard) 
+  @Auth() 
   @Get()
   async obtenerTodos(
     @Query('NOMBRE') NOMBRE?: string,
@@ -106,7 +106,7 @@ export class CiudadanoController {
     }
   }
 
-  @UseGuards(JwtAuthGuard)
+  @Auth() 
   @Get(':cedula')
   async findByNUI(@Param('cedula') cedula: string): Promise<any> {
     try {

@@ -1,11 +1,10 @@
 import { Module } from '@nestjs/common';
 import { join } from 'path';
-import { ApiConfig } from './config/api.config';
-import { JoinValidationSchema } from './config/joi.validation';
+import { ApiConfig } from './configjoi/api.config';
+import { JoinValidationSchema } from './configjoi/joi.validation';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { UsuarioModule } from './usuarios/usuario.module';
-import { AuthModule } from './auth/auth.module';
 import { CiudadanoModule } from './ciudadanos/ciudadano.module';
 import { HistoricoModule } from './historico/historico.module';
 import { CboGestorCobranzasModule } from './Cbo_Gestor_Cobranzas/cbo-gestor-cobranzas.module';
@@ -26,8 +25,68 @@ import { CreSolicitudWebModule } from './cre_solicitud-web/cre_solicitud-web.mod
 import { CognosolicitudcreditoModule } from './cognosolicitudcredito/cognosolicitudcredito.module';
 import { AuthModuleCogno } from './cognosolicitudcredito/auth/auth.module';
 import { CoordenadasprefacturaModule } from './coordenadasprefactura/coordenadasprefactura.module';
-import { AuthsModule } from './auths/auths.module';
+import { AuthModule } from './auth/auth.module';
 import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgrande.module';
+import { CreProvinciaModule } from './cre_provincia/cre_provincia.module';
+import { CreCantonModule } from './cre-canton/cre-canton.module';
+import { CreParroquiaModule } from './cre_parroquia/cre_parroquia.module';
+import { CreBarrioModule } from './cre_barrio/cre_barrio.module';
+import { CreTipodocumentoModule } from './cre_tipodocumento/cre_tipodocumento.module';
+import { CreSexoModule } from './cre_sexo/cre_sexo.module';
+import { CreNiveleducacionModule } from './cre_niveleducacion/cre_niveleducacion.module';
+import { CreProfesionModule } from './cre_profesion/cre_profesion.module';
+import { CreParentescoModule } from './cre_parentesco/cre_parentesco.module';
+import { CreEstadocivilModule } from './cre_estadocivil/cre_estadocivil.module';
+import { FileUploadModule } from './file-upload/file-upload.module';
+import { TipoClienteModule } from './tipo-cliente/tipo-cliente.module';
+import { CreTipoempresaModule } from './cre_tipoempresa/cre_tipoempresa.module';
+import { CreTipocontratoModule } from './cre_tipocontrato/cre_tipocontrato.module';
+import { CreTiposueldoModule } from './cre_tiposueldo/cre_tiposueldo.module';
+import { CreCargoModule } from './cre_cargo/cre_cargo.module';
+import { RoleswebModule } from './rolesweb/rolesweb.module';
+import { UserRolesWebModule } from './user-roles-web/user-roles-web.module';
+import { RolePermissionsWebModule } from './role-permissions-web/role-permissions-web.module';
+import { RouteswebModule } from './routesweb/routesweb.module';
+import { PermissionsWebModule } from './permissions-web/permissions-web.module';
+import { SeguridadmenuModule } from './seguridadmenu/seguridadmenu.module';
+import { MenuItemRoleModule } from './menu-item-role/menu-item-role.module';
+import { UsuarioBodegaModule } from './usuario-bodega/usuario-bodega.module';
+import { DetalleTipoClienteModule } from './detalle-tipo-cliente/detalle-tipo-cliente.module';
+import { TipoTrabajoModule } from './tipo-trabajo/tipo-trabajo.module';
+import { CreTipocalificacionModule } from './cre-tipocalificacion/cre-tipocalificacion.module';
+import { CreEstadoModule } from './cre-estado/cre-estado.module';
+import { EstadoSolicitudModule } from './estado-solicitud/estado-solicitud.module';
+import { CrectaedogestionModule } from './crectaedogestion/crectaedogestion.module';
+
+import { CreNacionalidadModule } from './cre_nacionalidad/cre_nacionalidad.module';
+import { CreInmuebleModule } from './cre_inmueble/cre_inmueble.module';
+import { CreCiudadinmuebleModule } from './cre_ciudadinmueble/cre_ciudadinmueble.module';
+import { CreTipoviviendaModule } from './cre_tipovivienda/cre_tipovivienda.module';
+import { CreTiempoviviendaModule } from './cre_tiempovivienda/cre_tiempovivienda.module';
+
+import { NominaModule } from './nomina/nomina.module';
+import { OtpcodigoModule } from './otpcodigo/otpcodigo.module';
+import { CreverificaciontelefonicaModule } from './creverificaciontelefonica/creverificaciontelefonica.module';
+import { EqfxidentificacionconsultadaModule } from './eqfxidentificacionconsultada/eqfxidentificacionconsultada.module';
+import { DocumentosSolicitudModule } from './documentos-solicitud/documentos-solicitud.module';
+import { CreSolicitudverificaciontelefonicaModule } from './cre-solicitudverificaciontelefonica/cre-solicitudverificaciontelefonica.module';
+import { AnalistacreditoModule } from './analistacredito/analistacredito.module';
+import { FechaAnalistaModule } from './fecha-analista/fecha-analista.module';
+import { HorariosanalistasModule } from './horariosanalistas/horariosanalistas.module';
+import { HistorialObservacionesModule } from './historial-observaciones/historial-observaciones.module';
+import { CreSituacionlaboralModule } from './cre-situacionlaboral/cre-situacionlaboral.module';
+import { CreVerificacionTelefonicaMaestroModule } from './cre_verificacion-telefonica-maestro/cre_verificacion-telefonica-maestro.module';
+import { CreReferenciasclienteswebModule } from './cre-referenciasclientesweb/cre-referenciasclientesweb.module';
+import { CognotrabajocargoModule } from './cognotrabajocargo/cognotrabajocargo.module';
+import { TiemposolicitudeswebModule } from './tiemposolicitudesweb/tiemposolicitudesweb.module';
+import { IngresoCobradorModule } from './ingreso-cobrador/ingreso-cobrador.module';
+import { ClientesVerificacionTerrenaModule } from './clientes-verificacion-terrena/clientes-verificacion-terrena.module';
+import { TerrenaGestionDomicilioModule } from './terrena-gestion-domicilio/terrena-gestion-domicilio.module';
+import { TerrenaGestionTrabajoModule } from './terrena-gestion-trabajo/terrena-gestion-trabajo.module';
+import { ExecSpModule } from './exec-sp/exec-sp.module';
+
+
+
 
 @Module({
   imports: [
@@ -85,12 +144,78 @@ import { WebSolicitudgrandeModule } from './web_solicitudgrande/web_solicitudgra
     CompraencuestaModule,
     CreActividadeconominaModule,
     CreTiempoModule,
+    CreTipoempresaModule,
+    CreTipocontratoModule,
+    CreCargoModule,
     CreSolicitudWebModule,
     CognosolicitudcreditoModule,
     AuthModuleCogno,
     CoordenadasprefacturaModule,
-    AuthsModule,
+    AuthModule,
     WebSolicitudgrandeModule,
+    CreProvinciaModule,
+    CreCantonModule,
+    CreParroquiaModule,
+    CreBarrioModule,
+
+    CreTipodocumentoModule,
+
+    CreSexoModule,
+    CreNiveleducacionModule,
+    CreProfesionModule,
+    CreParentescoModule,
+
+    CreEstadocivilModule,
+    FileUploadModule,
+
+    TipoClienteModule,
+
+    CreTiposueldoModule,
+    RoleswebModule,
+    UserRolesWebModule,
+    RolePermissionsWebModule,
+    RouteswebModule,
+    PermissionsWebModule,
+    SeguridadmenuModule,
+    MenuItemRoleModule,
+    UsuarioBodegaModule,
+    DetalleTipoClienteModule,
+    TipoTrabajoModule,
+    CreTipocalificacionModule,
+    CreEstadoModule,
+    EstadoSolicitudModule,
+    CrectaedogestionModule,
+
+    CreNacionalidadModule,
+    CreInmuebleModule,
+    CreCiudadinmuebleModule,
+    CreTipoviviendaModule,
+    CreTiempoviviendaModule,
+
+    NominaModule,
+    OtpcodigoModule,
+    CreverificaciontelefonicaModule,
+    EqfxidentificacionconsultadaModule,
+    DocumentosSolicitudModule,
+    CreSolicitudverificaciontelefonicaModule,
+    AnalistacreditoModule,
+    FechaAnalistaModule,
+    HorariosanalistasModule,
+    HistorialObservacionesModule,
+    CreSituacionlaboralModule,
+    CreVerificacionTelefonicaMaestroModule,
+    CreReferenciasclienteswebModule,
+    CognotrabajocargoModule,
+    TiemposolicitudeswebModule,
+    IngresoCobradorModule,
+    ClientesVerificacionTerrenaModule,
+    TerrenaGestionDomicilioModule,
+    TerrenaGestionTrabajoModule,
+    ExecSpModule,
+
+
+
+
   ],
 })
 export class AppModule {}

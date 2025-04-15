@@ -1,22 +1,45 @@
-import { Type } from "class-transformer";
-import { IsInt, IsOptional, IsPositive, IsString, Min } from "class-validator";
-
+import { Type, Transform } from 'class-transformer';
+import { IsInt, IsOptional, IsPositive, IsDate, IsString, Min } from 'class-validator';
 
 export class PaginationDto {
+  @IsOptional()
+  @IsDate()
+  @Type(() => Date)
+  @Transform(({ value }) => new Date(value)) // Ensure that the date is converted correctly
+  fechaInicio?: Date;
 
   @IsOptional()
-  @IsString()
-  @Type (() => String)
-  Filtro?: string;
+  @IsDate()
+  @Type(() => Date)
+  @Transform(({ value }) => new Date(value)) // Ensure that the date is converted correctly
+  fechaFin?: Date;
+
+  @IsOptional()
+  @IsInt()
+  @Transform(({ value }) => parseInt(value)) // Converts value to an integer
+  estado?: number;
+
+@IsOptional()
+@Type(() => Number)
+ bodega?: number;
+
+
+ @IsOptional()
+ @Type(() => Number)
+ vendedor?: number;
+
+ @IsOptional()
+ @Type(() => Number)
+ analista?: number;
+
 
   @IsOptional()
   @IsPositive()
-  @Type (() => Number)
-  limit?: number;
+  @Type(() => Number)
+  limit?: number = 10;
 
   @IsOptional()
   @Min(0)
-  @Type (() => Number)
-  offset?: number ;
+  @Type(() => Number)
+  offset?: number = 0;
 }
-/* para crear  nest g mo common*/

@@ -1,4 +1,5 @@
 
+import { Col } from "sequelize/types/utils";
 import { BeforeInsert, Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity('Cre_SolicitudWeb')
@@ -19,6 +20,10 @@ export class CreSolicitudWeb {
 
     @Column('int')
     idVendedor: number;
+
+    @Column('int')
+    idAnalista: number;
+
 
     @Column('int')
     idCompraEncuesta: number;
@@ -51,6 +56,9 @@ export class CreSolicitudWeb {
     idActEconomina: number;
 
     @Column('int')
+    idSituacionLaboral: number;
+
+    @Column('int')
     idCre_Tiempo: number;
 
     @Column('bit')
@@ -71,8 +79,49 @@ export class CreSolicitudWeb {
     @Column({ type: 'int', default: 1 })
     Estado: number;
 
+    @Column({type : 'int', default: 1})
+    idCre_TiempoVivienda: number;
+
+    @Column( {type: 'int', default: 1})
+    idTipoCliente: number;
+
     @Column('int')
     idProductos: number;
+
+	@Column('varchar')
+	otp_code: string;
+
+    @Column('varchar')
+    Usuario: string;
+
+
+    @Column('int')
+    idEstadoVerificacionDocumental: number;
+
+    @Column('int')
+    idEstadoVerificacionSolicitud: number;
+
+    @Column('int')
+    idEstadoVerificacionTelefonica : number;
+    
+    @Column('int')
+    idEstadoVerificacionTerrena: number;
+
+    @Column('int')
+    Resultado: number;
+
+    @Column('decimal', { precision: 10, scale: 2 })
+    Entrada: number;
+
+    @Column('int')
+    TerrenoDomicilio: number;
+
+    @Column('int')
+    TerrenoLaboral: number;
+
+    @Column('int')
+    idEstadoVerificacionDomicilio: number;
+    
 
     @BeforeInsert()
     upperApellidos() {
@@ -102,5 +151,5 @@ export class CreSolicitudWeb {
         }
     }
     
-
+    
 }

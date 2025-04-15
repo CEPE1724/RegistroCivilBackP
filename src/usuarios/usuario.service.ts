@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { In, Repository } from 'typeorm';
+import { In, Like, Not, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { Usuario } from './usuario.entity';
+import { not } from 'joi';
+import { Console } from 'console';
 
 @Injectable()
 export class UsuarioService {
@@ -34,6 +36,25 @@ export class UsuarioService {
       where: { idGrupo: In([1, 18, 16, 17 , 22, 11])},
     });
   }
+
+
+  async findAllAnalistas(Filtro: any): Promise<Usuario[]> {
+
+    return await this.usuarioRepository.find({
+      where: {
+        Nombre: Like(`%${Filtro}%`),  // Simula el LIKE de SQL
+        idGrupo: Not(In([36])),        // Excluye los usuarios cuyo idGrupo es 36
+      },
+    });
+  }
+
+  async findByGrupoId(idGrupo: number): Promise<Partial<Usuario>[]> {
+	return await this.usuarioRepository.find({
+	  select: ['idUsuario', 'Nombre', 'idGrupo'],
+	  where: { idGrupo: idGrupo },
+	});
+  }
+  
 
   async validatePassword(plainTextPassword: string, hashedPassword: string): Promise<boolean> {
     return bcrypt.compare(plainTextPassword, hashedPassword);

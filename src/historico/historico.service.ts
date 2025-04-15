@@ -41,7 +41,7 @@ export class HistoricoService {
       idUsuario: idUsuario,
       apiRC: apiRC,
     });
-     /* console.log("nuevoHistorico:",nuevoHistorico);  */
+
 
     // Guardar el nuevo registro en la base de datos
     return this.historicoRepository.save(nuevoHistorico);

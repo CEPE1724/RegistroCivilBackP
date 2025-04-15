@@ -12,5 +12,21 @@ export class CoordenadasprefacturaController {
     return this.coordenadasprefacturaService.findAll(paginationGeoreferenciaDto);
   }
 
+  @Get('find/:id/:Tipo')
+  findOne(
+    @Param('id') id: number,
+    @Param('Tipo') Tipo: number,
+  ) {
+    return this.coordenadasprefacturaService.existsAndCount(id, Tipo);
+  }
+
+  @Post('insert')
+  async insert(
+    @Body() createCoordenadasPrefacturaDto: CreateCoordenadasprefacturaDto,
+  ) {
+    return await this.coordenadasprefacturaService.create(
+      createCoordenadasPrefacturaDto,
+    );
+  }
 }
 
