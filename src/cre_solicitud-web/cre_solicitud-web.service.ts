@@ -347,11 +347,12 @@ export class CreSolicitudWebService {
 
     
 
-  async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
+  async getSolicitudesWebRepositorio(anio?: number, mes?: number, filtro: string = ''): Promise<any[]> {
 
     const anioValue = (anio != null && !isNaN(anio)) ? anio : 'NULL';
     const mesValue = (mes != null && !isNaN(mes)) ? mes : 'NULL';
-    const query = `EXEC sp_GetSolicitudWebRepositorio @Anio = ${anioValue}, @Mes = ${mesValue}`;
+    const filtroValue = filtro ? `'${filtro.replace(/'/g, "''")}'` : "''";
+    const query = `EXEC sp_GetSolicitudWebRepositorio @Anio = ${anioValue}, @Mes = ${mesValue}, @Filtro = ${filtroValue}`;
 
 
     const result = await this.creSolicitudWebRepository.query(query);
