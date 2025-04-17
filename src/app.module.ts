@@ -84,6 +84,7 @@ import { ClientesVerificacionTerrenaModule } from './clientes-verificacion-terre
 import { TerrenaGestionDomicilioModule } from './terrena-gestion-domicilio/terrena-gestion-domicilio.module';
 import { TerrenaGestionTrabajoModule } from './terrena-gestion-trabajo/terrena-gestion-trabajo.module';
 import { ExecSpModule } from './exec-sp/exec-sp.module';
+import { ListaNegraCellModule } from './lista-negra-cell/lista-negra-cell.module';
 
 
 
@@ -212,6 +213,7 @@ import { ExecSpModule } from './exec-sp/exec-sp.module';
     TerrenaGestionDomicilioModule,
     TerrenaGestionTrabajoModule,
     ExecSpModule,
+    ListaNegraCellModule,
 
 
 
