@@ -85,11 +85,6 @@ import { TerrenaGestionDomicilioModule } from './terrena-gestion-domicilio/terre
 import { TerrenaGestionTrabajoModule } from './terrena-gestion-trabajo/terrena-gestion-trabajo.module';
 import { ExecSpModule } from './exec-sp/exec-sp.module';
 
-import { ListaNegraCellModule } from './lista-negra-cell/lista-negra-cell.module';
-
-import { CreSolicitudwebWsModule } from './cre_solicitudweb-ws/cre_solicitudweb-ws.module';
-
-
 
 
 
@@ -217,11 +212,6 @@ import { CreSolicitudwebWsModule } from './cre_solicitudweb-ws/cre_solicitudweb-
     TerrenaGestionDomicilioModule,
     TerrenaGestionTrabajoModule,
     ExecSpModule,
-
-    ListaNegraCellModule,
-
-    CreSolicitudwebWsModule,
-
 
 
 

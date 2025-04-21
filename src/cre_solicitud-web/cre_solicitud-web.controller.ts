@@ -33,11 +33,12 @@ export class CreSolicitudWebController {
   async getrepositorios(
     @Query('anio') anio?: string,
     @Query('mes') mes?: string,
+    @Query('filtro') filtro?: string,
   ) {
 
     const anioParsed = anio ? parseInt(anio, 10) : undefined;
     const mesParsed = mes ? parseInt(mes, 10) : undefined;
-    return await this.creSolicitudWebService.getSolicitudesWebRepositorio(anioParsed, mesParsed);
+    return await this.creSolicitudWebService.getSolicitudesWebRepositorio(anioParsed, mesParsed, filtro || '');
   }
 
   @Get(':id')
