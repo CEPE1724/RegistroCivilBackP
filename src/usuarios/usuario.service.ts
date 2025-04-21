@@ -47,6 +47,15 @@ export class UsuarioService {
       },
     });
   }
+  async findAllVerificadores(Filtro: any): Promise<Usuario[]> {
+
+    return await this.usuarioRepository.find({
+      where: {
+        Nombre: Like(`%${Filtro}%`),
+        idGrupo: Not(In([36])),
+      },
+    });
+  }
 
   async findByGrupoId(idGrupo: number): Promise<Partial<Usuario>[]> {
 	return await this.usuarioRepository.find({

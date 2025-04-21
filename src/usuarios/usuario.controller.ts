@@ -28,6 +28,11 @@ async findUsuariosByGrupo(@Param('idGrupo') idGrupo: number): Promise<Partial<Us
     return this.usuarioService.findAllAnalistas(Filtro);
   }
 
+  @Get('verificadores')
+  async findVerificadores(@Query('Filtro') Filtro: string): Promise<Usuario[]> {
+    return this.usuarioService.findAllVerificadores(Filtro);
+  }
+
 
   @Get(':Nombre')
   async findOne(@Param('Nombre') Nombre: string): Promise<Usuario | string> {
