@@ -1,16 +1,3 @@
-/*
-
-CREATE TABLE ListaNegraCell (
- idListaNegraCell INT IDENTITY(1,1) PRIMARY KEY,
- Telefono VARCHAR(20),
- Observacion VARCHAR(255),
- Activo BIT DEFAULT 1,
-    FechaSistema DATETIME DEFAULT GETDATE(),
-    Estacion VARCHAR(50) DEFAULT HOST_NAME(),
-    Usuario VARCHAR(50) DEFAULT SUSER_NAME()
-)
-
-*/
 
 
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
