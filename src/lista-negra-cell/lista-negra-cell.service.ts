@@ -78,6 +78,11 @@ export class ListaNegraCellService {
     return await this.listaNegraRepo.save(registro);
   }
 
+  async findByTelefono(telefono: string): Promise<number> {
+    const count = await this.listaNegraRepo.count({ where: { Telefono: telefono, Activo : true } });
+    return count;
+  }
+  
   remove(id: number) {
     return `This action removes a #${id} listaNegraCell`;
   }
