@@ -15,7 +15,15 @@ export class AnalistacreditoService {
     ) { }
 
     
-  create(createAnalistacreditoDto: CreateAnalistacreditoDto) {
+  async create(createAnalistacreditoDto: CreateAnalistacreditoDto) {
+    const existingAnalista = await this.analistacreditoRepository.findOne({
+      where: { Nombre: createAnalistacreditoDto.Nombre },
+    });
+
+    if (existingAnalista) {
+      return { message: 'An analyst with this name already exists.' };
+    }
+
     return this.analistacreditoRepository.save(createAnalistacreditoDto);
   }
 
@@ -24,6 +32,24 @@ export class AnalistacreditoService {
       { 
         where: { Estado: 1 },
       });
+  }
+
+  findAllUser(igrupo: number, analista: string) {
+
+    if( igrupo == 1)
+    {
+      return this.analistacreditoRepository.find(
+        { 
+          where: { Estado: 1 },
+        });
+    }else
+    {
+      return this.analistacreditoRepository.find(
+        { 
+          where: { Estado: 1,  Nombre: analista },
+        });
+    }
+
   }
 
   findOne(id: number) {

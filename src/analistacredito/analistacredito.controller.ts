@@ -17,6 +17,12 @@ export class AnalistacreditoController {
     return this.analistacreditoService.findAll();
   }
 
+  @Get('usuario/:igrupo/:analista')
+  findAllUsers(@Param('igrupo') igrupo: number, @Param('analista') analista: string) {
+    return this.analistacreditoService.findAllUser(igrupo, analista);
+  }
+
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.analistacreditoService.findOne(+id);
