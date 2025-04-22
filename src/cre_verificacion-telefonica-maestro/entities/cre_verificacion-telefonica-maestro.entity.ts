@@ -51,4 +51,7 @@ export class CreVerificacionTelefonicaMaestro {
     @Column()
     idEstadoGestns: number;
 
+    @Column()
+    Observacion: string;
+
 }

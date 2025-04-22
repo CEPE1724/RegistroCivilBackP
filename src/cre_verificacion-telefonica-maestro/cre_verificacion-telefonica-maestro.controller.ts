@@ -11,4 +11,9 @@ export class CreVerificacionTelefonicaMaestroController {
    async findByID(@Param('idCre_SolicitudWeb') idCre_VerificacionTelefonica: string) {
       return await this.creVerificacionTelefonicaMaestroService.findByID(Number(idCre_VerificacionTelefonica));
     }
+
+  @Post()
+  create(@Body() createCreVerificacionTelefonicaMaestroDto: CreateCreVerificacionTelefonicaMaestroDto) {
+    return this.creVerificacionTelefonicaMaestroService.create(createCreVerificacionTelefonicaMaestroDto);
+  }
 }

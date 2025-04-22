@@ -19,5 +19,15 @@ async findByID(idCre_SolicitudWeb: number) {
 
 }
 
+async create(createCreVerificacionTelefonicaMaestroDto: CreateCreVerificacionTelefonicaMaestroDto) {
+  try {
+    const newRecord = this.creVerificacionTelefonicaMaestroRepository.create(createCreVerificacionTelefonicaMaestroDto);
+    return await this.creVerificacionTelefonicaMaestroRepository.save(newRecord);
+  } catch (error) {
+    this.logger.error('Error creating record', error);
+    throw error;
+  }
+
+}
 }
 
