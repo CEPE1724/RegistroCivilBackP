@@ -84,6 +84,9 @@ import { ClientesVerificacionTerrenaModule } from './clientes-verificacion-terre
 import { TerrenaGestionDomicilioModule } from './terrena-gestion-domicilio/terrena-gestion-domicilio.module';
 import { TerrenaGestionTrabajoModule } from './terrena-gestion-trabajo/terrena-gestion-trabajo.module';
 import { ExecSpModule } from './exec-sp/exec-sp.module';
+import { HorariosverificadoresModule } from './horariosverificadores/horariosverificadores.module';
+import { VerificadorcreditoModule } from './verificadorcredito/verificadorcredito.module';
+import { FechaVerificadorModule } from './fecha-verificador/fecha-verificador.module';
 
 import { ListaNegraCellModule } from './lista-negra-cell/lista-negra-cell.module';
 
@@ -217,6 +220,9 @@ import { CreSolicitudwebWsModule } from './cre_solicitudweb-ws/cre_solicitudweb-
     TerrenaGestionDomicilioModule,
     TerrenaGestionTrabajoModule,
     ExecSpModule,
+    HorariosverificadoresModule,
+    VerificadorcreditoModule,
+    FechaVerificadorModule,
 
     ListaNegraCellModule,
 
