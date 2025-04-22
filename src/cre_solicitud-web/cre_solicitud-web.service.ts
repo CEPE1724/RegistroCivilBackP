@@ -132,10 +132,10 @@ export class CreSolicitudWebService {
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
 
-     if (bApiDataTrabajo && apiDataTrabajo.trabajos && apiDataTrabajo.trabajos.length > 0 && apiDataTrabajo.trabajos[0].fechaActualizacion) {
-      // Si tiene datos, se guarda la información
-      await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
-  }
+      if (bApiDataTrabajo && apiDataTrabajo.trabajos && apiDataTrabajo.trabajos.length > 0 && apiDataTrabajo.trabajos[0].fechaActualizacion) {
+        // Si tiene datos, se guarda la información
+        await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
+      }
 
 
       // validar tipo cliente
@@ -153,6 +153,95 @@ export class CreSolicitudWebService {
       this.handleDBException(error);
     }
   }
+
+
+  private readonly preposiciones = ['DE', 'DEL', 'LA', 'LOS', 'LAS'];
+
+  private isPrepositional(word: string): boolean {
+    return this.preposiciones.includes(word.toUpperCase());
+  }
+
+  private agruparCompuesto(palabras: string[], startIndex: number): { valor: string, nextIndex: number } {
+    let compuesto = palabras[startIndex];
+    let i = startIndex + 1;
+
+    while (i < palabras.length && this.isPrepositional(palabras[i])) {
+      compuesto += ' ' + palabras[i];
+      i++;
+      if (i < palabras.length) {
+        compuesto += ' ' + palabras[i];
+        i++;
+      }
+    }
+
+    return { valor: compuesto, nextIndex: i };
+  }
+
+  private splitNombreCompleto(nombreCompleto: string) {
+    const palabras = nombreCompleto.trim().split(/\s+/);
+    let i = 0;
+
+    // Apellido Paterno
+    const apellido1 = this.agruparCompuesto(palabras, i);
+    const apellidoPaterno = apellido1.valor;
+    i = apellido1.nextIndex;
+
+    // Apellido Materno
+    const apellido2 = this.agruparCompuesto(palabras, i);
+    const apellidoMaterno = apellido2.valor;
+    i = apellido2.nextIndex;
+
+    // Resto son nombres
+    const nombresRestantes = palabras.slice(i);
+    const primerNombre = nombresRestantes[0] || '';
+    const segundoNombre = nombresRestantes.slice(1).join(' ') || '';
+
+    return {
+      apellidoPaterno: apellidoPaterno.toUpperCase(),
+      apellidoMaterno: apellidoMaterno.toUpperCase(),
+      primerNombre: primerNombre.toUpperCase(),
+      segundoNombre: segundoNombre.toUpperCase(),
+    };
+  }
+
+  private toTitleCase(str: string) {
+    return str
+      .toLowerCase()
+      .split(' ')
+      .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+      .join(' ');
+  }
+
+  async getSolicitudCogno(cedula: string) {
+    try {
+      const token = await this.authService.getToken(cedula); // Llamada a AuthService para obtener el token
+      const apiData = await this.authService.getApiData(token, cedula);
+
+      if (apiData.estado.codigo === "OK") {
+        
+        const { identificacion, nombre, fechaNacimiento } = apiData.personaNatural;
+        const partesNombre = this.splitNombreCompleto(nombre);
+
+        // Calcular la edad actual en años
+        const birthDate = new Date(fechaNacimiento);
+        const today = new Date();
+        let age = today.getFullYear() - birthDate.getFullYear();
+        const monthDiff = today.getMonth() - birthDate.getMonth();
+        if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+          age--;
+        }
+
+        return { identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo,
+          ...partesNombre
+         };
+      }
+      return { codigo: false }; // Devuelve falso si el estado no es "OK"
+    } catch (error) {
+      this.logger.error('Error al obtener la solicitud de Cogno', error);
+      return { codigo: false }; // Devuelve falso en caso de error
+    }
+  }
+
 
 
   async findAllFilter(filterCreSolicitudWebDto: FilterCreSolicitudWebDto) {
@@ -213,40 +302,40 @@ export class CreSolicitudWebService {
 
 
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
-    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0 , EstadoSolicitud = 0 , EstadoDocumental=0 , EstadoTelefonica = 0 , cedula , nombres , numeroSolicitud} = paginationDto;
-    
+    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud } = paginationDto;
+
 
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
-    
+
     // Aplicar los filtros de fechas con las horas ajustadas
     if (fechaInicio && fechaFin) {
       const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
       const fechaFinStr = fechaFin.toISOString().split('T')[0];
-    
+
       queryBuilder.andWhere(
         'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin)',
         { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr }
       );
     }
-    
+
     if (estado !== undefined) {
       queryBuilder.andWhere('(cre_solicitud_web.estado = :estado OR :estado = 0)', { estado });
     }
-    
+
     if (vendedor !== undefined) {
       queryBuilder.andWhere('(cre_solicitud_web.idVendedor = :vendedor OR :vendedor = 0)', { vendedor });
     }
-    
+
     if (analista !== undefined) {
       queryBuilder.andWhere('(cre_solicitud_web.idAnalista = :analista OR :analista = 0)', { analista });
     }
 
-    
-    
+
+
     if (EstadoSolicitud !== undefined) {
       queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionSolicitud = :EstadoSolicitud OR :EstadoSolicitud = 0)', { EstadoSolicitud });
     }
-    
+
     if (EstadoDocumental !== undefined) {
       queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionDocumental = :EstadoDocumental OR :EstadoDocumental = 0)', { EstadoDocumental });
     }
@@ -265,14 +354,14 @@ export class CreSolicitudWebService {
         cedula: `%${cedula}%`,
       });
     }
-  
+
     // Filtro por número de solicitud
     if (numeroSolicitud) {
       queryBuilder.andWhere('cre_solicitud_web.NumeroSolicitud LIKE :numeroSolicitud', {
         numeroSolicitud: `%${numeroSolicitud}%`,
       });
     }
-  
+
     // Filtro por nombres y apellidos (búsqueda parcial)
     if (nombres) {
       const nombreBusqueda = `%${nombres}%`;
@@ -286,21 +375,21 @@ export class CreSolicitudWebService {
     }
     // Obtener el conteo total de registros
     const totalCount = await queryBuilder.getCount();
-    
+
     // Aplicar la paginación
     queryBuilder.skip(offset).take(limit);
-    
+
     // Obtener los registros filtrados
     const creSolicitudWeb = await queryBuilder.getMany();
-    
+
     return {
       data: creSolicitudWeb,
       total: totalCount,
     };
   }
-  
-  
-  
+
+
+
 
   /*async findAll(paginationDto: PaginationDto) {
     const { limit = 10, offset = 0, Filtro = '' } = paginationDto;
@@ -345,7 +434,7 @@ export class CreSolicitudWebService {
     };
   }*/
 
-    
+
 
   async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
 
@@ -377,12 +466,12 @@ export class CreSolicitudWebService {
   }
 
   async updateTelefonica(idCre_SolicitudWeb: number, idEstadoVerificacionDocumental: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-    return this.creSolicitudWebRepository.update(idCre_SolicitudWeb, { 
+    return this.creSolicitudWebRepository.update(idCre_SolicitudWeb, {
       idEstadoVerificacionDocumental: idEstadoVerificacionDocumental
-     });
+    });
   }
 
-  async updateSolicitud(idCre_SolicitudWeb: number,  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+  async updateSolicitud(idCre_SolicitudWeb: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
     const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
     if (!creSolicitudWeb) {
       throw new NotFoundException('Registro no encontrado');
@@ -395,7 +484,7 @@ export class CreSolicitudWebService {
       this.handleDBException(error);
     }
   }
-   
+
 
   remove(id: number) {
     return `This action removes a #${id} creSolicitudWeb`;

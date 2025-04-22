@@ -69,4 +69,9 @@ export class CreSolicitudWebController {
   remove(@Param('id') id: string) {
     return this.creSolicitudWebService.remove(+id);
   }
+
+  @Get('solicitud-Cogno/:Cedula')
+  async getSolicitudCogno(@Param('Cedula') Cedula: string) {
+    return await this.creSolicitudWebService.getSolicitudCogno(Cedula);
+  }
 }
