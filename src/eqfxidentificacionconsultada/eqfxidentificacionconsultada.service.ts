@@ -7,7 +7,7 @@ import { Eqfxidentificacionconsultada } from './entities/eqfxidentificacionconsu
 
 @Injectable()
 export class EqfxidentificacionconsultadaService {
-  private readonly logger = new Logger('CreSolicitudWebService');
+  private readonly logger = new Logger('eqfxidentificacionconsultadaService');
 
   constructor(
     @InjectRepository(Eqfxidentificacionconsultada)
@@ -16,7 +16,7 @@ export class EqfxidentificacionconsultadaService {
 
   // Método modificado para devolver un mensaje cuando no existe el valor
   async findOne(NumeroDocumento: string) {
-    const result = await this.eqfxidentificacionconsultadaRepository.findOne({ where: { NumeroDocumento } });
+    const result = await this.eqfxidentificacionconsultadaRepository.findOne({ where: { NumeroDocumento }, order: { idEQFX_IdentificacionConsultada: 'DESC' } });
     if (!result) {
       // Lanzamos una excepción si no se encuentra el documento
       return {

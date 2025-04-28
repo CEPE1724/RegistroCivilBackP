@@ -92,6 +92,9 @@ import { ListaNegraCellModule } from './lista-negra-cell/lista-negra-cell.module
 
 import { CreSolicitudwebWsModule } from './cre_solicitudweb-ws/cre_solicitudweb-ws.module';
 import { ListacuentasdepositosModule } from './listacuentasdepositos/listacuentasdepositos.module';
+import { EqfxResultadoSegmentacionModule } from './eqfx-resultado-segmentacion/eqfx-resultado-segmentacion.module';
+import { EqfxResultadoPoliticasModule } from './eqfx-resultado-politicas/eqfx-resultado-politicas.module';
+import { EqfxScorePuntajeV3Module } from './eqfx-score-puntaje-v3/eqfx-score-puntaje-v3.module';
 
 
 
@@ -230,6 +233,12 @@ import { ListacuentasdepositosModule } from './listacuentasdepositos/listacuenta
     CreSolicitudwebWsModule,
 
     ListacuentasdepositosModule,
+
+    EqfxResultadoSegmentacionModule,
+
+    EqfxResultadoPoliticasModule,
+
+    EqfxScorePuntajeV3Module,
 
 
 
