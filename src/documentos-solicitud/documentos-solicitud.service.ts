@@ -174,4 +174,23 @@ async getObservaciones(idSolicitud: number, idTipoDocumento: number): Promise<Hi
 }
 
 
+async areThreeDocsApproved(idSolicitud: number): Promise<boolean> {
+  const tiposRequeridos = [14, 13, 12];
+
+  const documentos = await this.documentosSolicitudRepository.find({
+    where: {
+      idCre_SolicitudWeb: idSolicitud,
+      idTipoDocumentoWEB: In(tiposRequeridos),
+      idEstadoDocumento: 3
+    }
+  });
+
+  const tiposEncontrados = documentos.map(doc => doc.idTipoDocumentoWEB);
+  const tiposAprobadosSet = new Set(tiposEncontrados);
+
+  // Verifica que todos los tipos requeridos estén en estado 3
+  return tiposRequeridos.every(tipo => tiposAprobadosSet.has(tipo));
+}
+
+
 }
