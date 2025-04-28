@@ -91,6 +91,7 @@ import { FechaVerificadorModule } from './fecha-verificador/fecha-verificador.mo
 import { ListaNegraCellModule } from './lista-negra-cell/lista-negra-cell.module';
 
 import { CreSolicitudwebWsModule } from './cre_solicitudweb-ws/cre_solicitudweb-ws.module';
+import { ListacuentasdepositosModule } from './listacuentasdepositos/listacuentasdepositos.module';
 
 
 
@@ -227,6 +228,8 @@ import { CreSolicitudwebWsModule } from './cre_solicitudweb-ws/cre_solicitudweb-
     ListaNegraCellModule,
 
     CreSolicitudwebWsModule,
+
+    ListacuentasdepositosModule,
 
 
 
