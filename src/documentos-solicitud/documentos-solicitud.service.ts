@@ -180,8 +180,7 @@ async areThreeDocsApproved(idSolicitud: number): Promise<boolean> {
   const documentos = await this.documentosSolicitudRepository.find({
     where: {
       idCre_SolicitudWeb: idSolicitud,
-      idTipoDocumentoWEB: In(tiposRequeridos),
-      idEstadoDocumento: 3
+      idTipoDocumentoWEB: In(tiposRequeridos)
     }
   });
 
