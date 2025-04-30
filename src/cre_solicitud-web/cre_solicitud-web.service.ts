@@ -108,7 +108,7 @@ export class CreSolicitudWebService {
       const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
 
       const saveDataNatural = await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
-
+      console.log('saveDataNatural', saveDataNatural);
       if (apiData.personaNaturalConyuge.personaConyuge.identificacion && apiData.personaNaturalConyuge.personaConyuge.nombre) {
         if (apiData.personaNaturalConyuge.personaConyuge.identificacion !== null && apiData.personaNaturalConyuge.personaConyuge.nombre !== '') {
           await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);

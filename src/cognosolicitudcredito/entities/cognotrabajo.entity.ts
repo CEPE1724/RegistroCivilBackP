@@ -19,8 +19,8 @@ export class CognoTrabajo {
     @Column('bigint')
     fechaIngreso: number;
 
-    @Column('datetime')
-    fechaAfiliacionHasta: Date;
+    @Column('bigint')
+    fechaAfiliacionHasta: number;
 
     @Column('varchar', {
         length: 50

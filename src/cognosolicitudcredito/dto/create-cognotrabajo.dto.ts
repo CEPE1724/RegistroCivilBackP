@@ -28,10 +28,10 @@ export class CreateCognoTrabajoDto {
     @IsOptional()
     fechaIngreso?: number;
 
-    @IsDate()
-    @Type(() => Date)
+    @IsNumber()
+    @IsPositive()
     @IsOptional()
-    fechaAfiliacionHasta?: Date;
+    fechaAfiliacionHasta?: number;
 
     @IsString()
     @MinLength(1)
