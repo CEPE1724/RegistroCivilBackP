@@ -26,8 +26,8 @@ export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayD
       client.disconnect();
       return;
     }
-    //console.log('Client connected:', payload);
-    //console.log('Client connected:', client.id);
+    console.log('Client connected:', payload);
+    console.log('Client connected:', client.id);
 
     this.wss.emit('clients-updated', this.creSolicitudwebWsService.getConnectedClients());
   }
