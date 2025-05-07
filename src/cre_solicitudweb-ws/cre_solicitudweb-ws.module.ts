@@ -6,5 +6,6 @@ import { AuthModule } from 'src/auth/auth.module';
 @Module({
   providers: [CreSolicitudwebWsGateway, CreSolicitudwebWsService],
   imports: [AuthModule],
+  exports: [CreSolicitudwebWsGateway], 
 })
 export class CreSolicitudwebWsModule {}

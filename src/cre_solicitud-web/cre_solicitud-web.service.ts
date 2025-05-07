@@ -9,6 +9,8 @@ import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
 import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';
 import { EqfxidentificacionconsultadaService } from 'src/eqfxidentificacionconsultada/eqfxidentificacionconsultada.service';
+import { CreSolicitudwebWsGateway } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.gateway";
+
 @Injectable()
 export class CreSolicitudWebService {
 
@@ -18,7 +20,8 @@ export class CreSolicitudWebService {
     @InjectRepository(CreSolicitudWeb)
     private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>,
     private readonly authService: AuthService,
-    private readonly eqfxidentificacionconsultadaService: EqfxidentificacionconsultadaService
+    private readonly eqfxidentificacionconsultadaService: EqfxidentificacionconsultadaService,
+    private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway
   ) { }
 
   private async EquifaxData(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
@@ -63,6 +66,12 @@ export class CreSolicitudWebService {
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
       /* obtener el id de la solicitud creada y cedula */
+
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+        id: creSolicitudWeb.idCre_SolicitudWeb,
+        cambios: createCreSolicitudWebDto,
+      });
+
       const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
       const cedula = creSolicitudWeb.Cedula;
       const token = await this.authService.getToken(cedula); // Llamada a AuthService para obtener el token
@@ -451,39 +460,84 @@ export class CreSolicitudWebService {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
   }
 
-  async update(idCre_SolicitudWeb: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+  async update(
+    idCre_SolicitudWeb: number,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+  ) {
     const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
+    
     if (!creSolicitudWeb) {
       throw new NotFoundException('Registro no encontrado');
     }
+  
     try {
       this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
+  
+      // Emitir evento websocket
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+        id: idCre_SolicitudWeb,
+        cambios: updateCreSolicitudWebDto,
+        updatedAt: new Date(), // opcional
+      });
+  
       return creSolicitudWeb;
     } catch (error) {
       this.handleDBException(error);
     }
   }
-
-  async updateTelefonica(idCre_SolicitudWeb: number, idEstadoVerificacionDocumental: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-    return this.creSolicitudWebRepository.update(idCre_SolicitudWeb, {
+  
+  async updateTelefonica(
+    idCre_SolicitudWeb: number,
+    idEstadoVerificacionDocumental: number,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+  ) {
+    const result = await this.creSolicitudWebRepository.update(idCre_SolicitudWeb, {
       idEstadoVerificacionDocumental: idEstadoVerificacionDocumental
     });
+  
+    this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+      id: idCre_SolicitudWeb,
+      cambios: updateCreSolicitudWebDto,
+      updatedAt: new Date(), // opcional
+    });
+  
+    return result;
+  }
+  
+
+// cre_solicitud-web.service.ts
+
+async updateSolicitud(
+  idCre_SolicitudWeb: number,
+  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+) {
+  // 1. Buscamos el registro
+  const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
+    where: { idCre_SolicitudWeb },
+  });
+  if (!creSolicitudWeb) {
+    throw new NotFoundException('Registro no encontrado');
   }
 
-  async updateSolicitud(idCre_SolicitudWeb: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
-    if (!creSolicitudWeb) {
-      throw new NotFoundException('Registro no encontrado');
-    }
-    try {
-      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
-      await this.creSolicitudWebRepository.save(creSolicitudWeb);
-      return creSolicitudWeb;
-    } catch (error) {
-      this.handleDBException(error);
-    }
+  try {
+    // 2. Merge + save
+    this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+    const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+    // 3. Emitir evento a todos los clientes con el nombre que espera el front
+    this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+      id: updated.idCre_SolicitudWeb,
+      cambios: updateCreSolicitudWebDto,
+      updatedAt: new Date(),     // opcional
+    });
+
+    return updated;
+  } catch (error) {
+    this.handleDBException(error);
   }
+}
+
 
 
   remove(id: number) {
