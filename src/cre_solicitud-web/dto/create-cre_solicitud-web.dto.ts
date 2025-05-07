@@ -178,7 +178,9 @@ export class CreateCreSolicitudWebDto {
 
     @IsNumber()
     @IsOptional()
-    idEstadoVerificacionDomicilio:number
+    idEstadoVerificacionDomicilio:number;
+
+  
 
     
     

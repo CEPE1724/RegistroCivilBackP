@@ -825,4 +825,9 @@ export class WebSolicitudgrande {
 
     EstadoGeneralSolicitud: number;
 
+    @Column('varchar', {
+        default: ''
+    })
+    Facebook: string;
+
 }

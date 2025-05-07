@@ -654,4 +654,8 @@ export class CreateWebSolicitudgrandeDto {
   @MinLength(1)
   readonly ReferenciaUbicacionNegocio?: string;
 
+  @IsOptional()
+  @IsString()
+  readonly Facebook?: string;
+
 }

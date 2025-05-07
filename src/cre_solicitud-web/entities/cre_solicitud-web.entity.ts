@@ -121,6 +121,8 @@ export class CreSolicitudWeb {
 
     @Column('int')
     idEstadoVerificacionDomicilio: number;
+
+   
     
 
     @BeforeInsert()

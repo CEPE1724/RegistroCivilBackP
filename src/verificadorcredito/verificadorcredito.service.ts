@@ -12,9 +12,18 @@ export class VerificadorcreditoService {
   constructor(
     @InjectRepository(VerificadorCredito)
     private readonly verificadorcreditoRepository: Repository<VerificadorCredito>,
-  ) {}
+  ) { }
+
+
+
 
   create(createVerificadorcreditoDto: CreateVerificadorcreditoDto) {
+    const existingVerificador = this.verificadorcreditoRepository.findOne({
+      where: { Nombre: createVerificadorcreditoDto.Nombre },
+    });
+    if (existingVerificador) {
+      return { message: 'A verifier with this name already exists.' };
+    }
     return this.verificadorcreditoRepository.save(createVerificadorcreditoDto);
   }
 
