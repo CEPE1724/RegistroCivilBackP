@@ -66,6 +66,12 @@ export class CreSolicitudWebService {
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
       /* obtener el id de la solicitud creada y cedula */
+
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+        id: creSolicitudWeb.idCre_SolicitudWeb,
+        cambios: createCreSolicitudWebDto,
+      });
+
       const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
       const cedula = creSolicitudWeb.Cedula;
       const token = await this.authService.getToken(cedula); // Llamada a AuthService para obtener el token
@@ -454,25 +460,51 @@ export class CreSolicitudWebService {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
   }
 
-  async update(idCre_SolicitudWeb: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+  async update(
+    idCre_SolicitudWeb: number,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+  ) {
     const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
+    
     if (!creSolicitudWeb) {
       throw new NotFoundException('Registro no encontrado');
     }
+  
     try {
       this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
+  
+      // Emitir evento websocket
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+        id: idCre_SolicitudWeb,
+        cambios: updateCreSolicitudWebDto,
+        updatedAt: new Date(), // opcional
+      });
+  
       return creSolicitudWeb;
     } catch (error) {
       this.handleDBException(error);
     }
   }
-
-  async updateTelefonica(idCre_SolicitudWeb: number, idEstadoVerificacionDocumental: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-    return this.creSolicitudWebRepository.update(idCre_SolicitudWeb, {
+  
+  async updateTelefonica(
+    idCre_SolicitudWeb: number,
+    idEstadoVerificacionDocumental: number,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+  ) {
+    const result = await this.creSolicitudWebRepository.update(idCre_SolicitudWeb, {
       idEstadoVerificacionDocumental: idEstadoVerificacionDocumental
     });
+  
+    this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+      id: idCre_SolicitudWeb,
+      cambios: updateCreSolicitudWebDto,
+      updatedAt: new Date(), // opcional
+    });
+  
+    return result;
   }
+  
 
 // cre_solicitud-web.service.ts
 
