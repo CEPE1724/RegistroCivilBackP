@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { AuthModule } from 'src/auth/auth.module';
 import { MenuItemRoleService } from './menu-item-role.service';
 import { MenuItemRoleController } from './menu-item-role.controller';
 import { MenuItemRole } from './entities/menu-item-role.entity';
@@ -11,8 +12,9 @@ import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([MenuItemRole, MenuItems, Usuario, MenuItemAccess, MenuItemAccessUser]),
-    AuthModule // Importa todas las entidades necesarias
+
+    TypeOrmModule.forFeature([MenuItemRole, MenuItems, Usuario, MenuItemAccess, MenuItemAccessUser, AuthModule]), // Importa todas las entidades necesarias
+
   ],
   controllers: [MenuItemRoleController],
   providers: [MenuItemRoleService],

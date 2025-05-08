@@ -71,6 +71,14 @@ export class CreSolicitudWebController {
 
    return this.creSolicitudWebService.updateSolicitud(idCre_SolicitudWeb, updateCreSolicitudWebDto);
   }
+
+  @Patch('updatecodDactilar/:idCre_SolicitudWeb')
+  async updateCodDactilar(
+    @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
+    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+    return this.creSolicitudWebService.updateCodDactilar(idCre_SolicitudWeb, updateCreSolicitudWebDto);
+  }
+
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.creSolicitudWebService.remove(+id);
