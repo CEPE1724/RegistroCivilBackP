@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from 'src/auth/auth.module';
 import { EqfxReporteBuroCreditoService } from './eqfx-reporte-buro-credito.service';
 import { EqfxReporteBuroCreditoController } from './eqfx-reporte-buro-credito.controller';
 import { EqfxIndicadoresDeudaModule } from '../eqfx-indicadores-deuda/eqfx-indicadores-deuda.module';
@@ -38,6 +39,7 @@ import {EqfxEntidadesConsultadasModule} from '../eqfx-entidades-consultadas/eqfx
     EqfxCreditosOtorg12UltMesEdModule,
     EqfxInfoPosteriorFechaCorteModule,
     EqfxEntidadesConsultadasModule,
+    AuthModule,
   ],
   controllers: [EqfxReporteBuroCreditoController],
   providers: [EqfxReporteBuroCreditoService],
