@@ -63,6 +63,7 @@ export class CreateCreSolicitudWebDto {
 
     @IsString()
     @MinLength(8)
+    @IsOptional()
     CodDactilar: string;
 
     @IsString()
