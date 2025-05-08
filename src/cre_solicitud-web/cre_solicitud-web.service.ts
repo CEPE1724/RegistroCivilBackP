@@ -10,6 +10,8 @@ import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
 import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';
 import { EqfxidentificacionconsultadaService } from 'src/eqfxidentificacionconsultada/eqfxidentificacionconsultada.service';
 import { CreSolicitudwebWsGateway } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.gateway";
+import { CreSolicitudwebWsService } from 'src/cre_solicitudweb-ws/cre_solicitudweb-ws.service';
+import { Socket } from 'dgram';
 
 @Injectable()
 export class CreSolicitudWebService {
@@ -21,7 +23,8 @@ export class CreSolicitudWebService {
     private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>,
     private readonly authService: AuthService,
     private readonly eqfxidentificacionconsultadaService: EqfxidentificacionconsultadaService,
-    private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway
+    private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway,
+    private readonly creSolicitudwebWsService : CreSolicitudwebWsService
   ) { }
 
   private async EquifaxData(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
@@ -510,9 +513,9 @@ export class CreSolicitudWebService {
 
 async updateSolicitud(
   idCre_SolicitudWeb: number,
-  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
 ) {
-  // 1. Buscamos el registro
+  // 1. Buscar el registro
   const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
     where: { idCre_SolicitudWeb },
   });
@@ -520,17 +523,33 @@ async updateSolicitud(
     throw new NotFoundException('Registro no encontrado');
   }
 
+  // ⚠️ Captura el idUsuario ANTES del merge
+  const idUsuarioDestino = creSolicitudWeb.idAnalista; // Ajusta según tu entidad
+
   try {
     // 2. Merge + save
     this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
     const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
 
-    // 3. Emitir evento a todos los clientes con el nombre que espera el front
+    // 3. Evento global
     this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
       id: updated.idCre_SolicitudWeb,
       cambios: updateCreSolicitudWebDto,
-      updatedAt: new Date(),     // opcional
+      updatedAt: new Date(),
     });
+
+    // 4. Evento solo para el usuario específico
+   // 4. Evento solo para el usuario específico
+if (idUsuarioDestino) {
+  const socketDestino = this.creSolicitudwebWsService.getSocketByUserId(idUsuarioDestino);
+  if (socketDestino) {
+    socketDestino.emit('solicitud-web-usuario', {
+      id: updated.idCre_SolicitudWeb,
+      cambios: updateCreSolicitudWebDto,
+      mensaje: 'Tienes una solicitud actualizada',
+    });
+  }
+}
 
     return updated;
   } catch (error) {

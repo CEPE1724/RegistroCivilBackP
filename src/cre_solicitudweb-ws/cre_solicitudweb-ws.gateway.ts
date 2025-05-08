@@ -17,20 +17,29 @@ export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayD
   async handleConnection(client: Socket) {
     const token = client.handshake.headers.authentication as string;
     let payload: JwtPayload;
+  
     try {
-      payload = this.jwtService.verify(token);
-
+      payload = this.jwtService.verify<JwtPayload>(token);
+  
+      // Guarda usuario y grupo en el cliente conectado
+      client.data.idUsuario = payload.idUsuario;
+      client.data.idGrupo = payload.idGrupo;
+      client.data.Nombre = payload.Nombre;
+  
       await this.creSolicitudwebWsService.registerClient(client, payload.idUsuario);
-    }
-    catch (error) {
+    } catch (error) {
       client.disconnect();
       return;
     }
+  
     console.log('Client connected:', payload);
-    console.log('Client connected:', client.id);
-
+    console.log('Client ID:', client.id);
+  
     this.wss.emit('clients-updated', this.creSolicitudwebWsService.getConnectedClients());
   }
+  
+
+  
   handleDisconnect(client: Socket) {
     // console.log('Client disconnected:', client.id);
     this.creSolicitudwebWsService.removeClient(client.id);

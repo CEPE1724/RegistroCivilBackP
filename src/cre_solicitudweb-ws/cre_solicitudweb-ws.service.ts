@@ -43,6 +43,12 @@ export class CreSolicitudwebWsService {
          console.log('Client removed:', clientId);
     }
 
+
+    getSocketByUserId(idUsuario: number): Socket | null {
+        const client = Object.values(this.connectedClients).find(client => client.user.idUsuario === idUsuario);
+        return client ? client.socekt : null;
+      }
+      
     getConnectedClients(): string[] {
         return Object.keys(this.connectedClients);
 

@@ -1,9 +1,10 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query, Put, UseGuards } from '@nestjs/common';
 import { CreSolicitudWebService } from './cre_solicitud-web.service';
 import { CreateCreSolicitudWebDto } from './dto/create-cre_solicitud-web.dto';
 import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
+import { AuthGuard } from '@nestjs/passport';
 @Controller('cre-solicitud-web')
 export class CreSolicitudWebController {
   constructor(private readonly creSolicitudWebService: CreSolicitudWebService) { }
@@ -14,6 +15,7 @@ export class CreSolicitudWebController {
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
   @Get('prueba')
+  @UseGuards(AuthGuard())
   getPrueba() {
 
     return { message: 'Prueba OK' };
@@ -59,9 +61,13 @@ export class CreSolicitudWebController {
   }
 
   @Patch('updatetelefonicaEstados/:idCre_SolicitudWeb')
+
   async updateSolicitud(
     @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
-   @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+    
+   @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto , 
+  ) 
+   {
 
    return this.creSolicitudWebService.updateSolicitud(idCre_SolicitudWeb, updateCreSolicitudWebDto);
   }

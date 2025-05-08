@@ -3,12 +3,13 @@ import { CreVerificacionTelefonicaMaestroService } from './cre_verificacion-tele
 import { CreVerificacionTelefonicaMaestroController } from './cre_verificacion-telefonica-maestro.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CreVerificacionTelefonicaMaestro } from './entities/cre_verificacion-telefonica-maestro.entity'
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [CreVerificacionTelefonicaMaestroController],
   providers: [CreVerificacionTelefonicaMaestroService],
   imports: [
-    TypeOrmModule.forFeature([CreVerificacionTelefonicaMaestro])
+    TypeOrmModule.forFeature([CreVerificacionTelefonicaMaestro]),AuthModule
   ]
 })
 export class CreVerificacionTelefonicaMaestroModule {}

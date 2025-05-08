@@ -8,8 +8,7 @@ import { AuthModule } from '../auth/auth.module';
   controllers: [CompraencuestaController],
   providers: [CompraencuestaService],
   imports: [
-    TypeOrmModule.forFeature([Compraencuesta]),
-    AuthModule,
+    TypeOrmModule.forFeature([Compraencuesta]), AuthModule
   ]
 })
 export class CompraencuestaModule {}

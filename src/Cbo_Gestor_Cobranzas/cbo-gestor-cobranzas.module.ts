@@ -4,9 +4,10 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { CboGestorCobranzas } from './cbo-gestor-cobranzas.entity';
 import { CboGestorCobranzasService } from './cbo-gestor-cobranzas.service';
 import { CboGestorCobranzasController } from './cbo-gestor-cobranzas.controller';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CboGestorCobranzas])],
+  imports: [TypeOrmModule.forFeature([CboGestorCobranzas]),AuthModule ],
   providers: [CboGestorCobranzasService],
   controllers: [CboGestorCobranzasController],
 })
