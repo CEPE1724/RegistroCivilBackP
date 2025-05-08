@@ -539,6 +539,20 @@ async updateSolicitud(
 }
 
 
+  async updateCodDactilar(idCre_SolicitudWeb: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
+    if (!creSolicitudWeb) {
+      throw new NotFoundException('Registro no encontrado');
+    }
+    try {
+      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+      await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      return creSolicitudWeb;
+    } catch (error) {
+      this.handleDBException(error);
+    }
+  }
+
 
   remove(id: number) {
     return `This action removes a #${id} creSolicitudWeb`;
