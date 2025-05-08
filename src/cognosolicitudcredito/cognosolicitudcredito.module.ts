@@ -10,11 +10,12 @@ import { AuthService } from './auth/auth.service';
 import { AuthController } from './auth/auth.controller';
 import { CognoSolicitudProfesiones } from './entities/cognosolicitudprofesiones.entity';
 import { CognoTrabajo } from './entities/cognotrabajo.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   controllers: [CognosolicitudcreditoController, AuthController],
   providers: [CognosolicitudcreditoService, AuthService],
   imports: [TypeOrmModule.forFeature([Cognosolicitudcredito, CognoPersonaNatural, CognoSolicitudLugarNacimiento , 
-    CognoSolicitudNacionalidades , CognoSolicitudProfesiones, CognoTrabajo])],
+    CognoSolicitudNacionalidades , CognoSolicitudProfesiones, CognoTrabajo]) , AuthModule],
 })
 export class CognosolicitudcreditoModule {}

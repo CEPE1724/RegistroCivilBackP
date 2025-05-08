@@ -1,7 +1,8 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
 import { MenuItemRoleService } from './menu-item-role.service';
 import { CreateMenuItemRoleDto } from './dto/create-menu-item-role.dto';
 import { UpdateMenuItemRoleDto } from './dto/update-menu-item-role.dto';
+import { AuthGuard } from '@nestjs/passport';
 
 @Controller('menu-item-role')
 export class MenuItemRoleController {
@@ -10,6 +11,7 @@ export class MenuItemRoleController {
 
 
 	@Get(':userId/menu')
+	@UseGuards(AuthGuard())
 	async getUserMenuItems(@Param('userId') userId: number) {
 		return this.menuItemRoleService.getUserMenuItems(userId);
 	}

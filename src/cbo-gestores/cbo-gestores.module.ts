@@ -5,10 +5,11 @@ import { CboGestoresService } from './cbo-gestores.service';
 import { CboGestoresController } from './cbo-gestores.controller';
 import { CboGestorCobranzas } from '../Cbo_Gestor_Cobranzas/cbo-gestor-cobranzas.entity';
 import { CboGestoresEstrategia } from '../Cbo_Gestores_Estrategia/Cbo_Gestores_Estrategia.entity';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([CboGestores, CboGestorCobranzas, CboGestoresEstrategia]), // Asegúrate de que los repositorios estén disponibles
+    TypeOrmModule.forFeature([CboGestores, CboGestorCobranzas, CboGestoresEstrategia] ) , AuthModule , // Asegúrate de que los repositorios estén disponibles
   ],
   providers: [CboGestoresService],
   controllers: [CboGestoresController],
