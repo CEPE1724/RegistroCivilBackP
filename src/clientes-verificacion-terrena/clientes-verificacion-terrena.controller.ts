@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { ClientesVerificacionTerrenaService } from './clientes-verificacion-terrena.service';
 import { CreateClientesVerificacionTerrenaDto } from './dto/create-clientes-verificacion-terrena.dto';
 import { UpdateClientesVerificacionTerrenaDto } from './dto/update-clientes-verificacion-terrena.dto';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 interface VerificacionBasicaInput {
 	idCre_solicitud?: number;
@@ -16,32 +18,38 @@ export class ClientesVerificacionTerrenaController {
   constructor(private readonly clientesVerificacionTerrenaService: ClientesVerificacionTerrenaService) {}
 
   @Post()
+  @Auth()
   create(@Body() createClientesVerificacionTerrenaDto: CreateClientesVerificacionTerrenaDto) {
 	
     return this.clientesVerificacionTerrenaService.create(createClientesVerificacionTerrenaDto);
   }
   
   @Post('basica')
+  @Auth()
   createVerificacionBasica(@Body() body: VerificacionBasicaInput) {
 	return this.clientesVerificacionTerrenaService.createVerificacionBasica(body);
   }
   
   @Get()
+  @Auth()
   findAll() {
     return this.clientesVerificacionTerrenaService.findAll();
   }
 
   @Get(':id/:Tipo')
+  @Auth()
   findOne(@Param('id') id: number, @Param('Tipo') Tipo: number) {
     return this.clientesVerificacionTerrenaService.findOne(id, Tipo);
   }
 
   @Patch(':id')
+  @Auth()
   update(@Param('id') id: string, @Body() updateClientesVerificacionTerrenaDto: UpdateClientesVerificacionTerrenaDto) {
     return this.clientesVerificacionTerrenaService.update(+id, updateClientesVerificacionTerrenaDto);
   }
 
   @Delete(':id')
+  @Auth()
   remove(@Param('id') id: string) {
     return this.clientesVerificacionTerrenaService.remove(+id);
   }

@@ -3,6 +3,8 @@ import { CreSolicitudverificaciontelefonicaService } from './cre-solicitudverifi
 import { CreateCreSolicitudverificaciontelefonicaDto } from './dto/create-cre-solicitudverificaciontelefonica.dto';
 import { UpdateCreSolicitudverificaciontelefonicaDto } from './dto/update-cre-solicitudverificaciontelefonica.dto';
 import { Query } from '@nestjs/common';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 @Controller('cre-solicitudverificaciontelefonica')
 export class CreSolicitudverificaciontelefonicaController {
@@ -10,6 +12,7 @@ export class CreSolicitudverificaciontelefonicaController {
 
 
   @Post()
+  @Auth()
   create(@Body() createCreSolicitudverificaciontelefonicaDto: CreateCreSolicitudverificaciontelefonicaDto) {
     return this.creSolicitudverificaciontelefonicaService.create(createCreSolicitudverificaciontelefonicaDto);
   }
@@ -20,6 +23,7 @@ export class CreSolicitudverificaciontelefonicaController {
 
 
   @Get('search')
+  @Auth()
   search(
     @Query('idCre_SolicitudWeb') idCre_SolicitudWeb: number, 
     @Query('idCre_VerificacionTelefonicaMaestro') idCre_VerificacionTelefonicaMaestro: number
@@ -28,6 +32,7 @@ export class CreSolicitudverificaciontelefonicaController {
   }
 
   @Patch(':id')
+  @Auth()
   update(@Param('id') id: string, @Body() updateCreSolicitudverificaciontelefonicaDto: UpdateCreSolicitudverificaciontelefonicaDto) {
     return this.creSolicitudverificaciontelefonicaService.update(+id, updateCreSolicitudverificaciontelefonicaDto);
   }

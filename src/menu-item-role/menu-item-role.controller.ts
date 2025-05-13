@@ -12,8 +12,7 @@ export class MenuItemRoleController {
 
 
 	@Get(':userId/menu')
-	@Auth()
-	
+	//@UseGuards(AuthGuard())
 	async getUserMenuItems(@Param('userId') userId: number) {
 		return this.menuItemRoleService.getUserMenuItems(userId);
 	}

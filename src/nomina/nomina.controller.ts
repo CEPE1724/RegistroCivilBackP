@@ -3,7 +3,10 @@ import { NominaService } from './nomina.service';
 import { CreateNominaDto } from './dto/create-nomina.dto';
 import { UpdateNominaDto } from './dto/update-nomina.dto';
 import { get } from 'http';
-import { Auth } from 'src/auth/decorators';
+
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
+
 
 @Controller('nomina')
 export class NominaController {
