@@ -18,6 +18,8 @@ export class CreSolicitudWebController {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
+  
+  
   @Get('prueba')
   @Auth()
   @UseGuards(AuthGuard())
@@ -26,6 +28,7 @@ export class CreSolicitudWebController {
     return { message: 'Prueba OK' };
   }
   @Get()
+  @Auth()                 
   @Auth()
   findAll(@Query() paginationDto: PaginationDto, @Query('bodega') bodega: number[]) {
     return this.creSolicitudWebService.findAll(paginationDto, bodega);

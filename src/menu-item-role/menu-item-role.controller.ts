@@ -3,6 +3,7 @@ import { MenuItemRoleService } from './menu-item-role.service';
 import { CreateMenuItemRoleDto } from './dto/create-menu-item-role.dto';
 import { UpdateMenuItemRoleDto } from './dto/update-menu-item-role.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('menu-item-role')
 export class MenuItemRoleController {

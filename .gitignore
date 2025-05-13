@@ -43,4 +43,4 @@ iisnode/*.txt
 logs/  
 
 /config/google-credentials.json
-
+coverage/

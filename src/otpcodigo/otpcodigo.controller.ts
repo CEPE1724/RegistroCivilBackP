@@ -1,5 +1,6 @@
 import { Controller, Post, Body, Param } from '@nestjs/common';
 import { OtpcodigoService } from './otpcodigo.service';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('otp')
 export class OtpController {
@@ -7,6 +8,7 @@ export class OtpController {
 
 
   @Post('generate')
+  @Auth()
   async generateOtp(@Body('phoneNumber') phoneNumber: string) {
   
     try {
@@ -18,6 +20,7 @@ export class OtpController {
   }
 
   @Post('verify')
+  @Auth()
   async verifyOtp(
     @Body('phoneNumber') phoneNumber: string,
     @Body('otpCode') otpCode: string,
