@@ -5,6 +5,10 @@ import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { RoleProtected } from 'src/auth/decorators';
+import { ValidRoles } from 'src/auth/interfaces';
+import { UserRoleGuard } from 'src/auth/guards/user-role/user-role.guard';
+import { Auth } from 'src/auth/decorators';
 @Controller('cre-solicitud-web')
 export class CreSolicitudWebController {
   constructor(private readonly creSolicitudWebService: CreSolicitudWebService) { }
@@ -14,13 +18,16 @@ export class CreSolicitudWebController {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
+  
+  
   @Get('prueba')
-  @UseGuards(AuthGuard())
+@Auth()                 
   getPrueba() {
 
     return { message: 'Prueba OK' };
   }
   @Get()
+  @Auth()                 
   findAll(@Query() paginationDto: PaginationDto, @Query('bodega') bodega: number[]) {
     return this.creSolicitudWebService.findAll(paginationDto, bodega);
     

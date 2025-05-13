@@ -3,12 +3,14 @@ import { FileUploadService } from './file-upload.service';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage, memoryStorage } from 'multer';
 import * as path from 'path';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('file-upload')
 export class FileUploadController {
   constructor(private readonly fileUploadService: FileUploadService) {}
 
   @Post('upload')
+    @Auth() 
   @UseInterceptors(
     FileInterceptor('file', {
       storage: memoryStorage(), // Usamos memoryStorage para almacenar el archivo en memoria

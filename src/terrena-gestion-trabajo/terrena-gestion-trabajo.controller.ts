@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { TerrenaGestionTrabajoService } from './terrena-gestion-trabajo.service';
 import { CreateTerrenaGestionTrabajoDto } from './dto/create-terrena-gestion-trabajo.dto';
 import { UpdateTerrenaGestionTrabajoDto } from './dto/update-terrena-gestion-trabajo.dto';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('terrena-gestion-trabajo')
 export class TerrenaGestionTrabajoController {
@@ -9,6 +10,7 @@ export class TerrenaGestionTrabajoController {
 
 
   @Get(':id')
+  @Auth()
   async findOne(@Param('id') id: number) {
     return this.terrenaGestionTrabajoService.findOne(+id);
   }

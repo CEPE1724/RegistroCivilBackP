@@ -13,8 +13,9 @@ import { MenuItemAccessUser } from './entities/menu-items-access-user.entity'; /
 @Module({
   imports: [
 
-    TypeOrmModule.forFeature([MenuItemRole, MenuItems, Usuario, MenuItemAccess, MenuItemAccessUser]),
-    AuthModule // Importa todas las entidades necesarias
+
+    TypeOrmModule.forFeature([MenuItemRole, MenuItems, Usuario, MenuItemAccess, MenuItemAccessUser,]),AuthModule // Importa todas las entidades necesarias
+
 
   ],
   controllers: [MenuItemRoleController],
