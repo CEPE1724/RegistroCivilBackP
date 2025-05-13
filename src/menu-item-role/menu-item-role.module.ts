@@ -9,10 +9,13 @@ import { Usuario } from './entities/usuarios.entity'; // Agregar Usuario aquí
 import { MenuItemAccess } from './entities/menu-items-access.entity'; // Agregar MenuItemAccess aquí
 import { MenuItemAccessUser } from './entities/menu-items-access-user.entity'; // Agregar MenuItemAccessUser aquí
 
+
 @Module({
   imports: [
 
+
     TypeOrmModule.forFeature([MenuItemRole, MenuItems, Usuario, MenuItemAccess, MenuItemAccessUser,]),AuthModule // Importa todas las entidades necesarias
+
 
   ],
   controllers: [MenuItemRoleController],
