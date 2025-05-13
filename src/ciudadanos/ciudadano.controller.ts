@@ -11,6 +11,7 @@ import {
 } from '@nestjs/common';
 import { RawHeaders, GetUser, Auth } from '../auth/decorators';
 import { CiudadanoService } from './ciudadano.service';
+import { ValidRoles } from '../auth/interfaces';
 
 @Controller('dactilar')
 

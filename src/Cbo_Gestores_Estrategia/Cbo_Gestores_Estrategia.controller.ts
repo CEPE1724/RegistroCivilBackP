@@ -4,6 +4,8 @@ import { CboGestoresEstrategiaService } from './Cbo_Gestores_Estrategia.service'
 import { CboGestoresEstrategia } from './Cbo_Gestores_Estrategia.entity';
 import { ResponseDto } from './Cbo_Gestores_Estrategia.service.dto';
 import { Response } from 'express';  // Para utilizar el tipo Response de Express
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 @Controller('cbo-gestores-estrategia')
 export class CboGestoresEstrategiaController {
@@ -11,6 +13,7 @@ export class CboGestoresEstrategiaController {
 
   // Endpoint para crear un nuevo registro de estrategia
   @Post()
+  @Auth()
   async create(@Body() cboGestoresEstrategia: CboGestoresEstrategia, @Res() res: Response): Promise<Response> {
     try {
       // Creamos el nuevo registro a través del servicio
@@ -30,6 +33,7 @@ export class CboGestoresEstrategiaController {
 
   // Endpoint para obtener todos los registros
   @Get()
+  @Auth()
   async findAll(@Res() res: Response): Promise<Response> {
     try {
       // Obtenemos los registros a través del servicio
