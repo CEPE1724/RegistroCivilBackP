@@ -3,6 +3,7 @@ import { MenuItemRoleService } from './menu-item-role.service';
 import { CreateMenuItemRoleDto } from './dto/create-menu-item-role.dto';
 import { UpdateMenuItemRoleDto } from './dto/update-menu-item-role.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('menu-item-role')
 export class MenuItemRoleController {
@@ -11,7 +12,8 @@ export class MenuItemRoleController {
 
 
 	@Get(':userId/menu')
-	@UseGuards(AuthGuard())
+	@Auth()
+	
 	async getUserMenuItems(@Param('userId') userId: number) {
 		return this.menuItemRoleService.getUserMenuItems(userId);
 	}

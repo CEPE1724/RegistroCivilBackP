@@ -10,12 +10,14 @@ export class HistoricoController {
     private readonly historicoService: HistoricoService,
   ) {}
 
-  @Auth()
+  
   @Get()
+  @Auth()
   async obtenerHistorial() {
     return this.historicoService.obtenerHistorial();
   }
 
+  @Auth()
   @Auth()
   @Post('registrar')
   async registrarConsulta(@Req() request: Request, @Body('cedula') cedula: string, @Body('apiRC') apiRC: boolean) {
