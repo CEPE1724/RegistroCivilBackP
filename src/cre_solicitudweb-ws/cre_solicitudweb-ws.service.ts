@@ -48,6 +48,17 @@ export class CreSolicitudwebWsService {
         const client = Object.values(this.connectedClients).find(client => client.user.idUsuario === idUsuario);
         return client ? client.socekt : null;
       }
+
+      getSocketByNombre(nombre: string): Socket | undefined {
+        for (const client of Object.values(this.connectedClients)) {
+            if (client.user.Nombre === nombre) {
+                return client.socekt; // 👈 cuidado con el typo en "socekt"
+            }
+        }
+        return undefined;
+    }
+    
+      
       
     getConnectedClients(): string[] {
         return Object.keys(this.connectedClients);

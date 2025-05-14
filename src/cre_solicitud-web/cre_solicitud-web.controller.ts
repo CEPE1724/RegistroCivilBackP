@@ -5,7 +5,7 @@ import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { PaginationDto } from 'src/common/dtos/pagination.dto';
 import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
 import { AuthGuard } from '@nestjs/passport';
-import { Auth } from '../auth/decorators';
+import { Auth, GetUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
 
 @Controller('cre-solicitud-web')
@@ -78,12 +78,12 @@ export class CreSolicitudWebController {
   @Auth()
   async updateSolicitud(
     @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
-    
-   @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto , 
+   @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto ,
+    @GetUser() usuarioEjecutor: any,
   ) 
    {
 
-   return this.creSolicitudWebService.updateSolicitud(idCre_SolicitudWeb, updateCreSolicitudWebDto);
+   return this.creSolicitudWebService.updateSolicitud(idCre_SolicitudWeb, updateCreSolicitudWebDto , usuarioEjecutor);
   }
 
   @Patch('updatecodDactilar/:idCre_SolicitudWeb')
