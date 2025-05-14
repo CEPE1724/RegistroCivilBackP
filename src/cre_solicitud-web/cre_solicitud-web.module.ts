@@ -8,16 +8,19 @@ import {EqfxidentificacionconsultadaModule} from 'src/eqfxidentificacionconsulta
 import { CreSolicitudwebWsService } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.service";
 import { CreSolicitudwebWsGateway } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.gateway";
 import { CreSolicitudwebWsModule } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.module";
+import { SolicitudWebNotifierService } from './solicitud-web-notifier.service';
+
 import { AuthModule } from 'src/auth/auth.module';
 @Module({
   controllers: [CreSolicitudWebController],
-  providers: [CreSolicitudWebService], // ✅ Solo el servicio
+  providers: [CreSolicitudWebService , SolicitudWebNotifierService], // ✅ Solo el servicio
   imports: [
     TypeOrmModule.forFeature([CreSolicitudWeb]),
     AuthModuleCogno,
     EqfxidentificacionconsultadaModule,
     CreSolicitudwebWsModule, // ✅ Este módulo ya provee el Gateway
     AuthModule,
+    
   ],
 })
 export class CreSolicitudWebModule {}
