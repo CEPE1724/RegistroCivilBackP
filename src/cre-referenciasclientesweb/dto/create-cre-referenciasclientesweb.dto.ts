@@ -6,7 +6,7 @@ export class CreateCreReferenciasclienteswebDto {
 
 
     @IsInt()
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
 
     @IsInt()

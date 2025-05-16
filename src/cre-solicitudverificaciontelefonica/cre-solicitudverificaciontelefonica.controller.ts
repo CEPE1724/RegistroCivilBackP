@@ -25,7 +25,7 @@ export class CreSolicitudverificaciontelefonicaController {
   @Get('search')
   @Auth()
   search(
-    @Query('idCre_SolicitudWeb') idCre_SolicitudWeb: number, 
+    @Query('idCre_SolicitudWeb') idCre_SolicitudWeb: string, 
     @Query('idCre_VerificacionTelefonicaMaestro') idCre_VerificacionTelefonicaMaestro: number
   ) {
     return this.creSolicitudverificaciontelefonicaService.search(idCre_SolicitudWeb, idCre_VerificacionTelefonicaMaestro);

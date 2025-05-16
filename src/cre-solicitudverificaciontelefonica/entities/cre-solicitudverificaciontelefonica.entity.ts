@@ -33,7 +33,7 @@ export class CreSolicitudverificaciontelefonica {
     Origen: number;
     
     @Column({ type: 'int', nullable: true })
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
     
     @Column({ type: 'datetime', nullable: true })
     Fecha: Date;

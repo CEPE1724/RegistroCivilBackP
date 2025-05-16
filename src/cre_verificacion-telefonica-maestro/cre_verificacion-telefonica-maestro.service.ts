@@ -12,7 +12,7 @@ constructor(
   @InjectRepository(CreVerificacionTelefonicaMaestro)
   private readonly creVerificacionTelefonicaMaestroRepository: Repository<CreVerificacionTelefonicaMaestro>,
 ) { }
-async findByID(idCre_SolicitudWeb: number) {
+async findByID(idCre_SolicitudWeb: string) {
   return await this.creVerificacionTelefonicaMaestroRepository.find({
     where: { idCre_SolicitudWeb }, // Ensure this matches the entity property
   }); 

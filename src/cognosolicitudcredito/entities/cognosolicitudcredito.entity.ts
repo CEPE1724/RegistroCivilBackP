@@ -1,12 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, PrimaryColumn } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid'; // Para generar UUIDs manualmente, si es necesario
 
 @Entity('CognoSolicitudCredito')
 export class Cognosolicitudcredito {
-    @PrimaryGeneratedColumn('increment')
-    idCognoSolicitudCredito: number;
+    @PrimaryColumn('uuid') // Usamos 'uuid' como tipo para la columna primaria
+    idCognoSolicitudCredito: string;
 
     @Column('int', { default: 0 })
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @Column('text', { default: '' })
     Cedula: string;

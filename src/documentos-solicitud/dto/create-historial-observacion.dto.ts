@@ -3,7 +3,7 @@ import { IsInt, IsOptional, IsString, IsDate, IsNumber } from 'class-validator';
 export class CreateHistorialObservacionesDto {
     @IsOptional()
     @IsInt()
-    idCre_SolicitudWeb?: number;
+    idCre_SolicitudWeb?: string;
 
     @IsOptional()
     @IsInt()

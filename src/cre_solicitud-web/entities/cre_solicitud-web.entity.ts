@@ -1,12 +1,13 @@
 
 import { Col } from "sequelize/types/utils";
 import { BeforeInsert, Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { v4 as uuidv4 } from 'uuid'; // Para generar UUIDs manualmente, si es necesario
 
 @Entity('Cre_SolicitudWeb')
 export class CreSolicitudWeb {
 
-    @PrimaryGeneratedColumn()
-    idCre_SolicitudWeb: number;
+    @PrimaryColumn('uuid') // Usamos 'uuid' como tipo para la columna primaria
+    idCre_SolicitudWeb: string;  // El tipo será 'string' en TypeORM, ya que se maneja como una cadena
 
     @Column('datetime')
     Fecha: Date;

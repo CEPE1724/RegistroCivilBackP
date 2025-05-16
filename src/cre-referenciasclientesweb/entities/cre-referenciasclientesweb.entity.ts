@@ -9,7 +9,7 @@ export class CreReferenciasclientesweb {
     @Column('int', {
         nullable: true
     })
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @Column('int', {
         nullable: true

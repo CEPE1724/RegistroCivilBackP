@@ -4,7 +4,7 @@ export class CreateDocumentosSolicitudDto {
 
   
   @IsNumber()
-  idCre_SolicitudWeb?: number;
+  idCre_SolicitudWeb?: string;
 
   @IsNumber()
   idTipoDocumentoWEB?: number;

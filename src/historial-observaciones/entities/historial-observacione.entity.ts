@@ -21,7 +21,7 @@ export class HistorialObservaciones {
     idHistorialObservaciones: number;
 
     @Column({ type: 'int' })
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @Column({ type: 'int' })
     idDocumentosSolicitudWeb: number;

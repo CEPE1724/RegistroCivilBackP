@@ -19,7 +19,7 @@ import { Type } from 'class-transformer';
 export class CreateHistorialObservacioneDto {
 
     @IsNumber()
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @IsNumber()
     idDocumentosSolicitudWeb: number;

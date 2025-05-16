@@ -23,7 +23,7 @@ export class CreSolicitudverificaciontelefonicaService {
 
 
     // Método para buscar registros con los parámetros idCre_SolicitudWeb y idCre_VerificacionTelefonicaMaestro
-    search(idCre_SolicitudWeb: number, idCre_VerificacionTelefonicaMaestro: number) {
+    search(idCre_SolicitudWeb: string, idCre_VerificacionTelefonicaMaestro: number) {
       return this.creSolicitudverificaciontelefonicaRepository.find({
         where: {
           idCre_SolicitudWeb,

@@ -49,7 +49,7 @@ export class CreSolicitudWebService {
     }
   }
 
-  private async callStoredProcedureRetornaTipoCliente(cedula: string, idSolicitud: number): Promise<any> {
+  private async callStoredProcedureRetornaTipoCliente(cedula: string, idSolicitud: string): Promise<any> {
     try {
 
       // Ejecutamos la consulta y pasamos el parámetro correctamente
@@ -462,12 +462,12 @@ export class CreSolicitudWebService {
     return result;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
   }
 
   async update(
-    idCre_SolicitudWeb: number,
+    idCre_SolicitudWeb: string,
     updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
     usuarioEjecutor?: any,
   ) {
@@ -506,7 +506,7 @@ export class CreSolicitudWebService {
 
 
   async updateTelefonica(
-    idCre_SolicitudWeb: number,
+    idCre_SolicitudWeb: string,
     idEstadoVerificacionDocumental: number,
     updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
     usuarioEjecutor?: any,
@@ -548,7 +548,7 @@ export class CreSolicitudWebService {
 
 // cre_solicitud-web.service.ts
 async updateSolicitud(
-  idCre_SolicitudWeb: number,
+  idCre_SolicitudWeb: string,
   updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
   usuarioEjecutor?: any,
 ) {
@@ -602,7 +602,7 @@ const beforeUpdate: CreSolicitudWeb = {
 
 
 async updateCodDactilar(
-  idCre_SolicitudWeb: number,
+  idCre_SolicitudWeb: string,
   updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
   usuarioEjecutor?: any,
 ) {
@@ -640,7 +640,7 @@ async updateCodDactilar(
 
 
 
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} creSolicitudWeb`;
   }
 

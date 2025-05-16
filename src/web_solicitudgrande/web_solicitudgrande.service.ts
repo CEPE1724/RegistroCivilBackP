@@ -44,7 +44,7 @@ export class WebSolicitudgrandeService {
     return this.webSolicitudgrandeRepository.findOne({ where: {  NumeroSolicitud:numerosolicitud } });
   }
 
-  update(id: number, updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
+  update(id: string, updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
 	const dtoTransformado: any = {
 		...updateWebSolicitudgrandeDto,
 		ValorInmmueble: updateWebSolicitudgrandeDto.ValorInmmueble
@@ -60,7 +60,7 @@ export class WebSolicitudgrandeService {
   }
 
  //update al campo CuotaAsignada y Cupo
-async updateCuotayCupo(id: number, updateDto: UpdateCuotaYCupoDto) {
+async updateCuotayCupo(id: string, updateDto: UpdateCuotaYCupoDto) {
   try {
     // Verificar si la solicitud existe
     const exists = await this.webSolicitudgrandeRepository.existsBy({ 
