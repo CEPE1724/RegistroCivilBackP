@@ -17,7 +17,7 @@ export class CreateWebSolicitudgrandeDto {
   @IsOptional()
   @IsNumber()
   @IsPositive()
-  readonly idCre_SolicitudWeb?: number;
+  readonly idCre_SolicitudWeb?: string;
 
   @IsOptional()
   @IsNumber()

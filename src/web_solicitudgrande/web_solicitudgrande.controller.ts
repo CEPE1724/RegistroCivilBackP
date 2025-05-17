@@ -30,16 +30,19 @@ export class WebSolicitudgrandeController {
   @Patch('listadosolicitud/:id')
   @Auth()
   update(@Param('id') id: string, @Body() updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
-    return this.webSolicitudgrandeService.update(+id, updateWebSolicitudgrandeDto);
+    return this.webSolicitudgrandeService.update(id, updateWebSolicitudgrandeDto);
   }
 
 @Patch('updatecuotaycupo/:id')
 @Auth()
 updateCuotayCupo(@Param('id') id: string, @Body() updateDto: UpdateCuotaYCupoDto) {
-  const idNumber = parseInt(id, 10);
-  if (isNaN(idNumber)) {
-    throw new BadRequestException('ID debe ser un número válido');
+  const idNumber = id
+
+  // string valido o qu eno venga vacio
+  if (!idNumber ) {
+    throw new BadRequestException('El id proporcionado no es válido.');
   }
+  
 
   return this.webSolicitudgrandeService.updateCuotayCupo(idNumber, updateDto);
   }

@@ -17,10 +17,10 @@ export class CognoSolicitudProfesiones {
     @PrimaryGeneratedColumn('increment')
     idCognoSolicitudProfesiones: number;
     
-    @Column('int', {
-        default: 0
+    @Column('text', {
+        default: ''
     })
-    idCognoSolicitudCredito: number;
+    idCognoSolicitudCredito: string;
      
     @Column('int')
     idProfesion: number;

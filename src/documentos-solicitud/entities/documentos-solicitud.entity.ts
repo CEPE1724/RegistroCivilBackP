@@ -20,7 +20,7 @@ export class DocumentosSolicitud {
     idDocumentosSolicitudWeb: number;
 
     @Column({ type: 'int', nullable: true })
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @Column({ type: 'int', nullable: true })
     idTipoDocumentoWEB: number;

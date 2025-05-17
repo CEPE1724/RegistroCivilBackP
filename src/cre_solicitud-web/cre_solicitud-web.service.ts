@@ -11,6 +11,8 @@ import { AuthService } from 'src/cognosolicitudcredito/auth/auth.service';
 import { EqfxidentificacionconsultadaService } from 'src/eqfxidentificacionconsultada/eqfxidentificacionconsultada.service';
 import { CreSolicitudwebWsGateway } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.gateway";
 import { CreSolicitudwebWsService } from 'src/cre_solicitudweb-ws/cre_solicitudweb-ws.service';
+import { SolicitudWebNotifierService } from './solicitud-web-notifier.service';
+
 import { Socket } from 'dgram';
 
 @Injectable()
@@ -24,7 +26,8 @@ export class CreSolicitudWebService {
     private readonly authService: AuthService,
     private readonly eqfxidentificacionconsultadaService: EqfxidentificacionconsultadaService,
     private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway,
-    private readonly creSolicitudwebWsService : CreSolicitudwebWsService
+    private readonly creSolicitudwebWsService : CreSolicitudwebWsService,
+    private readonly notifierService : SolicitudWebNotifierService
   ) { }
 
   private async EquifaxData(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
@@ -46,7 +49,7 @@ export class CreSolicitudWebService {
     }
   }
 
-  private async callStoredProcedureRetornaTipoCliente(cedula: string, idSolicitud: number): Promise<any> {
+  private async callStoredProcedureRetornaTipoCliente(cedula: string, idSolicitud: string): Promise<any> {
     try {
 
       // Ejecutamos la consulta y pasamos el parámetro correctamente
@@ -459,97 +462,175 @@ export class CreSolicitudWebService {
     return result;
   }
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
   }
 
   async update(
-    idCre_SolicitudWeb: number,
-    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+    idCre_SolicitudWeb: string,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+    usuarioEjecutor?: any,
   ) {
     const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
-    
     if (!creSolicitudWeb) {
       throw new NotFoundException('Registro no encontrado');
     }
   
     try {
+
+      const beforeUpdate: CreSolicitudWeb = {
+        ...creSolicitudWeb,
+        // No asignes valores a los métodos `upper*`
+        upperApellidos: undefined, // No necesitas asignar valores a estos métodos
+        upperNombres: undefined, 
+        upperSegundoNombre: undefined,
+        uppperApellidoPaterno: undefined,
+      };
       this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
-      await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
   
-      // Emitir evento websocket
-      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
-        id: idCre_SolicitudWeb,
+      await this.notifierService.emitirCambioSolicitudWeb({
+        solicitud: updated,
         cambios: updateCreSolicitudWebDto,
-        updatedAt: new Date(), // opcional
+        usuarioEjecutor,
+        original: beforeUpdate,
       });
   
-      return creSolicitudWeb;
+      return updated;
     } catch (error) {
       this.handleDBException(error);
     }
   }
   
+  
+
+
   async updateTelefonica(
-    idCre_SolicitudWeb: number,
+    idCre_SolicitudWeb: string,
     idEstadoVerificacionDocumental: number,
-    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+    usuarioEjecutor?: any,
   ) {
-    const result = await this.creSolicitudWebRepository.update(idCre_SolicitudWeb, {
-      idEstadoVerificacionDocumental: idEstadoVerificacionDocumental
-    });
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
+    if (!creSolicitudWeb) {
+      throw new NotFoundException('Registro no encontrado');
+    }
   
-    this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
-      id: idCre_SolicitudWeb,
-      cambios: updateCreSolicitudWebDto,
-      updatedAt: new Date(), // opcional
-    });
+    try {
+
+      const beforeUpdate: CreSolicitudWeb = {
+        ...creSolicitudWeb,
+        // No asignes valores a los métodos `upper*`
+        upperApellidos: undefined, // No necesitas asignar valores a estos métodos
+        upperNombres: undefined, 
+        upperSegundoNombre: undefined,
+        uppperApellidoPaterno: undefined,
+      };
+      creSolicitudWeb.idEstadoVerificacionDocumental = idEstadoVerificacionDocumental;
+      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+      const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
   
-    return result;
+      await this.notifierService.emitirCambioSolicitudWeb({
+        solicitud: updated,
+        cambios: updateCreSolicitudWebDto,
+        usuarioEjecutor,
+        original: beforeUpdate,
+
+      });
+  
+      return updated;
+    } catch (error) {
+      this.handleDBException(error);
+    }
   }
+  
   
 
 // cre_solicitud-web.service.ts
-
-async updateSolicitud(  
-  idCre_SolicitudWeb: number,
+async updateSolicitud(
+  idCre_SolicitudWeb: string,
   updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+  usuarioEjecutor?: any,
 ) {
-  // 1. Buscar el registro
+  console.log('➡️ Ejecutando updateSolicitud');
+
+  const idUsuarioEjecutor = usuarioEjecutor?.idUsuario;
+  const idGrupoEjecutor = usuarioEjecutor?.idGrupo;
+
   const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
     where: { idCre_SolicitudWeb },
   });
+
+  if (!creSolicitudWeb) {
+    console.log('❌ Registro no encontrado');
+    throw new NotFoundException('Registro no encontrado');
+  }
+
+  try {
+    // Actualizar la entidad
+      // Asegúrate de que no estás asignando valores a los métodos
+const beforeUpdate: CreSolicitudWeb = {
+  ...creSolicitudWeb,
+  // No asignes valores a los métodos `upper*`
+  upperApellidos: undefined, // No necesitas asignar valores a estos métodos
+  upperNombres: undefined, 
+  upperSegundoNombre: undefined,
+  uppperApellidoPaterno: undefined,
+};
+
+
+    this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+    const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+    // ✅ Emitir evento y notificaciones desde un único punto
+    await this.notifierService.emitirCambioSolicitudWeb({
+      solicitud: updated,
+      cambios: updateCreSolicitudWebDto,
+      usuarioEjecutor,
+      original: beforeUpdate,
+    });
+
+    return updated;
+
+  } catch (error) {
+    console.error('❗ Error al actualizar la solicitud:', error);
+    this.handleDBException(error);
+  }
+}
+
+
+
+
+async updateCodDactilar(
+  idCre_SolicitudWeb: string,
+  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+  usuarioEjecutor?: any,
+) {
+  const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
   if (!creSolicitudWeb) {
     throw new NotFoundException('Registro no encontrado');
   }
 
-  // ⚠️ Captura el idUsuario ANTES del merge
-  const idUsuarioDestino = creSolicitudWeb.idAnalista; // Ajusta según tu entidad
-
   try {
-    // 2. Merge + save
+
+    const beforeUpdate: CreSolicitudWeb = {
+      ...creSolicitudWeb,
+      // No asignes valores a los métodos `upper*`
+      upperApellidos: undefined, // No necesitas asignar valores a estos métodos
+      upperNombres: undefined, 
+      upperSegundoNombre: undefined,
+      uppperApellidoPaterno: undefined,
+    };
+
     this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
     const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
 
-    // 3. Evento global
-    this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
-      id: updated.idCre_SolicitudWeb,
+    await this.notifierService.emitirCambioSolicitudWeb({
+      solicitud: updated,
       cambios: updateCreSolicitudWebDto,
-      updatedAt: new Date(),
+      usuarioEjecutor,
+      original: beforeUpdate,
     });
-
-    // 4. Evento solo para el usuario específico
-   // 4. Evento solo para el usuario específico
-if (idUsuarioDestino) {
-  const socketDestino = this.creSolicitudwebWsService.getSocketByUserId(idUsuarioDestino);
-  if (socketDestino) {
-    socketDestino.emit('solicitud-web-usuario', {
-      id: updated.idCre_SolicitudWeb,
-      cambios: updateCreSolicitudWebDto,
-      mensaje: 'Tienes una solicitud actualizada',
-    });
-  }
-}
 
     return updated;
   } catch (error) {
@@ -558,22 +639,8 @@ if (idUsuarioDestino) {
 }
 
 
-async updateCodDactilar(idCre_SolicitudWeb: number, updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-  const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
-  if (!creSolicitudWeb) {
-    throw new NotFoundException('Registro no encontrado');
-  }
-  try {
-    this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
-    await this.creSolicitudWebRepository.save(creSolicitudWeb);
-    return creSolicitudWeb;
-  } catch (error) {
-    this.handleDBException(error);
-  }
-}
 
-
-  remove(id: number) {
+  remove(id: string) {
     return `This action removes a #${id} creSolicitudWeb`;
   }
 

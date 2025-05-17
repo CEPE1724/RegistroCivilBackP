@@ -13,10 +13,9 @@ import { Type } from 'class-transformer';
 
 export class CreateCognoTrabajoDto {
 
-    @IsNumber()
-    @IsPositive()
+    @IsString()
     @IsOptional()
-    idCognoSolicitudCredito?: number;
+    idCognoSolicitudCredito?: string;
 
     @IsNumber()
     @IsPositive()

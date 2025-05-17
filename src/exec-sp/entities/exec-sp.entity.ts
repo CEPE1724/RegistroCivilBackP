@@ -7,7 +7,7 @@ import { BeforeInsert, Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } f
 export class ExecSp {
 
     @PrimaryGeneratedColumn()
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @Column('datetime')
     Fecha: Date;

@@ -12,6 +12,7 @@ export class MenuItemRoleController {
 
 
 	@Get(':userId/menu')
+	@Auth()
 	//@UseGuards(AuthGuard())
 	async getUserMenuItems(@Param('userId') userId: number) {
 		return this.menuItemRoleService.getUserMenuItems(userId);
@@ -19,6 +20,7 @@ export class MenuItemRoleController {
 
 
 	@Get('permissionscomponents/:idmenu_items/:idUsuario')
+	@Auth()
 	async getPermissionsComponents(
 		@Param('idmenu_items') idmenu_items: number,
 		@Param('idUsuario') idUsuario: number) {
@@ -26,11 +28,13 @@ export class MenuItemRoleController {
 	}
 
 	@Get('permissionsmenu/:idUsuario')
+	@Auth()
 	async getPermissionsMenu(@Param('idUsuario') idUsuario: number) {
 		return this.menuItemRoleService.getPermissionsMenu(idUsuario);
 	}
 
 	@Get('accessroles/:idUsuario/:idmenu_items')
+	@Auth()
 	getMenuItemAccessRoles(
 		@Param('idUsuario') idUsuario: number,
 		@Param('idmenu_items') idmenu_items: number
@@ -40,6 +44,7 @@ export class MenuItemRoleController {
 
 
 	@Post('accessroles/create/:idUsuario/:idmenu_items_access')
+	@Auth()
 	async createSingleMenuItemAccess(
 		@Param('idUsuario') idUsuario: number,
 		@Param('idmenu_items_access') idmenu_items_access: number,
@@ -49,6 +54,7 @@ export class MenuItemRoleController {
 
 
 	@Delete('accessroles/delete/:idUsuario/:idmenu_items_access')
+	@Auth()
 	async deleteSingleMenuItemAccess(
 		@Param('idUsuario') idUsuario: number,
 		@Param('idmenu_items_access') idmenu_items_access: number,
@@ -59,16 +65,19 @@ export class MenuItemRoleController {
 
 
 	@Get()
+	@Auth()
 	findAll() {
 		return this.menuItemRoleService.findAll();
 	}
 
 	@Get(':id')
+	@Auth()
 	findOne(@Param('id') id: string) {
 		return this.menuItemRoleService.findOne(+id);
 	}
 
 	@Post('permisos/create/:idUsuario/:m_idmenu_items')
+	@Auth()
 	async createUserPermission(
 		@Param('idUsuario') idUsuario: number,
 		@Param('m_idmenu_items') m_idmenu_items: number
@@ -76,15 +85,14 @@ export class MenuItemRoleController {
 		return this.menuItemRoleService.createPermissionByUser(idUsuario, m_idmenu_items);
 	}
 
-
-
-
 	@Delete(':id')
+	@Auth()
 	remove(@Param('id') id: string) {
 		return this.menuItemRoleService.remove(+id);
 	}
 
 	@Delete('permisos/delete/:idUsuario/:idmenu_item_roles')
+	@Auth()
 	async deleteUserPermission(
 		@Param('idUsuario') idUsuario: number,
 		@Param('idmenu_item_roles') idmenu_item_roles: number,

@@ -1,21 +1,23 @@
 
-import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert, PrimaryColumn } from "typeorm";
+import { v4 as uuidv4 } from 'uuid'; // Para generar UUIDs manualmente, si es necesario
 
 @Entity('Web_SolicitudGrande')
 export class WebSolicitudgrande {
 
-    @PrimaryGeneratedColumn('increment')
-    idWeb_SolicitudGrande: number;
+    
+     @PrimaryColumn('uuid') 
+    idWeb_SolicitudGrande: string;
 
     @Column('int', {
         default: 0
     })
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
-    @Column('int', {
-        default: 0
+    @Column('varchar', {
+        default: ''
     })
-    idCognoSolicitudCredito: number;
+    idCognoSolicitudCredito: string;
 
     @Column('datetime', {
         default: () => 'GETDATE()'

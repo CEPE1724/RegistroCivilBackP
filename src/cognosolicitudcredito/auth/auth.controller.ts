@@ -11,7 +11,7 @@ export class AuthController {
 
     @Post('cogno/token/:cedula/:numberId')
     async login(@Param('cedula') cedula: string,
-        @Param('numberId') numberId: number) {
+        @Param('numberId') numberId: string) {
         const token = await this.authService.getToken(cedula);
 
 

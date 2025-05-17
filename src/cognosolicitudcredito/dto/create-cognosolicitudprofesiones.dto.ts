@@ -11,10 +11,9 @@ import {
 export class CreateCognosolicitudprofesionesDto {
 
 
-    @IsNumber()
-    @IsPositive()
+    @IsString()
     @IsOptional()
-    idCognoSolicitudCredito?: number;   
+    idCognoSolicitudCredito?: string; 
 
     @IsNumber()
     @IsPositive()

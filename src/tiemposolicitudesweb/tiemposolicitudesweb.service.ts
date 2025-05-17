@@ -19,7 +19,7 @@ export class TiemposolicitudeswebService {
   }
 
 
-  findAllTipo(idCre_SolicitudWeb: number, tipo: number) {
+  findAllTipo(idCre_SolicitudWeb: string, tipo: number) {
     return this.tiemposolicitudeswebRepository.find({
       where: {
         idCre_SolicitudWeb: idCre_SolicitudWeb,
@@ -31,7 +31,7 @@ export class TiemposolicitudeswebService {
     });
   }
 
-  findAllTiempo(tipo: number, idCre_SolicitudWeb: number, idEstadoVerificacionDocumental: number[]) {
+  findAllTiempo(tipo: number, idCre_SolicitudWeb: string, idEstadoVerificacionDocumental: number[]) {
     return this.tiemposolicitudeswebRepository.find({
       where: {
         idCre_SolicitudWeb: idCre_SolicitudWeb,
@@ -44,7 +44,7 @@ export class TiemposolicitudeswebService {
     });
   }
 
-  findAll(idCre_SolicitudWeb: number) {
+  findAll(idCre_SolicitudWeb: string) {
     return this.tiemposolicitudeswebRepository.find({
       where: {
         idCre_SolicitudWeb: idCre_SolicitudWeb

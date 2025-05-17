@@ -18,8 +18,8 @@ export class TiempoSolicitudesWeb {
     @Column({ name: 'idEstadoVerificacionDocumental', type: 'int', nullable: true })
     idEstadoVerificacionDocumental: number;
 
-    @Column({ name: 'idCre_SolicitudWeb', type: 'int', nullable: true })
-    idCre_SolicitudWeb: number;
+    @Column({ name: 'idCre_SolicitudWeb', type: 'varchar', length: 50, nullable: true })
+    idCre_SolicitudWeb: string  ;
 
     @Column({ name: 'Tipo', type: 'int', nullable: true })
     Tipo: number;

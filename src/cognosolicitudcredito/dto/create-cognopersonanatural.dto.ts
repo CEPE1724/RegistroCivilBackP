@@ -7,9 +7,8 @@ import {
 import { Type } from 'class-transformer';
 export class CreateCognopersonanaturalDto {
 
-    @IsNumber()
-    @IsPositive()
-    idCognoSolicitudCredito: number;
+    @IsString()
+    idCognoSolicitudCredito: string;
 
     @IsString()
     @MinLength(10)

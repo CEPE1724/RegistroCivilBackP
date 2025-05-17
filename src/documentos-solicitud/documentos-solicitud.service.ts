@@ -61,7 +61,7 @@ export class DocumentosSolicitudService {
 
 
   // Buscar documentos por solicitud
-  async findBySolicitud(idSolicitud: number, idEstadoVerificacionDocumental: number) {
+  async findBySolicitud(idSolicitud: string, idEstadoVerificacionDocumental: number) {
     /// si idEstadoVerificacionDocumental == 1 buscamos por estado 1 y 2
     if (idEstadoVerificacionDocumental == 1) {
       return await this.documentosSolicitudRepository.find({
@@ -77,7 +77,7 @@ export class DocumentosSolicitudService {
     
   }
 
-  async findBySolicitudEstado(idSolicitud: number, estado: number) {
+  async findBySolicitudEstado(idSolicitud: string, estado: number) {
     return await this.documentosSolicitudRepository.find({
       where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: estado }, // Filtramos los documentos que pertenezcan a esa solicitud
     });
@@ -98,7 +98,7 @@ export class DocumentosSolicitudService {
 
 
    // Método para cancelar documentos con estado 5 o 4
-   async updateCancelados(idSolicitud: number): Promise<void> {
+   async updateCancelados(idSolicitud: string): Promise<void> {
     const documentos = await this.documentosSolicitudRepository.find({
       where: {
         idCre_SolicitudWeb: idSolicitud,  // Filtrar por solicitud
@@ -131,7 +131,7 @@ export class DocumentosSolicitudService {
 
   // Verifica si ya existe un archivo con el idCreSolicitudWeb y tipoDocumento con estado 1
 
-  async checkIfFileExists(idCreSolicitudWeb: number, tipoDocumento: number): Promise<boolean> {
+  async checkIfFileExists(idCreSolicitudWeb: string, tipoDocumento: number): Promise<boolean> {
 
     const result = await this.documentosSolicitudRepository.find({
       where: {
@@ -146,7 +146,7 @@ export class DocumentosSolicitudService {
   }
   
 
-  async updateEstado(idSolicitud: number): Promise<void> {
+  async updateEstado(idSolicitud: string): Promise<void> {
     const documentos = await this.documentosSolicitudRepository.find({
         where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: 1 }
     });
@@ -163,7 +163,7 @@ export class DocumentosSolicitudService {
 }
 
 
-async getObservaciones(idSolicitud: number, idTipoDocumento: number): Promise<HistorialObservaciones[]> {
+async getObservaciones(idSolicitud: string, idTipoDocumento: number): Promise<HistorialObservaciones[]> {
   return await this.historialObservacionesRepository.find({
     where: { 
       idCre_SolicitudWeb: idSolicitud,
@@ -174,7 +174,7 @@ async getObservaciones(idSolicitud: number, idTipoDocumento: number): Promise<Hi
 }
 
 
-async areThreeDocsApproved(idSolicitud: number): Promise<boolean> {
+async areThreeDocsApproved(idSolicitud: string): Promise<boolean> {
   const tiposRequeridos = [14, 13, 12];
 
   const documentos = await this.documentosSolicitudRepository.find({
