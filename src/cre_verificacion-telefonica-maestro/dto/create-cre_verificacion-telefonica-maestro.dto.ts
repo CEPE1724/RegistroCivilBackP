@@ -26,11 +26,11 @@ export class CreateCreVerificacionTelefonicaMaestroDto {
 
     @IsNumber()
     @IsPositive()
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @IsNumber()
     @IsPositive()
-    idWeb_SolicitudGrande: number;
+    idWeb_SolicitudGrande: string;
 
     @IsString()
     Observacion: string;

@@ -11,10 +11,10 @@ import { Type } from 'class-transformer';
 
 export class CreateCognolugarnacimientoDto {
 
-    @IsNumber()
-    @IsPositive()
+
+
     @IsOptional()
-    idCognoSolicitudCredito?: number;
+    idCognoSolicitudCredito?: string;
 
     @IsNumber()
     @IsPositive()

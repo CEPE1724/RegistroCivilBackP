@@ -129,7 +129,7 @@ export class AuthService {
         }
     }
 
-    async create(apiData: any, bApiDataTrabajo: boolean, numberId: number): Promise<Cognosolicitudcredito> {
+    async create(apiData: any, bApiDataTrabajo: boolean, numberId: string): Promise<Cognosolicitudcredito> {
         try {
 
             const existingRecord = await this.cognosolicitudcreditoRepository.findOne({
@@ -171,7 +171,7 @@ export class AuthService {
 
     }
 
-    async createNatural(apiData: any, idCognoSolicitudCredito: number, Tipo: number): Promise<CognoPersonaNatural> {
+    async createNatural(apiData: any, idCognoSolicitudCredito: string, Tipo: number): Promise<CognoPersonaNatural> {
         try {
             /// veirificar si existe la persona natural
             const existingRecord = await this.cognoPersonaNaturalRepository.findOne({
@@ -245,7 +245,7 @@ export class AuthService {
         }
     }
 
-    async createNaturalConyugue(apiData: any, idCognoSolicitudCredito: number, Tipo: number): Promise<CognoPersonaNatural> {
+    async createNaturalConyugue(apiData: any, idCognoSolicitudCredito: string, Tipo: number): Promise<CognoPersonaNatural> {
         try {
 
 
@@ -322,7 +322,7 @@ export class AuthService {
         }
     }
 
-    async createLugarNacimiento(apiData: any, idCognoSolicitudCredito: number, Tipo: number): Promise<CognoSolicitudLugarNacimiento> {
+    async createLugarNacimiento(apiData: any, idCognoSolicitudCredito: string, Tipo: number): Promise<CognoSolicitudLugarNacimiento> {
         try {
 
             /// veirificar si existe la persona natural
@@ -403,7 +403,7 @@ export class AuthService {
 
     }
 
-    async createNacionalidades(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+    async createNacionalidades(apiData: any, idCognoSolicitudCredito: string): Promise<void> {
         try {
             // Validación previa para evitar errores de undefined
             if (!apiData?.nacionalidades || !Array.isArray(apiData.nacionalidades) || apiData.nacionalidades.length === 0) {
@@ -457,7 +457,7 @@ export class AuthService {
         }
     }
 
-    async createProfesiones(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+    async createProfesiones(apiData: any, idCognoSolicitudCredito: string): Promise<void> {
 
 
         try {
@@ -501,7 +501,7 @@ export class AuthService {
         }
     }
 
-    async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+    async createTrabajo(apiData: any, idCognoSolicitudCredito: string): Promise<void> {
 
 
         try {
@@ -523,7 +523,7 @@ export class AuthService {
 
 
                 if (existingRecord) {
-                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || 0;
+                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || '';
                     existingRecord.fechaActualizacion = trabajoData.fechaActualizacion || 0;
                     existingRecord.fechaIngreso = trabajoData.fechaIngreso || 0;
                     existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta || new Date();
@@ -595,7 +595,7 @@ export class AuthService {
                     const sl = pp?.situacionLegal;
 
                     const createCognoTrabajoDto: CreateCognoTrabajoDto = {
-                        idCognoSolicitudCredito: idCognoSolicitudCredito || 0,
+                        idCognoSolicitudCredito: idCognoSolicitudCredito || '',
                         fechaActualizacion: trabajoData.fechaActualizacion || 0,
                         fechaIngreso: trabajoData.fechaIngreso || 0,
                         fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta || 0,

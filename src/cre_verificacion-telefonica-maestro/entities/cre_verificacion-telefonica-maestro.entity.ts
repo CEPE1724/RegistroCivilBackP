@@ -34,10 +34,10 @@ export class CreVerificacionTelefonicaMaestro {
     idEstadoOrigenTelefonica: number;
     
     @Column()
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
     
     @Column()
-    idWeb_SolicitudGrande: number;
+    idWeb_SolicitudGrande: string;
     
     @Column()
     FechaSistema: Date;

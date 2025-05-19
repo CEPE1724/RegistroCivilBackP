@@ -21,14 +21,15 @@ import {
     IsOptional,
     IsPositive,
     MinLength,
+    isString,
 } from 'class-validator';
 
 export class CreateCognosolicitudnacionalidadesDto {
 
-    @IsNumber()
-    @IsPositive()
+
+    @IsString()
     @IsOptional()
-    idCognoSolicitudCredito?: number;
+    idCognoSolicitudCredito?: string;
 
 
     @IsNumber()

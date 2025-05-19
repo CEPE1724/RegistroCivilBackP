@@ -6,10 +6,10 @@ export class CognoSolicitudLugarNacimiento {
     @PrimaryGeneratedColumn('increment')
     idCognoSolicitudLugarNacimiento: number;
 
-    @Column('int', {
-        default: 0
+    @Column('text', {
+        default: ''
     })
-    idCognoSolicitudCredito: number;
+    idCognoSolicitudCredito: string;
 
     @Column('int')
     idLugar: number;

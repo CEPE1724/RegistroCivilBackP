@@ -1,22 +1,4 @@
-/*
-CREATE TABLE [dbo].[Cre_SolicitudVerificacionTelefonica](
-    [idCre_SolicitudVerificacionTelefonica] [int] IDENTITY(1,1) NOT NULL,
-    [ClienteGarante] [bit] NULL,
-    [Origen] [int] NULL,
-    [idCre_SolicitudWeb] [int] NULL,
-    [Fecha] [datetime] NULL,
-    [Telefono] [varchar](20) NULL,
-    [Contacto] [varchar](100) NULL,
-    [idParentesco] [int] NULL,
-    [idEstadoGestns] [int] NULL,
-    [Observaciones] [varchar](1000) NULL,
-    [Estado] [bit] NULL,
-    [NotasDelSistema] [varchar](100) NULL,
-    [Usuario] [varchar](50) NULL,
-    [Indice] [int] NULL,
-    [Web] [int] NULL,
-    [Nuevo] [bit] NULL,
-*/
+
 
 import { IsBoolean, IsDate, IsNumber, IsOptional, IsPositive, IsString, MaxLength, MinLength } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -33,7 +15,7 @@ export class CreateCreSolicitudverificaciontelefonicaDto {
 
     @IsNumber()
     @IsPositive() 
-    idCre_SolicitudWeb: number;
+    idCre_SolicitudWeb: string;
 
     @IsDate()
     @Type(() => Date)

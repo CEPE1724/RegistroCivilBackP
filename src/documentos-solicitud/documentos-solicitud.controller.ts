@@ -21,7 +21,7 @@ export class DocumentosSolicitudController {
   @Get('verificar-documentos-aprobados/:idSolicitud')
   @Auth()
 async verificarDocumentosAprobados(@Param('idSolicitud') idSolicitud: string) {
-  const result = await this.documentosSolicitudService.areThreeDocsApproved(Number(idSolicitud));
+  const result = await this.documentosSolicitudService.areThreeDocsApproved(idSolicitud);
   return { allThreeDocsApproved: result };
 }
 
@@ -33,7 +33,7 @@ async getObservaciones(
   @Query('idTipoDocumento') idTipoDocumento: string
 ) {
   return await this.documentosSolicitudService.getObservaciones(
-    Number(idSolicitud),
+    idSolicitud,
     Number(idTipoDocumento)
   );
 }
@@ -41,7 +41,7 @@ async getObservaciones(
 @Patch('update-cancelados/:idSolicitud')
 @Auth()
 async updateCancelados(@Param('idSolicitud') id: string, @Body() updateDocumentoStatusDto: UpdateDocumentoStatusDto) {
-  await this.documentosSolicitudService.updateCancelados(Number(id));
+  await this.documentosSolicitudService.updateCancelados(id);
   return { message: 'Documentos cancelados correctamente.' };
 }
 
@@ -54,10 +54,15 @@ async checkIfFileExists(
 ) {
 
   // Convertir los valores a números
-  const idCreSolicitudWebNum = Number(idCreSolicitudWeb);
+  const idCreSolicitudWebNum = (idCreSolicitudWeb);
   const tipoDocumentoNum = Number(tipoDocumento);
 
-  if (isNaN(idCreSolicitudWebNum) || isNaN(tipoDocumentoNum)) {
+  // idCreSolicitudWebNum si no esta vacio string
+  if (idCreSolicitudWebNum === undefined || idCreSolicitudWebNum === null || idCreSolicitudWebNum === '') {
+    return { exists: false }; // Devuelve falso si alguno de los parámetros no es válido
+  }
+  
+  if ( isNaN(tipoDocumentoNum)) {
 
     return { exists: false }; // Devuelve falso si alguno de los parámetros no es válido
   }
@@ -78,14 +83,14 @@ async checkIfFileExists(
     @Param('idSolicitud') idSolicitud: string,
     @Param('idEstadoVerificacionDocumental') idEstadoVerificacionDocumental: string
   ) {
-    return await this.documentosSolicitudService.findBySolicitud(Number(idSolicitud), Number(idEstadoVerificacionDocumental));
+    return await this.documentosSolicitudService.findBySolicitud(idSolicitud, Number(idEstadoVerificacionDocumental));
   }
 
   
 
   @Get(':idSolicitud/:estado')
   @Auth()
-  async findBySolicitudEstado(@Param('idSolicitud') idSolicitud: number, @Param('estado') estado: number) {
+  async findBySolicitudEstado(@Param('idSolicitud') idSolicitud: string, @Param('estado') estado: number) {
     return await this.documentosSolicitudService.findBySolicitudEstado(idSolicitud, estado);
   }
 
@@ -105,7 +110,7 @@ async checkIfFileExists(
   @Patch('updateEstado/:idSolicitud')
   @Auth()
   async updateEstado(@Param('idSolicitud') idSolicitud: string) {
-    await this.documentosSolicitudService.updateEstado(Number(idSolicitud));
+    await this.documentosSolicitudService.updateEstado(idSolicitud);
     return { message: 'Documentos actualizados correctamente.' };
   }
 

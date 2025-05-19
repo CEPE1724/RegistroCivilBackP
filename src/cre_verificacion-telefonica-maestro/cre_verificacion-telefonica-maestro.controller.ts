@@ -7,13 +7,13 @@ import { ValidRoles } from '../auth/interfaces';
 
 @Controller('cre-verificacion-telefonica-maestro')
 export class CreVerificacionTelefonicaMaestroController {
-  constructor(private readonly creVerificacionTelefonicaMaestroService: CreVerificacionTelefonicaMaestroService) {}
+  constructor(private readonly creVerificacionTelefonicaMaestroService: CreVerificacionTelefonicaMaestroService) { }
 
-   @Get(':idCre_SolicitudWeb')
-   @Auth()
-   async findByID(@Param('idCre_SolicitudWeb') idCre_VerificacionTelefonica: string) {
-      return await this.creVerificacionTelefonicaMaestroService.findByID(Number(idCre_VerificacionTelefonica));
-    }
+  @Get(':idCre_SolicitudWeb')
+  @Auth()
+  async findByID(@Param('idCre_SolicitudWeb') idCre_VerificacionTelefonica: string) {
+    return await this.creVerificacionTelefonicaMaestroService.findByID((idCre_VerificacionTelefonica));
+  }
 
   @Post()
   @Auth()

@@ -19,7 +19,7 @@ export class CreReferenciasclienteswebService {
     return this.creReferenciasclienteswebRepository.save(createCreReferenciasclienteswebDto);
   }
 
-  findAll(idsolicitud: number) {
+  findAll(idsolicitud: string) {
     return this.creReferenciasclienteswebRepository.find(
       {
         where: {
@@ -29,7 +29,7 @@ export class CreReferenciasclienteswebService {
     );
   }
 
-  async findAllCount(idsolicitud: number) {
+  async findAllCount(idsolicitud: string) {
     const count = await this.creReferenciasclienteswebRepository.count(
       {
         where: {
@@ -41,7 +41,7 @@ export class CreReferenciasclienteswebService {
   }
 
 
-  findOne(id: number) {
+  findOne(id: string) {
     return this.creReferenciasclienteswebRepository.findOne(
       {
         where: {

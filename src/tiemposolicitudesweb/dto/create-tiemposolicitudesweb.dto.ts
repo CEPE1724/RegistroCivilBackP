@@ -15,7 +15,7 @@ export class CreateTiemposolicitudeswebDto {
     idEstadoVerificacionDocumental?: number;
 
     @IsNumber()
-    idCre_SolicitudWeb?: number;
+    idCre_SolicitudWeb?: string;
 
     @IsNumber()
     Tipo?: number;

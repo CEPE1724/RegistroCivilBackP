@@ -8,10 +8,10 @@ export class CognoTrabajo {
     @PrimaryGeneratedColumn('increment')
     idCognoTrabajo: number;
 
-    @Column('int', {
-        default: 0
+    @Column('text', {
+        default: ''
     })
-    idCognoSolicitudCredito: number;
+    idCognoSolicitudCredito: string;
 
     @Column('bigint')
     fechaActualizacion: number;

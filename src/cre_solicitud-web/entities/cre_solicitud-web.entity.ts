@@ -1,10 +1,11 @@
 
 import { Col } from "sequelize/types/utils";
 import { BeforeInsert, Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } from "typeorm";
+import { v4 as uuidv4 } from 'uuid'; // Para generar UUIDs manualmente, si es necesario
 
 @Entity('Cre_SolicitudWeb')
 export class CreSolicitudWeb {
- /// cambio de  string a number
+
     @PrimaryGeneratedColumn()
     idCre_SolicitudWeb: number;
 

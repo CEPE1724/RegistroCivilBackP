@@ -17,20 +17,20 @@ export class CreReferenciasclienteswebController {
 
   @Get('all/:idsolicitud')
   @Auth()
-  findAll(@Param('idsolicitud') idsolicitud: number) {
+  findAll(@Param('idsolicitud') idsolicitud: string) {
     return this.creReferenciasclienteswebService.findAll(idsolicitud);
   }
 
   @Get('all/count/:idsolicitud')
   @Auth()
-  findAllCount(@Param('idsolicitud') idsolicitud: number) {
+  findAllCount(@Param('idsolicitud') idsolicitud: string) {
     return this.creReferenciasclienteswebService.findAllCount(idsolicitud);
   }
 
   @Get(':id')
   @Auth()
   findOne(@Param('id') id: string) {
-    return this.creReferenciasclienteswebService.findOne(+id);
+    return this.creReferenciasclienteswebService.findOne(id);
   }
 
 }

@@ -16,13 +16,13 @@ export class TiemposolicitudeswebController {
 
   @Get('all/:idCre_SolicitudWeb')
   @Auth()
-  findAll(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number) {
+  findAll(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: string) {
     return this.tiemposolicitudeswebService.findAll(idCre_SolicitudWeb);
   }
 
   @Get('all/estado/:idCre_SolicitudWeb/:tipo')
   @Auth()
-  findAllEstado(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
+  findAllEstado(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: string,
   @Param('tipo') tipo: number) {
     return this.tiemposolicitudeswebService.findAllTipo(idCre_SolicitudWeb, tipo);
   }
@@ -36,7 +36,7 @@ export class TiemposolicitudeswebController {
   @Get('tiempo/:tipo/:idCre_SolicitudWeb/:idEstadoVerificacionDocumental')
   @Auth()
   findAllTiempo(@Param('tipo') tipo: number,
-  @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
+  @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: string,
   @Param('idEstadoVerificacionDocumental') idEstadoVerificacionDocumental: string) {
     const idEstados = idEstadoVerificacionDocumental.split(',').map(id => parseInt(id));
 
