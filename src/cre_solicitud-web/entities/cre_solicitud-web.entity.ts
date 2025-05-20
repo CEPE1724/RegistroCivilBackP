@@ -4,7 +4,7 @@ import { BeforeInsert, Column, Entity, PrimaryColumn, PrimaryGeneratedColumn } f
 
 @Entity('Cre_SolicitudWeb')
 export class CreSolicitudWeb {
-
+ /// cambio de  string a number
     @PrimaryGeneratedColumn()
     idCre_SolicitudWeb: number;
 
