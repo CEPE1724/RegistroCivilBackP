@@ -52,7 +52,7 @@ export class CreSolicitudwebWsService {
       getSocketByNombre(nombre: string): Socket | undefined {
         for (const client of Object.values(this.connectedClients)) {
             if (client.user.Nombre === nombre) {
-                return client.socekt; // 👈 cuidado con el typo en "socekt"
+                return client.socekt; 
             }
         }
         return undefined;
