@@ -13,18 +13,27 @@ export class IngresoCobradorService {
 	constructor(
 		@InjectRepository(IngresoCobrador)
 		private readonly ingresoCobradorRepository: Repository<IngresoCobrador>,
-	) {}
+	) { }
 
-  findAll() {
-    return  this.ingresoCobradorRepository.find();
-  }
+	findAll() {
+		return this.ingresoCobradorRepository.find({
+			relations: ['dispositivos'],
+			select: {
+				idIngresoCobrador: true,
+				Nombre: true,
+				dispositivos: {
+					TokenExpo: true
+				}
+			}
+		});
+	}
 
-  private handleDBException(error: any) {
-	   if (error.code === '23505') {
-		 throw new BadRequestException(error.detail);
-	   }
-	   this.logger.error(error);
-	   throw new InternalServerErrorException('Unexpected error');
-   
-	 }
+	private handleDBException(error: any) {
+		if (error.code === '23505') {
+			throw new BadRequestException(error.detail);
+		}
+		this.logger.error(error);
+		throw new InternalServerErrorException('Unexpected error');
+
+	}
 }

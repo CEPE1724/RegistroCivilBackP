@@ -13,7 +13,8 @@ FechaSistema	datetime	YES
 Usuario	varchar	YES
 Estacion	varchar	YES*/
 
-import { Entity, PrimaryGeneratedColumn,  Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn,  Column, OneToMany, OneToOne, JoinColumn } from 'typeorm';
+import { DispositivosApp } from 'src/dispositivos-app/entities/dispositivos-app.entity';
 
 @Entity('IngresoCobrador')
 export class IngresoCobrador {
@@ -25,4 +26,7 @@ export class IngresoCobrador {
 		nullable: true
 	})
 	Nombre: string;
+
+	@OneToMany(() => DispositivosApp, dispositivo => dispositivo.ingresoCobrador)
+	dispositivos: DispositivosApp[];
 }

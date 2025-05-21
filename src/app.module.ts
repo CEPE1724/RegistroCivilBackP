@@ -110,6 +110,7 @@ import { EqfxCreditosOtorg12UltMesEdModule } from './eqfx-creditos-otorg12-ult-m
 import { EqfxInfoPosteriorFechaCorteModule } from './eqfx-info-posterior-fecha-corte/eqfx-info-posterior-fecha-corte.module';
 import { EqfxEntidadesConsultadasModule } from './eqfx-entidades-consultadas/eqfx-entidades-consultadas.module';
 import { EqfxReporteBuroCreditoModule } from './eqfx-reporte-buro-credito/eqfx-reporte-buro-credito.module';
+import { DispositivosAppModule } from './dispositivos-app/dispositivos-app.module';
 
 
 
@@ -284,6 +285,8 @@ import { EqfxReporteBuroCreditoModule } from './eqfx-reporte-buro-credito/eqfx-r
     EqfxEntidadesConsultadasModule,
 
     EqfxReporteBuroCreditoModule,
+
+    DispositivosAppModule,
 
 
 
