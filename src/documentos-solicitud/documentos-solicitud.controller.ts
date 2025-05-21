@@ -3,6 +3,8 @@ import { DocumentosSolicitudService } from './documentos-solicitud.service';
 import { CreateDocumentosSolicitudDto } from './dto/create-documentos-solicitud.dto';
 import { UpdateDocumentoStatusDto } from './dto/update-documentos-solicitud.dto'; // Correcto aquí
 import { Query } from '@nestjs/common';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 
 @Controller('documentos-solicitud')
@@ -10,12 +12,14 @@ export class DocumentosSolicitudController {
   constructor(private readonly documentosSolicitudService: DocumentosSolicitudService) {}
 
   @Post()
+  @Auth()
   create(@Body() createDocumentosSolicitudDto: CreateDocumentosSolicitudDto) {
     return this.documentosSolicitudService.create(createDocumentosSolicitudDto);
   }
 
 
   @Get('verificar-documentos-aprobados/:idSolicitud')
+  @Auth()
 async verificarDocumentosAprobados(@Param('idSolicitud') idSolicitud: string) {
   const result = await this.documentosSolicitudService.areThreeDocsApproved(Number(idSolicitud));
   return { allThreeDocsApproved: result };
@@ -23,6 +27,7 @@ async verificarDocumentosAprobados(@Param('idSolicitud') idSolicitud: string) {
 
   
 @Get('observaciones')
+@Auth()
 async getObservaciones(
   @Query('idSolicitud') idSolicitud: string,
   @Query('idTipoDocumento') idTipoDocumento: string
@@ -34,6 +39,7 @@ async getObservaciones(
 }
 
 @Patch('update-cancelados/:idSolicitud')
+@Auth()
 async updateCancelados(@Param('idSolicitud') id: string, @Body() updateDocumentoStatusDto: UpdateDocumentoStatusDto) {
   await this.documentosSolicitudService.updateCancelados(Number(id));
   return { message: 'Documentos cancelados correctamente.' };
@@ -41,6 +47,7 @@ async updateCancelados(@Param('idSolicitud') id: string, @Body() updateDocumento
 
 
 @Get('check')
+@Auth()
 async checkIfFileExists(
   @Query('idCreSolicitudWeb') idCreSolicitudWeb: string,
   @Query('tipoDocumento') tipoDocumento: string
@@ -66,6 +73,7 @@ async checkIfFileExists(
 
 
   @Get('documentos/:idSolicitud/:idEstadoVerificacionDocumental')
+  @Auth()
   async findBySolicitud(
     @Param('idSolicitud') idSolicitud: string,
     @Param('idEstadoVerificacionDocumental') idEstadoVerificacionDocumental: string
@@ -76,6 +84,7 @@ async checkIfFileExists(
   
 
   @Get(':idSolicitud/:estado')
+  @Auth()
   async findBySolicitudEstado(@Param('idSolicitud') idSolicitud: number, @Param('estado') estado: number) {
     return await this.documentosSolicitudService.findBySolicitudEstado(idSolicitud, estado);
   }
@@ -84,6 +93,7 @@ async checkIfFileExists(
 
 
   @Patch(':id')
+  @Auth()
   async update(@Param('id') id: string, @Body() updateDocumentoStatusDto: UpdateDocumentoStatusDto) {
     return await this.documentosSolicitudService.update(Number(id), updateDocumentoStatusDto);
   }
@@ -93,6 +103,7 @@ async checkIfFileExists(
 
 
   @Patch('updateEstado/:idSolicitud')
+  @Auth()
   async updateEstado(@Param('idSolicitud') idSolicitud: string) {
     await this.documentosSolicitudService.updateEstado(Number(idSolicitud));
     return { message: 'Documentos actualizados correctamente.' };

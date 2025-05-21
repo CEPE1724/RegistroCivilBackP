@@ -2,6 +2,8 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { CreProvinciaService } from './cre_provincia.service';
 import { CreateCreProvinciaDto } from './dto/create-cre_provincia.dto';
 import { UpdateCreProvinciaDto } from './dto/update-cre_provincia.dto';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 @Controller('cre-provincia')
 export class CreProvinciaController {
@@ -13,6 +15,7 @@ export class CreProvinciaController {
   }
 */
   @Get()
+  @Auth()
   findAll() {
     return this.creProvinciaService.findAll();
   }

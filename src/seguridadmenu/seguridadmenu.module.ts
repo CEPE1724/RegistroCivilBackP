@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from 'src/auth/auth.module';
 import { SeguridadmenuService } from './seguridadmenu.service';
 import { SeguridadmenuController } from './seguridadmenu.controller';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -11,7 +12,8 @@ import {UserRolesWebModule} from '../user-roles-web/user-roles-web.module';
 @Module({
   controllers: [SeguridadmenuController],
   providers: [SeguridadmenuService],
-  imports: [TypeOrmModule.forFeature([Rolesweb]),
-    PermissionsWebModule, RolePermissionsWebModule, RoleswebModule, RouteswebModule, UserRolesWebModule],
+  imports: [TypeOrmModule.forFeature([Rolesweb]), 
+    PermissionsWebModule, RolePermissionsWebModule, RoleswebModule, RouteswebModule,
+     UserRolesWebModule, AuthModule],
 })
 export class SeguridadmenuModule {}

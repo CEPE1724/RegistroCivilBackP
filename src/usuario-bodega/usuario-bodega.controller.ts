@@ -1,5 +1,6 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
 import { UsuarioBodegaService } from './usuario-bodega.service';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('usuario-bodega')
 export class UsuarioBodegaController {
@@ -9,6 +10,7 @@ export class UsuarioBodegaController {
 
   // Endpoint para obtener bodegas asociadas a un usuario específico
   @Get('usuario/bodegas')
+  @Auth()
   async findBodegasByUser(
     @Query('userId') userId: number, // ID del usuario (vía URL)
     @Query('idTipoFactura') idTipoFactura: number, // idTipoFactura (vía query)

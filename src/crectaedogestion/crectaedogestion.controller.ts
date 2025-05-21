@@ -1,5 +1,7 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { CrectaedogestionService } from './crectaedogestion.service';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
 
 
 @Controller('crectaedogestion')
@@ -8,6 +10,7 @@ export class CrectaedogestionController {
 
 
   @Get()
+  @Auth()
   findAll() {
     return this.crectaedogestionService.findAll();
   }

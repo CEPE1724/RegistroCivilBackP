@@ -2,6 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/commo
 import { IngresoCobradorService } from './ingreso-cobrador.service';
 import { CreateIngresoCobradorDto } from './dto/create-ingreso-cobrador.dto';
 import { UpdateIngresoCobradorDto } from './dto/update-ingreso-cobrador.dto';
+import { Auth } from 'src/auth/decorators';
 
 @Controller('ingreso-cobrador')
 export class IngresoCobradorController {
@@ -13,6 +14,7 @@ export class IngresoCobradorController {
 //   }
 
   @Get()
+  @Auth()
   findAll() {
     return this.ingresoCobradorService.findAll();
   }

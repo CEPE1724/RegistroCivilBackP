@@ -3,6 +3,9 @@ import { CreCantonService } from './cre-canton.service';
 import { CreateCreCantonDto } from './dto/create-cre-canton.dto';
 import { UpdateCreCantonDto } from './dto/update-cre-canton.dto';
 import { CreCanton } from './entities/cre-canton.entity';
+import { Auth } from '../auth/decorators';
+import { ValidRoles } from '../auth/interfaces';
+
 @Controller('cre-canton')
 export class CreCantonController {
   constructor(private readonly creCantonService: CreCantonService) {}
@@ -19,6 +22,7 @@ export class CreCantonController {
     */
 
   @Get(':idProvincia')
+  @Auth()
   async findByProvincia(@Param('idProvincia') idProvincia: string) {
     return await this.creCantonService.findByProvincia(Number(idProvincia));
   }

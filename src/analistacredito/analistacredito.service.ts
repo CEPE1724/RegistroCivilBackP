@@ -36,7 +36,7 @@ export class AnalistacreditoService {
 
   findAllUser(igrupo: number, analista: string) {
 
-    if( igrupo == 1)
+    if( igrupo == 1 || igrupo == 18)
     {
       return this.analistacreditoRepository.find(
         { 

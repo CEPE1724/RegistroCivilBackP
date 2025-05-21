@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { AuthModule } from 'src/auth/auth.module';
 import { RouteswebService } from './routesweb.service';
 import { RouteswebController } from './routesweb.controller';
 import { Routesweb } from './entities/routesweb.entity';
@@ -8,6 +9,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
   providers: [RouteswebService],
   imports: [
     TypeOrmModule.forFeature([Routesweb]),
+    AuthModule
   ],
   exports: [RouteswebService]
 })
