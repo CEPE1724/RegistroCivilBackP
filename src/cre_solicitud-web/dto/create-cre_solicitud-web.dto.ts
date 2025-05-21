@@ -55,10 +55,12 @@ export class CreateCreSolicitudWebDto {
 
      @IsNumber()
     @IsPositive()
+    @IsOptional()
     idAnalista: number;
 
      @IsNumber()
     @IsPositive()
+    @IsOptional()
     idOperador: number;
 
 
