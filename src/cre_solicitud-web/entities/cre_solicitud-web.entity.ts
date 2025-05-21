@@ -125,6 +125,13 @@ export class CreSolicitudWeb {
     @Column('int')
     idEstadoVerificacionDomicilio: number;
 
+    @Column('varchar')
+    domicilioImages: string;
+
+    @Column('varchar')
+    trabajoImages: string;
+
+
    
     
 

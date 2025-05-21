@@ -192,6 +192,14 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     idEstadoVerificacionDomicilio:number;
 
+    @IsString()
+    @IsOptional()
+    domicilioImages: string;
+
+    @IsString()
+    @IsOptional()
+    trabajoImages: string;
+
   
 
     
