@@ -119,6 +119,9 @@ export class CreSolicitudWeb {
     @Column('int')
     TerrenoLaboral: number;
 
+     @Column('int')
+    idOperador: number;
+
     @Column('int')
     idEstadoVerificacionDomicilio: number;
 
