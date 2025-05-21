@@ -15,7 +15,7 @@ CREATE TABLE [dbo].[DispositivosAPP](
 	[iContActivacion] [int] NULL,
 	[PinSeguridad] [varchar](10) NULL,
 	[UsuarioAPP] [varchar](50) NULL,
-	[TokenExpo] [varchar](500) NULL, */ 
+	[TokenExpo] [varchar](500) NULL, */
 
 import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Nomina } from 'src/nomina/entities/nomina.entity';
@@ -72,12 +72,12 @@ export class DispositivosApp {
 	TokenExpo?: string;
 
 	// Relación con Nomina (cuando la Empresa es 1)
-  @ManyToOne(() => Nomina, (nomina) => nomina.idNomina)
-  @JoinColumn({ name: 'idNomina', referencedColumnName: 'idNomina' })
-  nomina: Nomina;
+	@ManyToOne(() => Nomina, (nomina) => nomina.idNomina)
+	@JoinColumn({ name: 'idNomina', referencedColumnName: 'idNomina' })
+	nomina: Nomina;
 
-  // Relación con IngresoCobrador (cuando la Empresa es 33)
-  @ManyToOne(() => IngresoCobrador, (ingresoCobrador) => ingresoCobrador.idIngresoCobrador)
-  @JoinColumn({ name: 'idNomina', referencedColumnName: 'idIngresoCobrador' })
-  ingresoCobrador: IngresoCobrador;
+	// Relación con IngresoCobrador (cuando la Empresa es 33)
+	@ManyToOne(() => IngresoCobrador, (ingresoCobrador) => ingresoCobrador.idIngresoCobrador)
+	@JoinColumn({ name: 'idNomina', referencedColumnName: 'idIngresoCobrador' })
+	ingresoCobrador: IngresoCobrador;
 }
