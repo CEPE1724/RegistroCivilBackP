@@ -77,4 +77,11 @@ export class TerrenaGestionDomicilio {
 
   @Column({ type: 'decimal', precision: 18, scale: 2 })
   ValorArrendado: number;
+
+  @Column({ type: 'int'})
+  direccionCoincide: number;
+
+  @Column({ type: 'int'})
+  tipoVerificacion: number;
+
 }

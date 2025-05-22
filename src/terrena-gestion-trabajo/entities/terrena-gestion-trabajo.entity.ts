@@ -59,4 +59,10 @@ export class TerrenaGestionTrabajo {
 
   @Column({ type: 'varchar', length: 500, nullable: true })
   PersonaEntrevistada: string;
+
+  @Column({ type: 'int' })
+  direccionCoincide: number;
+
+  @Column({ type: 'int' })
+  tipoVerificacion: number;
 }
