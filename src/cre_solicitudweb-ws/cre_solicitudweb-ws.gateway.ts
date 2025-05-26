@@ -35,7 +35,7 @@ export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayD
     console.log('Client connected:', payload);
     console.log('Client ID:', client.id);
   
-    this.wss.emit('clients-updated', this.creSolicitudwebWsService.getConnectedClients());
+    //this.wss.emit('clients-updated', this.creSolicitudwebWsService.getConnectedClients());
   }
   
 
@@ -43,7 +43,7 @@ export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayD
   handleDisconnect(client: Socket) {
     // console.log('Client disconnected:', client.id);
     this.creSolicitudwebWsService.removeClient(client.id);
-    this.wss.emit('clients-updated', this.creSolicitudwebWsService.getConnectedClients());
+    ///this.wss.emit('clients-updated', this.creSolicitudwebWsService.getConnectedClients());
   }
 
   @SubscribeMessage('message-from-client')
