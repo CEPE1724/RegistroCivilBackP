@@ -30,6 +30,6 @@ export class TiempoSolicitudesWeb {
     @Column({ name: 'FechaSistema', type: 'datetime', nullable: true })
     FechaSistema: Date;
 
-    @Column({name: 'Telefono', type:'varchar', length: 100, nullable: true})
+    @Column({name: 'Telefono', type:'varchar', length: 500, nullable: true})
     Telefono: string;
 }

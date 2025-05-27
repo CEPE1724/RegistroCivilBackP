@@ -103,4 +103,22 @@ export class ClientesVerificacionTerrena {
 
   @Column({ type: 'int', nullable: true })
   Web?: number;
+
+  @Column({ type: 'varchar', nullable: true })
+  JefeInmediato?: string;
+
+  @Column({ type: 'varchar', nullable: true })
+  CelularInmediato?: string;
+
+  @Column({ type: 'int', nullable: true })
+  Afiliado?: number;
+
+  @Column({ type: 'int', nullable: true })
+  idTipoVivienda?: number;
+
+  @Column({ type: 'int', nullable: true })
+  idCre_TiempoVivienda?: number;
+
+  @Column({ type: 'int', nullable: true })
+  idCre_Tiempo?: number;
 }
