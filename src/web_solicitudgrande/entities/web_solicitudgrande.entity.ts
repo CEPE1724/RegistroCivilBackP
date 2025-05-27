@@ -830,4 +830,14 @@ export class WebSolicitudgrande {
     })
     Facebook: string;
 
+	@Column('varchar', {
+		default: ''
+	})
+	JefeInmediato: string;
+
+	@Column('varchar', {
+		default: ''
+	})
+	CelularInmediato: string;
+
 }
