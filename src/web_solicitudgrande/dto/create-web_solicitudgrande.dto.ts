@@ -658,4 +658,12 @@ export class CreateWebSolicitudgrandeDto {
   @IsString()
   readonly Facebook?: string;
 
+  @IsOptional()
+  @IsString()
+  readonly JefeInmediato?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly CelularInmediato?: string;
+
 }
