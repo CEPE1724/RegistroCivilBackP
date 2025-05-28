@@ -73,8 +73,10 @@ export class CreSolicitudWebController {
     @Param('idEstadoVerificacionDocumental') idEstadoVerificacionDocumental: number,
     @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
     @GetUser() usuarioEjecutor: any,
+
   ) {
     return this.creSolicitudWebService.updateTelefonica(idCre_SolicitudWeb, idEstadoVerificacionDocumental, updateCreSolicitudWebDto, usuarioEjecutor);
+
   }
 
   @Patch('updatetelefonicaEstados/:idCre_SolicitudWeb')
@@ -92,9 +94,11 @@ export class CreSolicitudWebController {
   @Auth()
   async updateCodDactilar(
     @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
-    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+
+    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto , 
     @GetUser() usuarioEjecutor: any,) {
-    return this.creSolicitudWebService.updateCodDactilar(idCre_SolicitudWeb, updateCreSolicitudWebDto, usuarioEjecutor);
+    return this.creSolicitudWebService.updateCodDactilar(idCre_SolicitudWeb, updateCreSolicitudWebDto , usuarioEjecutor);
+
   }
 
   @Delete(':id')
