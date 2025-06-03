@@ -597,7 +597,13 @@ const beforeUpdate: CreSolicitudWeb = {
     this.handleDBException(error);
   }
 }
+async verificarCedulaBodega(cedula: string, bodega: number): Promise<{ existe: boolean }> {
+  const solicitudExistente = await this.creSolicitudWebRepository.findOne({
+    where: { Cedula: cedula, Bodega: bodega },
+  });
 
+  return { existe: !!solicitudExistente };
+}
 
 
 

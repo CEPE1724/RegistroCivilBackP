@@ -69,7 +69,7 @@ export class SolicitudWebNotifierService {
       console.log('Socket no encontrado, no se puede notificar');
       return;
     }
-    console.log('Notificando usuario con socket:', socket.id || socket);
+    ////console.log('Notificando usuario con socket:', socket.id || socket);
     socket.emit('solicitud-web-usuario', {
       id: solicitud.idCre_SolicitudWeb,
       cambios,
@@ -83,12 +83,12 @@ export class SolicitudWebNotifierService {
     console.log('Ejecutor es admin o grupo 1, notificando a analista y vendedor');
     if (idAnalista) {
       const socketAnalista = this.wsService.getSocketByUserId(idAnalista);
-      console.log('Socket Analista:', socketAnalista);
+      ///console.log('Socket Analista:', socketAnalista);
       notificarUsuario(socketAnalista);
     }
     if (nombreVendedor) {
       const socketVendedor = this.wsService.getSocketByNombre(nombreVendedor);
-      console.log('Socket Vendedor:', socketVendedor);
+    ///  console.log('Socket Vendedor:', socketVendedor);
       notificarUsuario(socketVendedor);
     }
   } else if (idUsuarioEjecutor === idAnalista) {
@@ -96,7 +96,7 @@ export class SolicitudWebNotifierService {
     console.log('Ejecutor es analista, notificando vendedor');
     if (nombreVendedor) {
       const socketVendedor = this.wsService.getSocketByNombre(nombreVendedor);
-      console.log('Socket Vendedor:', socketVendedor);
+    ///  console.log('Socket Vendedor:', socketVendedor);
       notificarUsuario(socketVendedor);
     }
   } else if (nombreVendedor === usuarioEjecutor?.Nombre) {
@@ -104,7 +104,7 @@ export class SolicitudWebNotifierService {
     console.log('Ejecutor es vendedor, notificando analista');
     if (idAnalista) {
       const socketAnalista = this.wsService.getSocketByUserId(idAnalista);
-      console.log('Socket Analista:', socketAnalista);
+     /// console.log('Socket Analista:', socketAnalista);
       notificarUsuario(socketAnalista);
     }
   } else {
