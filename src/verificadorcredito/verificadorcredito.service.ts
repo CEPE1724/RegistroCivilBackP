@@ -17,10 +17,12 @@ export class VerificadorcreditoService {
 
 
 
-  create(createVerificadorcreditoDto: CreateVerificadorcreditoDto) {
-    const existingVerificador = this.verificadorcreditoRepository.findOne({
+ async   create(createVerificadorcreditoDto: CreateVerificadorcreditoDto) {
+
+    const existingVerificador = await  this.verificadorcreditoRepository.findOne({
       where: { Nombre: createVerificadorcreditoDto.Nombre },
     });
+
     if (existingVerificador) {
       return { message: 'A verifier with this name already exists.' };
     }

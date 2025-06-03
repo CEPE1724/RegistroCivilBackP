@@ -37,11 +37,10 @@ async verificarCedulaBodega(
     return { message: 'Prueba OK' };
   }
   @Get()
-  @Auth()                 
   @Auth()
   findAll(@Query() paginationDto: PaginationDto, @Query('bodega') bodega: number[]) {
     return this.creSolicitudWebService.findAll(paginationDto, bodega);
-    
+
   }
 
   @Get('documentosanalista')
@@ -70,40 +69,45 @@ async verificarCedulaBodega(
 
   @Put(':idCre_SolicitudWeb')
   @Auth()
-  async update(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number, @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto) {
-    return this.creSolicitudWebService.update(idCre_SolicitudWeb, updateCreSolicitudWebDto);
+  async update(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
+    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+    @GetUser() usuarioEjecutor: any) {
+    return this.creSolicitudWebService.update(idCre_SolicitudWeb, updateCreSolicitudWebDto, usuarioEjecutor);
   }
 
   @Patch('updatetelefonica/:idCre_SolicitudWeb/:idEstadoVerificacionDocumental')
   @Auth()
   async updateTelefonica(
-    @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number, 
+    @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
     @Param('idEstadoVerificacionDocumental') idEstadoVerificacionDocumental: number,
     @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
     @GetUser() usuarioEjecutor: any,
-) {
-    return this.creSolicitudWebService.updateTelefonica(idCre_SolicitudWeb, idEstadoVerificacionDocumental, updateCreSolicitudWebDto , usuarioEjecutor);
+
+  ) {
+    return this.creSolicitudWebService.updateTelefonica(idCre_SolicitudWeb, idEstadoVerificacionDocumental, updateCreSolicitudWebDto, usuarioEjecutor);
+
   }
 
   @Patch('updatetelefonicaEstados/:idCre_SolicitudWeb')
   @Auth()
   async updateSolicitud(
     @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
-   @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto ,
+    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
     @GetUser() usuarioEjecutor: any,
-  ) 
-   {
+  ) {
 
-   return this.creSolicitudWebService.updateSolicitud(idCre_SolicitudWeb, updateCreSolicitudWebDto , usuarioEjecutor);
+    return this.creSolicitudWebService.updateSolicitud(idCre_SolicitudWeb, updateCreSolicitudWebDto, usuarioEjecutor);
   }
 
   @Patch('updatecodDactilar/:idCre_SolicitudWeb')
   @Auth()
   async updateCodDactilar(
     @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
+
     @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto , 
     @GetUser() usuarioEjecutor: any,) {
     return this.creSolicitudWebService.updateCodDactilar(idCre_SolicitudWeb, updateCreSolicitudWebDto , usuarioEjecutor);
+
   }
 
   @Delete(':id')
