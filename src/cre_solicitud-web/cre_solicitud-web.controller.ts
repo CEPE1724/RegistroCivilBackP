@@ -18,6 +18,15 @@ export class CreSolicitudWebController {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
+  
+    @Get('verificar-cedula-bodega')
+@Auth()
+async verificarCedulaBodega(
+  @Query('cedula') cedula: string,
+  @Query('bodega') bodega: number,
+): Promise<{ existe: boolean }> {
+  return this.creSolicitudWebService.verificarCedulaBodega(cedula, bodega);
+}
 
 
   @Get('prueba')
@@ -111,5 +120,7 @@ export class CreSolicitudWebController {
   @Auth()
   async getSolicitudCogno(@Param('Cedula') Cedula: string) {
     return await this.creSolicitudWebService.getSolicitudCogno(Cedula);
-  }
+  } 
+
+ 
 }
