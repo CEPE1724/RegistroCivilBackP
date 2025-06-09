@@ -113,6 +113,7 @@ import { EqfxEntidadesConsultadasModule } from './eqfx-entidades-consultadas/eqf
 import { EqfxReporteBuroCreditoModule } from './eqfx-reporte-buro-credito/eqfx-reporte-buro-credito.module';
 import { DispositivosAppModule } from './dispositivos-app/dispositivos-app.module';
 import { ListaNegraCedulaModule } from './lista-negra-cedula/lista-negra-cedula.module';
+import { ComAsignacionDeVendedoresModule } from './com_asignacion-de-vendedores/com_asignacion-de-vendedores.module';
 
 
 
@@ -290,6 +291,8 @@ import { ListaNegraCedulaModule } from './lista-negra-cedula/lista-negra-cedula.
     EqfxReporteBuroCreditoModule,
 
     DispositivosAppModule,
+
+    ComAsignacionDeVendedoresModule,
 
 
 

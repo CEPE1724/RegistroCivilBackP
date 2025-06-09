@@ -18,15 +18,15 @@ export class CreSolicitudWebController {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
-  
-    @Get('verificar-cedula-bodega')
-@Auth()
-async verificarCedulaBodega(
-  @Query('cedula') cedula: string,
-  @Query('bodega') bodega: number,
-): Promise<{ existe: boolean }> {
-  return this.creSolicitudWebService.verificarCedulaBodega(cedula, bodega);
-}
+
+  @Get('verificar-cedula-bodega')
+  @Auth()
+  async verificarCedulaBodega(
+    @Query('cedula') cedula: string,
+    @Query('bodega') bodega: number,
+  ): Promise<{ existe: boolean }> {
+    return this.creSolicitudWebService.verificarCedulaBodega(cedula, bodega);
+  }
 
 
   @Get('prueba')
@@ -104,9 +104,9 @@ async verificarCedulaBodega(
   async updateCodDactilar(
     @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number,
 
-    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto , 
+    @Body() updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
     @GetUser() usuarioEjecutor: any,) {
-    return this.creSolicitudWebService.updateCodDactilar(idCre_SolicitudWeb, updateCreSolicitudWebDto , usuarioEjecutor);
+    return this.creSolicitudWebService.updateCodDactilar(idCre_SolicitudWeb, updateCreSolicitudWebDto, usuarioEjecutor);
 
   }
 
@@ -120,7 +120,7 @@ async verificarCedulaBodega(
   @Auth()
   async getSolicitudCogno(@Param('Cedula') Cedula: string) {
     return await this.creSolicitudWebService.getSolicitudCogno(Cedula);
-  } 
+  }
 
- 
+
 }
