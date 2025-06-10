@@ -105,6 +105,15 @@ export class DispositivosAppService {
 		return `This action returns a #${id} dispositivosApp`;
 	}
 
+	findOnebyUsuario(usuario: string) {
+		return this.dispositivosAppRepository.findOne({
+			where: {
+				UsuarioAPP: usuario,
+			},
+			select: ['idDispositivosAPP', 'TokenExpo', 'UsuarioAPP'],
+		});
+	}
+
 	update(id: number, updateDispositivosAppDto: UpdateDispositivosAppDto) {
 		return `This action updates a #${id} dispositivosApp`;
 	}
