@@ -50,4 +50,11 @@ async findUsuariosByGrupo(@Param('idGrupo') idGrupo: number): Promise<Partial<Us
     return resultado;
   }
 
+  @Get('id/:idUsuario')
+  @Auth()
+  async findById(@Param('idUsuario') idUsuario: number): Promise<Usuario | string> {
+	const resultado = await this.usuarioService.findById(idUsuario);
+	return resultado;
+  }
+
 }

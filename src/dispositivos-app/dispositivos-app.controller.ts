@@ -17,6 +17,11 @@ export class DispositivosAppController {
     return this.dispositivosAppService.findAll(+id);
   }
 
+  @Get('usuario/:nombreUsuario')
+  findOnebyUsuario(@Param('nombreUsuario') nombreUsuario: string) {
+	return this.dispositivosAppService.findOnebyUsuario(nombreUsuario);
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.dispositivosAppService.findOne(+id);

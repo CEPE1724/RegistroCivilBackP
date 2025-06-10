@@ -13,6 +13,16 @@ export class UsuarioService {
     private readonly usuarioRepository: Repository<Usuario>,
   ) {}
 
+  async findById(idUsuario: number): Promise<Usuario | string> {
+	const usuario = await this.usuarioRepository.findOne({
+	  where: { idUsuario: idUsuario },
+	});
+	if (!usuario) {
+	  return 'Usuario no encontrado';
+	}
+	return usuario;
+  }
+
   async findByNombre(Nombre: string): Promise<Usuario | string> {
     const nombresBloqueados = ['CDCAJA', 'FNCAJA', 'I3CAJA', 'OTCAJA', 'QVCAJA', 'R4CAJA', 'RECAJA'];
     if (nombresBloqueados.includes(Nombre)) {
