@@ -7,6 +7,13 @@ import { UpdateDispositivosAppDto } from './dto/update-dispositivos-app.dto';
 export class DispositivosAppController {
   constructor(private readonly dispositivosAppService: DispositivosAppService) {}
 
+
+  // dispositivos-app.controller.ts
+@Get('tokenExpo/:numeroSolicitud')
+getTokenExpo(@Param('numeroSolicitud') numeroSolicitud: string) {
+  return this.dispositivosAppService.getTokenExpoByNumeroSolicitud(numeroSolicitud);
+}
+
   @Post()
   create(@Body() createDispositivosAppDto: CreateDispositivosAppDto) {
     return this.dispositivosAppService.create(createDispositivosAppDto);
