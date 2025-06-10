@@ -6,6 +6,8 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { DispositivosApp } from './entities/dispositivos-app.entity';
 import { IngresoCobrador } from 'src/ingreso-cobrador/entities/ingreso-cobrador.entity';
 import { Nomina } from 'src/nomina/entities/nomina.entity';
+import { CreSolicitudWeb } from 'src/cre_solicitud-web/entities/cre_solicitud-web.entity';
+
 
 @Injectable()
 export class DispositivosAppService {
@@ -17,6 +19,8 @@ export class DispositivosAppService {
 		private readonly ingresoCobradorRepository: Repository<IngresoCobrador>,
 		@InjectRepository(Nomina)
 		private readonly nominaRepository: Repository<Nomina>,
+		@InjectRepository(CreSolicitudWeb)
+		private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>,
 	) { }
 
 	async findAll(Empresa: number) {
@@ -94,6 +98,52 @@ export class DispositivosAppService {
 
 		return { success: true, data: dispositivos };
 	}
+
+	async getTokenExpoByNumeroSolicitud(numeroSolicitud: string): Promise<string | null> {
+		this.logger.log(`Buscando solicitud con número: ${numeroSolicitud}`);
+
+		const solicitud = await this.creSolicitudWebRepository.findOne({
+			where: { NumeroSolicitud: numeroSolicitud },
+		});
+
+		if (!solicitud) {
+			this.logger.warn('Solicitud no encontrada');
+			return null;
+		}
+
+		const nomina = await this.nominaRepository.findOne({
+			where: { idPersonal: solicitud.idVendedor },
+		});
+
+		if (!nomina) {
+			this.logger.warn('Vendedor no encontrado en nómina');
+			return null;
+		}
+
+		const dispositivo = await this.dispositivosAppRepository.findOne({
+			where: { UsuarioAPP: nomina.Codigo }
+		});
+
+		if (!dispositivo) {
+			this.logger.warn('Dispositivo no encontrado');
+			return null;
+		}
+
+		this.logger.log(`Token encontrado: ${dispositivo.TokenExpo}`);
+		return dispositivo.TokenExpo;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
