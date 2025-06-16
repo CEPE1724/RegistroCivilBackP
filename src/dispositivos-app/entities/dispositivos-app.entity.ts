@@ -17,9 +17,10 @@ CREATE TABLE [dbo].[DispositivosAPP](
 	[UsuarioAPP] [varchar](50) NULL,
 	[TokenExpo] [varchar](500) NULL, */
 
-import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToMany, ManyToOne, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 import { Nomina } from 'src/nomina/entities/nomina.entity';
 import { IngresoCobrador } from 'src/ingreso-cobrador/entities/ingreso-cobrador.entity';
+import { Usuario } from 'src/usuarios/usuario.entity';
 
 @Entity('DispositivosAPP')
 export class DispositivosApp {
@@ -80,4 +81,10 @@ export class DispositivosApp {
 	@ManyToOne(() => IngresoCobrador, (ingresoCobrador) => ingresoCobrador.idIngresoCobrador)
 	@JoinColumn({ name: 'idNomina', referencedColumnName: 'idIngresoCobrador' })
 	ingresoCobrador: IngresoCobrador;
+
+	// Relacion con Usuario
+	@ManyToOne(() => Usuario, (usuario) => usuario.Nombre, { nullable: true })
+	@JoinColumn({ name: 'UsuarioAPP', referencedColumnName: 'Nombre' })
+	usuarioAPP: Usuario;
+	
 }
