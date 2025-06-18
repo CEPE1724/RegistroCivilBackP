@@ -29,7 +29,8 @@ export class UsuarioBodegaService {
       .select(['b.Codigo', 'b.Nombre', 'b.Bodega'])
       .innerJoin(UsuarioBodega, 'ub', 'ub.Bodega = b.Bodega')
       .innerJoin(Usuario, 'u', 'u.idUsuario = ub.idUsuario')
-      .where('u.idUsuario = :idUsuario', { idUsuario });
+      .where('u.idUsuario = :idUsuario', { idUsuario })
+      .where('b.CrediDigital = 1')
 
     // Condiciones basadas en `idTipoFactura`
     if (![3, 47].includes(idTipoFactura)) {
