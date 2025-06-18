@@ -6,7 +6,9 @@ import { IsNull, Not, Repository } from 'typeorm';
 import { DispositivosApp } from './entities/dispositivos-app.entity';
 import { IngresoCobrador } from 'src/ingreso-cobrador/entities/ingreso-cobrador.entity';
 import { Nomina } from 'src/nomina/entities/nomina.entity';
+import { Usuario } from 'src/usuarios/usuario.entity';
 import { CreSolicitudWeb } from 'src/cre_solicitud-web/entities/cre_solicitud-web.entity';
+import { where } from 'sequelize';
 
 
 @Injectable()
@@ -21,6 +23,8 @@ export class DispositivosAppService {
 		private readonly nominaRepository: Repository<Nomina>,
 		@InjectRepository(CreSolicitudWeb)
 		private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>,
+		@InjectRepository(Usuario)
+		private readonly usuarioRepository: Repository<Usuario>,
 	) { }
 
 	async findAll(Empresa: number) {
@@ -40,6 +44,12 @@ export class DispositivosAppService {
 					'dispositivo.idNomina = nomina.idNomina'
 				)
 				.addSelect(['nomina.PrimerNombre', 'nomina.ApellidoPaterno'])
+				.leftJoin(
+                'Usuario', 
+                'usuario',
+                'dispositivo.UsuarioAPP = usuario.Nombre' 
+            )
+            .addSelect(['usuario.idGrupo'])
 				.getMany();
 
 			dispositivos = await Promise.all(dispositivos.map(async (disp) => {
@@ -48,10 +58,16 @@ export class DispositivosAppService {
 					select: ['PrimerNombre', 'ApellidoPaterno']
 				});
 
+				const idGrupo = await this.usuarioRepository.findOne({
+					where: { Nombre: disp.UsuarioAPP },
+					select: ['idGrupo']
+				});
+
 				return {
 					...disp,
 					nombreCompleto: nominaInfo ?
-						`${nominaInfo.PrimerNombre || ''} ${nominaInfo.ApellidoPaterno || ''}` : ''
+						`${nominaInfo.PrimerNombre || ''} ${nominaInfo.ApellidoPaterno || ''}` : '',
+						idGrupo: idGrupo || ""
 				};
 			}));
 
@@ -68,6 +84,12 @@ export class DispositivosAppService {
 					'dispositivo.idNomina = ingresoCobrador.idIngresoCobrador'
 				)
 				.addSelect(['ingresoCobrador.Nombre'])
+				.leftJoin(
+                'Usuario',  
+                'usuario',
+                'dispositivo.UsuarioAPP = usuario.Nombre'
+            )
+            .addSelect(['usuario.idGrupo'])
 				.getMany();
 
 			dispositivos = await Promise.all(dispositivos.map(async (disp) => {
@@ -76,9 +98,15 @@ export class DispositivosAppService {
 					select: ['Nombre']
 				});
 
+				const idGrupo = await this.usuarioRepository.findOne({
+					where: { Nombre: disp.UsuarioAPP },
+					select: ['idGrupo']
+				});
+
 				return {
 					...disp,
-					nombreCompleto: cobradorInfo ? cobradorInfo.Nombre : ''
+					nombreCompleto: cobradorInfo ? cobradorInfo.Nombre : '',
+					idGrupo: idGrupo || ""
 				};
 			}));
 

@@ -2,7 +2,7 @@ import { BadRequestException, Injectable, InternalServerErrorException, Logger }
 import { CreateIngresoCobradorDto } from './dto/create-ingreso-cobrador.dto';
 import { UpdateIngresoCobradorDto } from './dto/update-ingreso-cobrador.dto';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { IngresoCobrador } from './entities/ingreso-cobrador.entity';
 
 @Injectable()
@@ -17,6 +17,7 @@ export class IngresoCobradorService {
 
 	findAll() {
 		return this.ingresoCobradorRepository.find({
+			where: { idIngresoCobrador: Not(271),},
 			relations: ['dispositivos'],
 			select: {
 				idIngresoCobrador: true,
