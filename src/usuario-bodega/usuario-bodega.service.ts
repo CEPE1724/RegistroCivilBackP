@@ -30,7 +30,7 @@ export class UsuarioBodegaService {
       .innerJoin(UsuarioBodega, 'ub', 'ub.Bodega = b.Bodega')
       .innerJoin(Usuario, 'u', 'u.idUsuario = ub.idUsuario')
       .where('u.idUsuario = :idUsuario', { idUsuario })
-      .where('b.CrediDigital = 1')
+     
 
     // Condiciones basadas en `idTipoFactura`
     if (![3, 47].includes(idTipoFactura)) {
@@ -50,7 +50,7 @@ export class UsuarioBodegaService {
     }
 
     if (idTipoFactura === 43) {
-      queryBuilder.andWhere('b.Credito = 1 AND b.Consignacion = 0');
+      queryBuilder.andWhere('b.Credito = 1 AND b.Consignacion = 0 AND b.CrediDigital = 1');
     }
 
     if ([2, 4].includes(idTipoFactura)) {
