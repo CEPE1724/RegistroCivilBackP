@@ -167,7 +167,7 @@ export class AuthService {
 
     async create(apiData: any, bApiDataTrabajo: boolean, numberId: number): Promise<Cognosolicitudcredito> {
         try {
-
+  console.log('create edison',  numberId);
             const existingRecord = await this.cognosolicitudcreditoRepository.findOne({
                 where: { Cedula: apiData.personaNatural.identificacion, idCre_SolicitudWeb: numberId },
             });

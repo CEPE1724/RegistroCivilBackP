@@ -165,9 +165,9 @@ export class CreSolicitudWebService {
         cambios: createCreSolicitudWebDto,
       });
 
-      const saveData = await this.authService.create(apiData, bApiDataTrabajo, 0);
+      const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
 
-      await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, idSolicitud);
+      await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
 
       if (apiData.personaNaturalConyuge.personaConyuge.identificacion && apiData.personaNaturalConyuge.personaConyuge.nombre) {
         if (apiData.personaNaturalConyuge.personaConyuge.identificacion !== null && apiData.personaNaturalConyuge.personaConyuge.nombre !== '') {
