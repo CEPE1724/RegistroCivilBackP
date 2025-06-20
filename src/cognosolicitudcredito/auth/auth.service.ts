@@ -526,163 +526,155 @@ export class AuthService {
     }
 
     async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
+    console.log('createTrabajo', apiData, idCognoSolicitudCredito);
 
-        console.log('createTrabajo', apiData, idCognoSolicitudCredito);
-        try {
-            if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
-                console.error("Error: No se encontraron trabajos válidos en la respuesta de la API.");
-                throw new Error("La información laboral es obligatoria y no se obtuvo desde la API.");
-            }
-
-            for (const trabajoData of apiData) {
-
-                const identificacionPatrono = trabajoData.personaPatrono?.identificacion ?? '';
-
-                const existingRecord = await this.cognoTrabajoRepository.findOne({
-                    where: {
-                        idCognoSolicitudCredito: idCognoSolicitudCredito,
-                        identificacionPersonaPatrono: identificacionPatrono,
-                    },
-                });
-
-
-                if (existingRecord) {
-                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || 0;
-                    existingRecord.fechaActualizacion = trabajoData.fechaActualizacion || 0;
-                    existingRecord.fechaIngreso = trabajoData.fechaIngreso || 0;
-                    existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta || new Date();
-
-                    if (trabajoData.personaPatrono) {
-
-                        // Validar que personaPatrono exista
-                        existingRecord.identificacionPersonaPatrono = trabajoData.personaPatrono.identificacion || '';
-                        existingRecord.nombrePatrono = trabajoData.personaPatrono.nombre || '';
-                        existingRecord.nombreUno = trabajoData.personaPatrono.nombreUno || '';
-                        existingRecord.nombreDos = trabajoData.personaPatrono.nombreDos || '';
-                        existingRecord.idTipoIdentificacion = trabajoData.personaPatrono.tipoIdentificacion.idTipoIdentificacion || 0;
-                        existingRecord.descripcion = trabajoData.personaPatrono.tipoIdentificacion.descripcion || '';
-                        existingRecord.plazoSocial = trabajoData.personaPatrono.plazoSocial || new Date();
-                        existingRecord.expediente = trabajoData.personaPatrono.expediente || 0;
-                        existingRecord.fechaConstitucion = trabajoData.personaPatrono.fechaConstitucion || new Date();
-                        existingRecord.nombreComercial = trabajoData.personaPatrono.nombreComercial || '';
-                        existingRecord.idTipoCompania = trabajoData.personaPatrono.tipoCompania.idTipoCompania || 0;
-                        existingRecord.nombretipoCompania = trabajoData.personaPatrono.tipoCompania.nombre || '';
-                        existingRecord.idCanton = trabajoData.personaPatrono.oficinaControl.idCanton || 0;
-                        existingRecord.nombreCanton = trabajoData.personaPatrono.oficinaControl.nombre || '';
-                        existingRecord.idProvincia = trabajoData.personaPatrono.oficinaControl.provincia.idProvincia || 0;
-                        existingRecord.nombreProvincia = trabajoData.personaPatrono.oficinaControl.provincia.nombre || '';
-                        existingRecord.codigoArea = trabajoData.personaPatrono.oficinaControl.provincia.codigoArea || '';
-                        existingRecord.idPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.idPais || 0;
-                        existingRecord.nombrePais = trabajoData.personaPatrono.oficinaControl.provincia.pais.nombre || '';
-                        existingRecord.codigoAreaPais = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoArea || '';
-                        existingRecord.codigoIso2 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso2 || '';
-                        existingRecord.codigoIso3 = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso3 || '';
-                        existingRecord.codigoIso = trabajoData.personaPatrono.oficinaControl.provincia.pais.codigoIso || '';
-                        existingRecord.nombreSituacionLegal = trabajoData.personaPatrono.situacionLegal.nombre || '';
-                        existingRecord.proveedoraEstado = trabajoData.personaPatrono.proveedoraEstado || '';
-                        existingRecord.pagoRemesas = trabajoData.personaPatrono.pagoRemesas || '';
-                        existingRecord.vendeCredito = trabajoData.personaPatrono.vendeCredito || '';
-                        existingRecord.capitalSuscrito = trabajoData.personaPatrono.capitalSuscrito || 0;
-                        existingRecord.capitalAutorizado = trabajoData.personaPatrono.capitalAutorizado || 0;
-                        existingRecord.valorNominal = trabajoData.personaPatrono.valorNominal || 0;
-                        existingRecord.perteneceMv = trabajoData.personaPatrono.perteneceMv || '';
-                        existingRecord.apellidoUno = trabajoData.personaPatrono.apellidoUno || '';
-                        existingRecord.apellidoDos = trabajoData.personaPatrono.apellidoDos || '';
-                    }
-
-                    existingRecord.valor = trabajoData.personaIngreso.valor || 0;
-                    existingRecord.tipoIngreso = trabajoData.personaIngreso.tipoIngreso || '';
-                    existingRecord.frecuenciaIngreso = trabajoData.personaIngreso.frecuenciaIngreso || '';
-                    existingRecord.valorRango = trabajoData.personaIngreso.valorRango || '';
-
-                    existingRecord.idCargo = (trabajoData.cargo && trabajoData.cargo.idCargo !== null) ? trabajoData.cargo.idCargo : 0;
-                    existingRecord.nombreCargo = (trabajoData.cargo && trabajoData.cargo.nombre) || '';
-
-                    existingRecord.tipoAfiliado = trabajoData.tipoAfiliado || '';
-                    existingRecord.telefonoOfi = trabajoData.telefonoOfi || '';
-                    existingRecord.telefonoAfi = trabajoData.telefonoAfi || '';
-                    existingRecord.direccionOfi = trabajoData.direccionOfi || '';
-                    existingRecord.direccionAfi = trabajoData.direccionAfi || '';
-                    existingRecord.celular = trabajoData.celular || '';
-                    existingRecord.baseDate = trabajoData.baseDate || new Date().toISOString();
-                } else {
-
-                    console.log('No existe el registro, se creará uno nuevo.');
-                    console.log('idCognoSolicitudCredito:', idCognoSolicitudCredito);
-                    console.log('trabajoData:', trabajoData);
-                    const pp = trabajoData.personaPatrono;
-                    const ti = pp?.tipoIdentificacion;
-                    const tc = pp?.tipoCompania;
-                    const oc = pp?.oficinaControl;
-                    const pr = oc?.provincia;
-                    const pa = pr?.pais;
-                    const sl = pp?.situacionLegal;
-
-                    const createCognoTrabajoDto: CreateCognoTrabajoDto = {
-                        idCognoSolicitudCredito: idCognoSolicitudCredito || 0,
-                        fechaActualizacion: trabajoData.fechaActualizacion || 0,
-                        fechaIngreso: trabajoData.fechaIngreso || 0,
-                        fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta || 0,
-
-                        identificacionPersonaPatrono: pp?.identificacion ?? '',
-                        nombrePatrono: pp?.nombre ?? '',
-                        nombreUno: pp?.nombreUno ?? '',
-                        nombreDos: pp?.nombreDos ?? '',
-                        idTipoIdentificacion: ti?.idTipoIdentificacion ?? 0,
-                        descripcion: ti?.descripcion ?? '',
-                        plazoSocial: pp?.plazoSocial ?? new Date(),
-                        expediente: pp?.expediente ?? 0,
-                        fechaConstitucion: pp?.fechaConstitucion ?? new Date(),
-                        nombreComercial: pp?.nombreComercial ?? '',
-                        idTipoCompania: tc?.idTipoCompania ?? 0,
-                        nombretipoCompania: tc?.nombre ?? '',
-                        idCanton: oc?.idCanton ?? 0,
-                        nombreCanton: oc?.nombre ?? '',
-                        idProvincia: pr?.idProvincia ?? 0,
-                        nombreProvincia: pr?.nombre ?? '',
-                        codigoArea: pr?.codigoArea ?? '',
-                        idPais: pa?.idPais ?? 0,
-                        nombrePais: pa?.nombre ?? '',
-                        codigoAreaPais: pa?.codigoArea ?? '',
-                        codigoIso2: pa?.codigoIso2 ?? '',
-                        codigoIso3: pa?.codigoIso3 ?? '',
-                        codigoIso: pa?.codigoIso ?? '',
-                        nombreSituacionLegal: sl?.nombre ?? '',
-                        proveedoraEstado: pp?.proveedoraEstado ?? '',
-                        pagoRemesas: pp?.pagoRemesas ?? '',
-                        vendeCredito: pp?.vendeCredito ?? '',
-                        capitalSuscrito: pp?.capitalSuscrito ?? 0,
-                        capitalAutorizado: pp?.capitalAutorizado ?? 0,
-                        valorNominal: pp?.valorNominal ?? 0,
-                        perteneceMv: pp?.perteneceMv ?? '',
-                        apellidoUno: pp?.apellidoUno ?? '',
-                        apellidoDos: pp?.apellidoDos ?? '',
-
-                        valor: trabajoData.personaIngreso?.valor ?? 0,
-                        tipoIngreso: trabajoData.personaIngreso?.tipoIngreso ?? '',
-                        frecuenciaIngreso: trabajoData.personaIngreso?.frecuenciaIngreso ?? '',
-                        valorRango: trabajoData.personaIngreso?.valorRango ?? '',
-                        idCargo: trabajoData.cargo?.idCargo ?? 0,
-                        nombreCargo: trabajoData.cargo?.nombre ?? '',
-                        tipoAfiliado: trabajoData.tipoAfiliado ?? '',
-                        telefonoOfi: trabajoData.telefonoOfi ?? '',
-                        telefonoAfi: trabajoData.telefonoAfi ?? '',
-                        direccionOfi: trabajoData.direccionOfi ?? '',
-                        direccionAfi: trabajoData.direccionAfi ?? '',
-                        celular: trabajoData.celular ?? '',
-                        baseDate: trabajoData.baseDate ?? new Date().toISOString(),
-                    };
-
-                    const newRecord = this.cognoTrabajoRepository.create(createCognoTrabajoDto);
-                    await this.cognoTrabajoRepository.save(newRecord);
-                }
-
-            }
-        } catch (error) {
-            console.error("Error en createTrabajo:", error);
-            this.handleDBException(error);
+    try {
+        if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+            console.error("Error: No se encontraron trabajos válidos en la respuesta de la API.");
+            throw new Error("La información laboral es obligatoria y no se obtuvo desde la API.");
         }
+
+        for (const trabajoData of apiData) {
+            const pp = trabajoData.personaPatrono;
+            const ti = pp?.tipoIdentificacion;
+            const tc = pp?.tipoCompania;
+            const oc = pp?.oficinaControl;
+            const pr = oc?.provincia;
+            const pa = pr?.pais;
+            const sl = pp?.situacionLegal;
+
+            const identificacionPatrono = pp?.identificacion ?? '';
+
+            const existingRecord = await this.cognoTrabajoRepository.findOne({
+                where: {
+                    idCognoSolicitudCredito: idCognoSolicitudCredito,
+                    identificacionPersonaPatrono: identificacionPatrono,
+                },
+            });
+
+            if (existingRecord) {
+                existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || 0;
+                existingRecord.fechaActualizacion = trabajoData.fechaActualizacion || 0;
+                existingRecord.fechaIngreso = trabajoData.fechaIngreso || 0;
+                existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta || new Date();
+
+                existingRecord.identificacionPersonaPatrono = pp?.identificacion ?? '';
+                existingRecord.nombrePatrono = pp?.nombre ?? '';
+                existingRecord.nombreUno = pp?.nombreUno ?? '';
+                existingRecord.nombreDos = pp?.nombreDos ?? '';
+                existingRecord.idTipoIdentificacion = ti?.idTipoIdentificacion ?? 0;
+                existingRecord.descripcion = ti?.descripcion ?? '';
+                existingRecord.plazoSocial = pp?.plazoSocial ?? new Date();
+                existingRecord.expediente = pp?.expediente ?? 0;
+                existingRecord.fechaConstitucion = pp?.fechaConstitucion ?? new Date();
+                existingRecord.nombreComercial = pp?.nombreComercial ?? '';
+                existingRecord.idTipoCompania = tc?.idTipoCompania ?? 0;
+                existingRecord.nombretipoCompania = tc?.nombre ?? '';
+                existingRecord.idCanton = oc?.idCanton ?? 0;
+                existingRecord.nombreCanton = oc?.nombre ?? '';
+                existingRecord.idProvincia = pr?.idProvincia ?? 0;
+                existingRecord.nombreProvincia = pr?.nombre ?? '';
+                existingRecord.codigoArea = pr?.codigoArea ?? '';
+                existingRecord.idPais = pa?.idPais ?? 0;
+                existingRecord.nombrePais = pa?.nombre ?? '';
+                existingRecord.codigoAreaPais = pa?.codigoArea ?? '';
+                existingRecord.codigoIso2 = pa?.codigoIso2 ?? '';
+                existingRecord.codigoIso3 = pa?.codigoIso3 ?? '';
+                existingRecord.codigoIso = pa?.codigoIso ?? '';
+                existingRecord.nombreSituacionLegal = sl?.nombre ?? '';
+                existingRecord.proveedoraEstado = pp?.proveedoraEstado ?? '';
+                existingRecord.pagoRemesas = pp?.pagoRemesas ?? '';
+                existingRecord.vendeCredito = pp?.vendeCredito ?? '';
+                existingRecord.capitalSuscrito = pp?.capitalSuscrito ?? 0;
+                existingRecord.capitalAutorizado = pp?.capitalAutorizado ?? 0;
+                existingRecord.valorNominal = pp?.valorNominal ?? 0;
+                existingRecord.perteneceMv = pp?.perteneceMv ?? '';
+                existingRecord.apellidoUno = pp?.apellidoUno ?? '';
+                existingRecord.apellidoDos = pp?.apellidoDos ?? '';
+
+                existingRecord.valor = trabajoData.personaIngreso?.valor ?? 0;
+                existingRecord.tipoIngreso = trabajoData.personaIngreso?.tipoIngreso ?? '';
+                existingRecord.frecuenciaIngreso = trabajoData.personaIngreso?.frecuenciaIngreso ?? '';
+                existingRecord.valorRango = trabajoData.personaIngreso?.valorRango ?? '';
+
+                existingRecord.idCargo = trabajoData.cargo?.idCargo ?? 0;
+                existingRecord.nombreCargo = trabajoData.cargo?.nombre ?? '';
+
+                existingRecord.tipoAfiliado = trabajoData.tipoAfiliado ?? '';
+                existingRecord.telefonoOfi = trabajoData.telefonoOfi ?? '';
+                existingRecord.telefonoAfi = trabajoData.telefonoAfi ?? '';
+                existingRecord.direccionOfi = trabajoData.direccionOfi ?? '';
+                existingRecord.direccionAfi = trabajoData.direccionAfi ?? '';
+                existingRecord.celular = trabajoData.celular ?? '';
+                existingRecord.baseDate = trabajoData.baseDate ?? new Date().toISOString();
+
+                await this.cognoTrabajoRepository.save(existingRecord);
+            } else {
+                const createCognoTrabajoDto: CreateCognoTrabajoDto = {
+                    idCognoSolicitudCredito: idCognoSolicitudCredito || 0,
+                    fechaActualizacion: trabajoData.fechaActualizacion || 0,
+                    fechaIngreso: trabajoData.fechaIngreso || 0,
+                    fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta || 0,
+
+                    identificacionPersonaPatrono: pp?.identificacion ?? '',
+                    nombrePatrono: pp?.nombre ?? '',
+                    nombreUno: pp?.nombreUno ?? '',
+                    nombreDos: pp?.nombreDos ?? '',
+                    idTipoIdentificacion: ti?.idTipoIdentificacion ?? 0,
+                    descripcion: ti?.descripcion ?? '',
+                    plazoSocial: pp?.plazoSocial ?? new Date(),
+                    expediente: pp?.expediente ?? 0,
+                    fechaConstitucion: pp?.fechaConstitucion ?? new Date(),
+                    nombreComercial: pp?.nombreComercial ?? '',
+                    idTipoCompania: tc?.idTipoCompania ?? 0,
+                    nombretipoCompania: tc?.nombre ?? '',
+                    idCanton: oc?.idCanton ?? 0,
+                    nombreCanton: oc?.nombre ?? '',
+                    idProvincia: pr?.idProvincia ?? 0,
+                    nombreProvincia: pr?.nombre ?? '',
+                    codigoArea: pr?.codigoArea ?? '',
+                    idPais: pa?.idPais ?? 0,
+                    nombrePais: pa?.nombre ?? '',
+                    codigoAreaPais: pa?.codigoArea ?? '',
+                    codigoIso2: pa?.codigoIso2 ?? '',
+                    codigoIso3: pa?.codigoIso3 ?? '',
+                    codigoIso: pa?.codigoIso ?? '',
+                    nombreSituacionLegal: sl?.nombre ?? '',
+                    proveedoraEstado: pp?.proveedoraEstado ?? '',
+                    pagoRemesas: pp?.pagoRemesas ?? '',
+                    vendeCredito: pp?.vendeCredito ?? '',
+                    capitalSuscrito: pp?.capitalSuscrito ?? 0,
+                    capitalAutorizado: pp?.capitalAutorizado ?? 0,
+                    valorNominal: pp?.valorNominal ?? 0,
+                    perteneceMv: pp?.perteneceMv ?? '',
+                    apellidoUno: pp?.apellidoUno ?? '',
+                    apellidoDos: pp?.apellidoDos ?? '',
+
+                    valor: trabajoData.personaIngreso?.valor ?? 0,
+                    tipoIngreso: trabajoData.personaIngreso?.tipoIngreso ?? '',
+                    frecuenciaIngreso: trabajoData.personaIngreso?.frecuenciaIngreso ?? '',
+                    valorRango: trabajoData.personaIngreso?.valorRango ?? '',
+                    idCargo: trabajoData.cargo?.idCargo ?? 0,
+                    nombreCargo: trabajoData.cargo?.nombre ?? '',
+                    tipoAfiliado: trabajoData.tipoAfiliado ?? '',
+                    telefonoOfi: trabajoData.telefonoOfi ?? '',
+                    telefonoAfi: trabajoData.telefonoAfi ?? '',
+                    direccionOfi: trabajoData.direccionOfi ?? '',
+                    direccionAfi: trabajoData.direccionAfi ?? '',
+                    celular: trabajoData.celular ?? '',
+                    baseDate: trabajoData.baseDate ?? new Date().toISOString(),
+                };
+
+                const newRecord = this.cognoTrabajoRepository.create(createCognoTrabajoDto);
+                await this.cognoTrabajoRepository.save(newRecord);
+            }
+        }
+    } catch (error) {
+        console.error("Error en createTrabajo:", error);
+        this.handleDBException(error);
     }
+}
+
 
 
 
