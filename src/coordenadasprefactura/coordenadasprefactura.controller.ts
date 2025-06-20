@@ -5,6 +5,7 @@ import { UpdateCoordenadasprefacturaDto } from './dto/update-coordenadasprefactu
 import { PaginationGeoreferenciaDto } from 'src/common/dtos/paginationgeoreferencia.dto';
 import { Auth } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
+import { number } from 'joi';
 
 @Controller('coordenadasprefactura')
 export class CoordenadasprefacturaController {
@@ -33,6 +34,13 @@ export class CoordenadasprefacturaController {
     return await this.coordenadasprefacturaService.create(
       createCoordenadasPrefacturaDto,
     );
+  }
+
+
+  @Get('id/:id/:tipo')
+  @Auth()
+  findOneId(@Param('id') id: number, @Param('tipo') tipo: number) {
+	return this.coordenadasprefacturaService.findAllbyId(id, tipo)
   }
 }
 

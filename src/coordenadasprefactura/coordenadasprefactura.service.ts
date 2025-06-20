@@ -122,6 +122,13 @@ export class CoordenadasprefacturaService {
     }
   }
 
+  findAllbyId(id: number, tipo: number) {
+    {
+      return this.coordenadasprefacturaRepository.find(
+        { where: { id: id, Tipo: tipo }});
+  }
+}
+
   private handleDBExceptions(error: any) {
     if (error.code === '23505') {
       throw new BadRequestException(error.detail);
