@@ -26,8 +26,8 @@ export class CreSolicitudWebService {
     private readonly authService: AuthService,
     private readonly eqfxidentificacionconsultadaService: EqfxidentificacionconsultadaService,
     private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway,
-    private readonly creSolicitudwebWsService : CreSolicitudwebWsService,
-    private readonly notifierService : SolicitudWebNotifierService
+    private readonly creSolicitudwebWsService: CreSolicitudwebWsService,
+    private readonly notifierService: SolicitudWebNotifierService
   ) { }
 
   private async EquifaxData(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
@@ -67,63 +67,108 @@ export class CreSolicitudWebService {
 
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     try {
-      // Validar si el cliente es persona natural o jurídica
+      const cedula = createCreSolicitudWebDto.Cedula;
+      let debeConsultarEquifax = false;
+
+      // 1. Consultar Equifax local
+      const eqfxData = await this.eqfxidentificacionconsultadaService.findOne(cedula);
+
+      if (eqfxData.success) {
+        const FechaConsulta = eqfxData.data.FechaSistema;
+        const fechaActual = new Date();
+        const fechaSistema = new Date(FechaConsulta);
+        const diferenciaTiempo = fechaActual.getTime() - fechaSistema.getTime();
+        const diferenciaMeses = diferenciaTiempo / (1000 * 60 * 60 * 24 * 30);
+
+        if (diferenciaMeses > 3) {
+          debeConsultarEquifax = true;
+        }
+      } else {
+        debeConsultarEquifax = true;
+      }
+
+      // 2. Si es necesario, consultar Equifax externo
+      if (debeConsultarEquifax) {
+        const equifaxResult = await this.EquifaxData('C', cedula);
+
+        if (!equifaxResult.success) {
+          // NO lanzar excepción. En su lugar, devolver respuesta clara al frontend.
+          return {
+            success: false,
+            mensaje: 'No se pudo consultar los datos en Equifax. Por favor, intente nuevamente más tarde.',
+            errorOrigen: 'Equifax',
+            data: null,
+          };
+        }
+      }
+      /* sección Cogno*/
+      const token = await this.authService.getToken(cedula);
+
+      if (!token) {
+        return {
+          success: false,
+          mensaje: 'Token Cogno falló. No se pudo continuar con el proceso.',
+          errorOrigen: 'AuthService',
+          data: null,
+        };
+      }
+
+      // 2. Consultar API externa Datos generales cogno
+      const apiResult = await this.authService.getApiData(token, cedula);
+
+      if (!apiResult.success) {
+        return {
+          success: false,
+          mensaje: `Error desde API externa: ${apiResult.mensaje}`,
+          errorOrigen: 'ApiExterna',
+          data: null,
+        };
+      }
+      const apiData = apiResult.data;
+      // 3.  Consultar API externa Datos laborales
+      const idSituacionLaboral = createCreSolicitudWebDto.idSituacionLaboral;
+      let trabajos = [];
+
+      const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
+
+      if (idSituacionLaboral === 1) {
+        // Obligatorio: debe tener datos y éxito
+        if (!trabajoResult.success || !trabajoResult.data?.trabajos?.length) {
+          return {
+            success: false,
+            mensaje: 'La información laboral es obligatoria y no fue posible obtenerla desde COGNO.',
+            errorOrigen: 'ApiEmpleo',
+            data: null,
+          };
+        }
+        trabajos = trabajoResult.data.trabajos;
+      } else {
+        // Opcional: usar si hay datos, continuar si no
+        if (trabajoResult.success && trabajoResult.data?.trabajos?.length) {
+          trabajos = trabajoResult.data.trabajos;
+        } else {
+          this.logger.warn(`API de empleo no devolvió datos para ${cedula}, pero no es obligatorio (idSituacionLaboral = ${idSituacionLaboral}).`);
+        }
+      }
+      let bApiDataTrabajo = false;
+      // Si hay trabajos, establecer bandera
+      if (trabajos.length > 0) {
+        bApiDataTrabajo = true;
+      }
 
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
-      /* obtener el id de la solicitud creada y cedula */
-
+      const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
+      // Emitir evento WebSocket
       this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
         id: creSolicitudWeb.idCre_SolicitudWeb,
         cambios: createCreSolicitudWebDto,
       });
 
-      const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
-      const cedula = creSolicitudWeb.Cedula;
-      const token = await this.authService.getToken(cedula); // Llamada a AuthService para obtener el token
-      // llamamao a la api de equifax con la cedula
-      const eqfxData = await this.eqfxidentificacionconsultadaService.findOne(cedula);
-      if (eqfxData.success) {
-        const FechaConsulta = eqfxData.data.FechaSistema;
+      const saveData = await this.authService.create(apiData, bApiDataTrabajo, 0);
 
-        // Obtener la fecha actual
-        const fechaActual = new Date();
+      await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, idSolicitud);
 
-        // Convertir la fecha de sistema a un objeto Date
-        const fechaSistema = new Date(FechaConsulta);
-
-        // Calcular la diferencia en milisegundos
-        const diferenciaTiempo = fechaActual.getTime() - fechaSistema.getTime();
-
-        // Convertir la diferencia a meses (milisegundos en un mes = 1000 * 60 * 60 * 24 * 30)
-        const diferenciaMeses = diferenciaTiempo / (1000 * 60 * 60 * 24 * 30);
-
-        // Validar si la diferencia es mayor a 3 meses
-        if (diferenciaMeses > 3) {
-          await this.EquifaxData('C', cedula);
-        }
-        // Mostrar el resultado
-      }
-      else {
-        // si no existe busca o consume la api de equifax
-        await this.EquifaxData('C', cedula);
-      }
-
-      // Llamamos a getApiData con el token obtenido
-      const apiData = await this.authService.getApiData(token, cedula);
-
-      // Lógica adicional para manejar los datos obtenidos
-      const apiDataTrabajo = await this.authService.getApiDataTrabajo(token, cedula);
-      let bApiDataTrabajo = false;
-      if (apiDataTrabajo.trabajos) {
-        bApiDataTrabajo = apiDataTrabajo.trabajos.length > 0;
-      }
-
-      // Guardamos los datos
-      const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
-
-      const saveDataNatural = await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
-      console.log('saveDataNatural', saveDataNatural);
       if (apiData.personaNaturalConyuge.personaConyuge.identificacion && apiData.personaNaturalConyuge.personaConyuge.nombre) {
         if (apiData.personaNaturalConyuge.personaConyuge.identificacion !== null && apiData.personaNaturalConyuge.personaConyuge.nombre !== '') {
           await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
@@ -138,8 +183,9 @@ export class CreSolicitudWebService {
 
       // Domicilio del cónyuge
       if (apiData.estadoCivil.estadoCivil.descripcion === 'CASADO') {
+        console.log('Domicilio del cónyuge:', apiData);
         await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
-        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 2);
+        //  await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 2);
       }
 
       // Crear nacionalidades, profesiones y trabajos
@@ -147,25 +193,44 @@ export class CreSolicitudWebService {
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
 
-      if (bApiDataTrabajo && apiDataTrabajo.trabajos && apiDataTrabajo.trabajos.length > 0 && apiDataTrabajo.trabajos[0].fechaActualizacion) {
+      if (bApiDataTrabajo && trabajos && trabajos.length > 0 && trabajos[0].fechaActualizacion) {
         // Si tiene datos, se guarda la información
-        await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
+        console.log('Trabajos a guardar:', trabajos);
+        await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
       }
 
+      // 3. Si Equifax fue exitoso, crear y guardar la solicitud
 
-      // validar tipo cliente
 
+
+      // 4. Ejecutar stored procedure
       const storedProcedureResult = await this.callStoredProcedureRetornaTipoCliente(cedula, idSolicitud);
       const tipoCliente = storedProcedureResult[0].TipoCliente;
       const Resultado = storedProcedureResult[0].Resultado;
 
-      // actualizar el tipo de cliente en la tabla cre_solicitud_web
+      // 5. Actualizar la solicitud con tipo cliente y estado
       const estado = Resultado === 0 ? 5 : 1;
-      await this.creSolicitudWebRepository.update(idSolicitud, { idTipoCliente: tipoCliente ? tipoCliente : 0, Estado: estado });
+      await this.creSolicitudWebRepository.update(idSolicitud, {
+        idTipoCliente: tipoCliente || 0,
+        Estado: estado,
+      });
 
-      return creSolicitudWeb;
+      return {
+        success: true,
+        mensaje: `Solicitud N° ${creSolicitudWeb.NumeroSolicitud} creada exitosamente.`,
+        data: creSolicitudWeb
+      };
+
+
     } catch (error) {
-      this.handleDBException(error);
+      // Error general (no Equifax), controlado también
+      this.logger.error('Error en create: ' + error.message);
+      return {
+        success: false,
+        mensaje: 'Ocurrió un error inesperado al procesar la solicitud.',
+        error: error.message,
+        errorOrigen: 'Servidor',
+      };
     }
   }
 
@@ -230,10 +295,11 @@ export class CreSolicitudWebService {
   async getSolicitudCogno(cedula: string) {
     try {
       const token = await this.authService.getToken(cedula); // Llamada a AuthService para obtener el token
-      const apiData = await this.authService.getApiData(token, cedula);
+
+      const apiData = await this.authService.getApiDataFind(token, cedula);
 
       if (apiData.estado.codigo === "OK") {
-        
+  
         const { identificacion, nombre, fechaNacimiento } = apiData.personaNatural;
         const partesNombre = this.splitNombreCompleto(nombre);
 
@@ -246,9 +312,10 @@ export class CreSolicitudWebService {
           age--;
         }
 
-        return { identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo,
+        return {
+          identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo,
           ...partesNombre
-         };
+        };
       }
       return { codigo: false }; // Devuelve falso si el estado no es "OK"
     } catch (error) {
@@ -475,34 +542,34 @@ export class CreSolicitudWebService {
     if (!creSolicitudWeb) {
       throw new NotFoundException('Registro no encontrado');
     }
-  
+
     try {
 
       const beforeUpdate: CreSolicitudWeb = {
         ...creSolicitudWeb,
         // No asignes valores a los métodos `upper*`
         upperApellidos: undefined, // No necesitas asignar valores a estos métodos
-        upperNombres: undefined, 
+        upperNombres: undefined,
         upperSegundoNombre: undefined,
         uppperApellidoPaterno: undefined,
       };
       this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
       const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
-  
+
       await this.notifierService.emitirCambioSolicitudWeb({
         solicitud: updated,
         cambios: updateCreSolicitudWebDto,
         usuarioEjecutor,
         original: beforeUpdate,
       });
-  
+
       return updated;
     } catch (error) {
       this.handleDBException(error);
     }
   }
-  
-  
+
+
 
 
   async updateTelefonica(
@@ -515,21 +582,21 @@ export class CreSolicitudWebService {
     if (!creSolicitudWeb) {
       throw new NotFoundException('Registro no encontrado');
     }
-  
+
     try {
 
       const beforeUpdate: CreSolicitudWeb = {
         ...creSolicitudWeb,
         // No asignes valores a los métodos `upper*`
         upperApellidos: undefined, // No necesitas asignar valores a estos métodos
-        upperNombres: undefined, 
+        upperNombres: undefined,
         upperSegundoNombre: undefined,
         uppperApellidoPaterno: undefined,
       };
       creSolicitudWeb.idEstadoVerificacionDocumental = idEstadoVerificacionDocumental;
       this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
       const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
-  
+
       await this.notifierService.emitirCambioSolicitudWeb({
         solicitud: updated,
         cambios: updateCreSolicitudWebDto,
@@ -537,112 +604,112 @@ export class CreSolicitudWebService {
         original: beforeUpdate,
 
       });
-  
+
       return updated;
     } catch (error) {
       this.handleDBException(error);
     }
   }
-  
-  
 
-// cre_solicitud-web.service.ts
-async updateSolicitud(
-  idCre_SolicitudWeb: number,
-  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
-  usuarioEjecutor?: any,
-) {
-  console.log('➡️ Ejecutando updateSolicitud');
 
-  const idUsuarioEjecutor = usuarioEjecutor?.idUsuario;
-  const idGrupoEjecutor = usuarioEjecutor?.idGrupo;
 
-  const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
-    where: { idCre_SolicitudWeb },
-  });
+  // cre_solicitud-web.service.ts
+  async updateSolicitud(
+    idCre_SolicitudWeb: number,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+    usuarioEjecutor?: any,
+  ) {
+    console.log('➡️ Ejecutando updateSolicitud');
 
-  if (!creSolicitudWeb) {
-    console.log('❌ Registro no encontrado');
-    throw new NotFoundException('Registro no encontrado');
-  }
+    const idUsuarioEjecutor = usuarioEjecutor?.idUsuario;
+    const idGrupoEjecutor = usuarioEjecutor?.idGrupo;
 
-  try {
-    // Actualizar la entidad
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
+      where: { idCre_SolicitudWeb },
+    });
+
+    if (!creSolicitudWeb) {
+      console.log('❌ Registro no encontrado');
+      throw new NotFoundException('Registro no encontrado');
+    }
+
+    try {
+      // Actualizar la entidad
       // Asegúrate de que no estás asignando valores a los métodos
-const beforeUpdate: CreSolicitudWeb = {
-  ...creSolicitudWeb,
-  // No asignes valores a los métodos `upper*`
-  upperApellidos: undefined, // No necesitas asignar valores a estos métodos
-  upperNombres: undefined, 
-  upperSegundoNombre: undefined,
-  uppperApellidoPaterno: undefined,
-};
+      const beforeUpdate: CreSolicitudWeb = {
+        ...creSolicitudWeb,
+        // No asignes valores a los métodos `upper*`
+        upperApellidos: undefined, // No necesitas asignar valores a estos métodos
+        upperNombres: undefined,
+        upperSegundoNombre: undefined,
+        uppperApellidoPaterno: undefined,
+      };
 
 
-    this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
-    const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+      const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
 
-    // ✅ Emitir evento y notificaciones desde un único punto
-    await this.notifierService.emitirCambioSolicitudWeb({
-      solicitud: updated,
-      cambios: updateCreSolicitudWebDto,
-      usuarioEjecutor,
-      original: beforeUpdate,
+      // ✅ Emitir evento y notificaciones desde un único punto
+      await this.notifierService.emitirCambioSolicitudWeb({
+        solicitud: updated,
+        cambios: updateCreSolicitudWebDto,
+        usuarioEjecutor,
+        original: beforeUpdate,
+      });
+
+      return updated;
+
+    } catch (error) {
+      console.error('❗ Error al actualizar la solicitud:', error);
+      this.handleDBException(error);
+    }
+  }
+  async verificarCedulaBodega(cedula: string, bodega: number): Promise<{ existe: boolean }> {
+    const solicitudExistente = await this.creSolicitudWebRepository.findOne({
+      where: { Cedula: cedula, Bodega: bodega, Estado: 1 },
     });
 
-    return updated;
-
-  } catch (error) {
-    console.error('❗ Error al actualizar la solicitud:', error);
-    this.handleDBException(error);
-  }
-}
-async verificarCedulaBodega(cedula: string, bodega: number): Promise<{ existe: boolean }> {
-  const solicitudExistente = await this.creSolicitudWebRepository.findOne({
-    where: { Cedula: cedula, Bodega: bodega, Estado: 1 },
-  });
-
-  return { existe: !!solicitudExistente };
-}
-
-
-
-async updateCodDactilar(
-  idCre_SolicitudWeb: number,
-  updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
-  usuarioEjecutor?: any,
-) {
-  const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
-  if (!creSolicitudWeb) {
-    throw new NotFoundException('Registro no encontrado');
+    return { existe: !!solicitudExistente };
   }
 
-  try {
 
-    const beforeUpdate: CreSolicitudWeb = {
-      ...creSolicitudWeb,
-      // No asignes valores a los métodos `upper*`
-      upperApellidos: undefined, // No necesitas asignar valores a estos métodos
-      upperNombres: undefined, 
-      upperSegundoNombre: undefined,
-      uppperApellidoPaterno: undefined,
-    };
 
-    this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
-    const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+  async updateCodDactilar(
+    idCre_SolicitudWeb: number,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+    usuarioEjecutor?: any,
+  ) {
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb } });
+    if (!creSolicitudWeb) {
+      throw new NotFoundException('Registro no encontrado');
+    }
 
-    await this.notifierService.emitirCambioSolicitudWeb({
-      solicitud: updated,
-      cambios: updateCreSolicitudWebDto,
-      usuarioEjecutor,
-      original: beforeUpdate,
-    });
+    try {
 
-    return updated;
-  } catch (error) {
-    this.handleDBException(error);
+      const beforeUpdate: CreSolicitudWeb = {
+        ...creSolicitudWeb,
+        // No asignes valores a los métodos `upper*`
+        upperApellidos: undefined, // No necesitas asignar valores a estos métodos
+        upperNombres: undefined,
+        upperSegundoNombre: undefined,
+        uppperApellidoPaterno: undefined,
+      };
+
+      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+      const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+      await this.notifierService.emitirCambioSolicitudWeb({
+        solicitud: updated,
+        cambios: updateCreSolicitudWebDto,
+        usuarioEjecutor,
+        original: beforeUpdate,
+      });
+
+      return updated;
+    } catch (error) {
+      this.handleDBException(error);
+    }
   }
-}
 
 
 

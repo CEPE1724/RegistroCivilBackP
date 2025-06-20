@@ -53,38 +53,60 @@ export class AuthService {
 
 
     async getToken(cedula: string): Promise<string> {
-
         try {
-            // Pasamos la cédula como parte de las credenciales si es necesario
             const data = qs.stringify({
-                username: this.username,  // Puedes usar la cédula como username si corresponde
+                username: this.username,
                 password: this.password,
                 client_id: this.clientId,
                 grant_type: 'password',
             });
 
-
-            // Solicitud para obtener el token
             const response = await axios.post(this.keycloakUrl, data, {
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
             });
 
-
             if (response.data && response.data.access_token) {
-                return response.data.access_token;  // Retornamos el token
+                return response.data.access_token;
             }
 
-            throw new InternalServerErrorException('Error al obtener el token');
+            // Si no hay token en la respuesta
+            return null;
         } catch (error) {
-            this.handleDBException(error);
+            this.logger.error('Error al obtener el token:', error.message);
+            return null; // Indicamos que falló
         }
     }
 
+
     // Método para consumir la API externa usando el token y la cédula como parámetro en la URL
     async getApiData(token: string, cedula: string): Promise<any> {
+        try {
+            const url = `${this.apiUrl}${cedula}`;
 
+            const response = await axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            const data = response.data;
+            console.log('Response from API:', data); // Para depuración
+
+            // Validar si viene un código de error
+            if (data?.estado?.codigo === 'ERROR') {
+                // Retorna un objeto que indique fallo controlado
+                return { success: false, mensaje: data.estado.mensaje || 'Error en API externa' };
+            }
+
+            // Si no hay error, retornar los datos esperados
+            return { success: true, data };
+        } catch (error) {
+            console.error('Error al obtener datos de la API externa:', error.message);
+            return { success: false, mensaje: 'No se pudo conectar COGNO' };
+        }
+    }
+
+    async getApiDataFind(token: string, cedula: string): Promise<any> {
 
         try {
             // Realizamos la solicitud a la API externa usando el token
@@ -107,27 +129,41 @@ export class AuthService {
         }
     }
 
-    async getApiDataTrabajo(token: string, cedula: string): Promise<any> {
+    async getApiDataTrabajo(token: string, cedula: string): Promise<{ success: boolean, mensaje?: string, data?: any }> {
         try {
-            // Realizamos la solicitud a la API externa usando el token
-            const url = `${this.apiUrl2}${cedula}`;  // Concatenamos la cédula en la URL
+            const url = `${this.apiUrl2}${cedula}`;
 
             const response = await axios.get(url, {
                 headers: {
-                    'Authorization': `Bearer ${token}`,  // Pasamos el token como Bearer
+                    Authorization: `Bearer ${token}`,
                 },
             });
 
-            if (response.data) {
-                return response.data;  // Retornamos los datos de la API
+            const data = response.data;
+            console.log('Response from API Trabajo:', data.trabajos);
+
+            // Si el API responde con un error de negocio
+            if (data?.estado?.codigo === 'ERROR') {
+                return {
+                    success: false,
+                    mensaje: data.estado.mensaje || 'Error en API de trabajo',
+                };
             }
 
-            throw new InternalServerErrorException('Error al obtener datos de la API');
+            // Aunque trabajos esté vacío, si el estado es OK, es válido
+            return {
+                success: true,
+                data,
+            };
         } catch (error) {
-            console.error(error);
-            this.handleDBException(error);
+            console.error('Error al obtener datos de empleo desde API:', error.message);
+            return {
+                success: false,
+                mensaje: 'No se pudo conectar con la API de empleo',
+            };
         }
     }
+
 
     async create(apiData: any, bApiDataTrabajo: boolean, numberId: number): Promise<Cognosolicitudcredito> {
         try {
@@ -247,15 +283,19 @@ export class AuthService {
 
     async createNaturalConyugue(apiData: any, idCognoSolicitudCredito: number, Tipo: number): Promise<CognoPersonaNatural> {
         try {
-
-
+            // console.log('createNaturalConyugue', apiData.personaNaturalConyuge, idCognoSolicitudCredito, Tipo);
+            // console.log('createNaturalConyugue', apiData.personaNaturalConyuge, idCognoSolicitudCredito, Tipo);
             /// veirificar si existe la persona natural
             const existingRecord = await this.cognoPersonaNaturalRepository.findOne({
                 where: { idCognoSolicitudCredito: idCognoSolicitudCredito, Tipo: Tipo },
             });
+            const nombreParroquia = apiData?.personaNaturalConyuge?.personaConyuge?.lugarDefuncion?.parroquia?.nombre ?? '';
+            console.log('idCognoSolicitudCredito', nombreParroquia, 'Tipo', Tipo);
+
 
             /* titutlar*/
             if (existingRecord) {
+                //console.log('existingRecord', existingRecord);
                 // Actualizamos los datos si ya existe
                 existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
                 existingRecord.identificacion = apiData.personaNaturalConyuge.personaConyuge.identificacion;
@@ -269,7 +309,8 @@ export class AuthService {
                 existingRecord.informacionAdicional = apiData.personaNaturalConyuge.personaConyuge.informacionAdicional;
                 existingRecord.idGenero = apiData.personaNaturalConyuge.personaConyuge.genero.idGenero;
                 existingRecord.Genero = apiData.personaNaturalConyuge.personaConyuge.genero.descripcion;
-                existingRecord.lugarDefuncion = apiData.personaNaturalConyuge.personaConyuge.lugarDefuncion;
+                existingRecord.lugarDefuncion = nombreParroquia; // Asignar lugarDefuncion solo si es válido
+
                 existingRecord.apellidoUno = apiData.personaNaturalConyuge.personaConyuge.apellidoUno;
                 existingRecord.apellidoDos = apiData.personaNaturalConyuge.personaConyuge.apellidoDos;
 
@@ -287,6 +328,7 @@ export class AuthService {
                 await this.cognoPersonaNaturalRepository.save(existingRecord);
                 return existingRecord;
             } else {
+
                 // Creamos un nuevo registro si no existe
                 const createCognopersonanaturalDto: CreateCognopersonanaturalDto = {
                     idCognoSolicitudCredito: idCognoSolicitudCredito,
@@ -301,7 +343,8 @@ export class AuthService {
                     informacionAdicional: apiData.personaNaturalConyuge.personaConyuge.informacionAdicional,
                     idGenero: apiData.personaNaturalConyuge.personaConyuge.genero.idGenero,
                     Genero: apiData.personaNaturalConyuge.personaConyuge.genero.descripcion,
-                    lugarDefuncion: apiData.personaNaturalConyuge.personaConyuge.lugarDefuncion,
+                    lugarDefuncion: nombreParroquia, // Asignar lugarDefuncion solo si es válido
+
                     apellidoUno: apiData.personaNaturalConyuge.personaConyuge.apellidoUno,
                     apellidoDos: apiData.personaNaturalConyuge.personaConyuge.apellidoDos,
 
@@ -315,6 +358,7 @@ export class AuthService {
                 };
                 const newRecord = this.cognoPersonaNaturalRepository.create(createCognopersonanaturalDto);
                 await this.cognoPersonaNaturalRepository.save(newRecord);
+                console.log('newRecord', newRecord);
                 return newRecord;
             }
         } catch (error) {
@@ -324,84 +368,64 @@ export class AuthService {
 
     async createLugarNacimiento(apiData: any, idCognoSolicitudCredito: number, Tipo: number): Promise<CognoSolicitudLugarNacimiento> {
         try {
-
-            /// veirificar si existe la persona natural
             const existingRecord = await this.cognoSolicitudLugarNacimientoRepository.findOne({
-                where: { idCognoSolicitudCredito: idCognoSolicitudCredito, Tipo: Tipo },
+                where: { idCognoSolicitudCredito, Tipo },
             });
-            // apiData.personaNatural   titular
-            // apiData.personaNaturalConyuge.personaConyuge  conyuge
 
-            let tipoJsoncogno = apiData.personaNatural.lugarNacimiento;
+            let tipoJsoncogno = apiData?.personaNatural?.lugarNacimiento;
 
-            if (Tipo == 1) {
-                tipoJsoncogno = apiData.personaNaturalConyuge.personaConyuge.lugarNacimiento;
+            if (Tipo === 1) {
+                tipoJsoncogno = apiData?.personaNaturalConyuge?.personaConyuge?.lugarNacimiento;
             }
-            if (Tipo == 2) {
-                tipoJsoncogno = apiData.personaNaturalConyuge.lugar;
+
+            if (Tipo === 2) {
+                tipoJsoncogno = apiData?.personaNaturalConyuge?.lugar;
             }
-            /* titutlar*/
+
+            // ⚠️ Validar que tipoJsoncogno sea un objeto válido
+            if (!tipoJsoncogno || typeof tipoJsoncogno !== 'object') {
+                console.warn(`⚠️ No se encontró lugarNacimiento válido para Tipo=${Tipo}`);
+                return null; // Salir temprano sin guardar nada
+            }
+
+            console.log('tipoJsoncogno', tipoJsoncogno, 'idCognoSolicitudCredito', idCognoSolicitudCredito, 'Tipo', Tipo);
+
+            const lugarData = {
+                idCognoSolicitudCredito,
+                idLugar: tipoJsoncogno.idLugar || 0,
+                codigoPostal: tipoJsoncogno.codigoPostal,
+                fechaActualizacion: tipoJsoncogno.fechaActualizacion || null,
+                idPais: tipoJsoncogno.parroquia?.canton?.provincia?.pais?.idPais || 0,
+                Pais: tipoJsoncogno.parroquia?.canton?.provincia?.pais?.nombre || '',
+                codigoAreaPais: tipoJsoncogno.parroquia?.canton?.provincia?.pais?.codigoArea || '',
+                codigoIso2: tipoJsoncogno.parroquia?.canton?.provincia?.pais?.codigoIso2 || '',
+                codigoIso3: tipoJsoncogno.parroquia?.canton?.provincia?.pais?.codigoIso3 || '',
+                codigoIso: tipoJsoncogno.parroquia?.canton?.provincia?.pais?.codigoIso || '',
+                idProvincia: tipoJsoncogno.parroquia?.canton?.provincia?.idProvincia || 0,
+                Provincia: tipoJsoncogno.parroquia?.canton?.provincia?.nombre || '',
+                codigoAreaProvincia: tipoJsoncogno.parroquia?.canton?.provincia?.codigoArea || '',
+                idCanton: tipoJsoncogno.parroquia?.canton?.idCanton || 0,
+                Canton: tipoJsoncogno.parroquia?.canton?.nombre || '',
+                idParroquia: tipoJsoncogno.parroquia?.idParroquia || 0,
+                Parroquia: tipoJsoncogno.parroquia?.nombre || '',
+                Tipo
+            };
+
             if (existingRecord) {
-
-                // ller parroquia len
-                // Actualizamos los datos si ya existe
-                existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito;
-                existingRecord.idLugar = tipoJsoncogno.idLugar || 0;
-                existingRecord.codigoPostal = tipoJsoncogno.codigoPostal;
-                existingRecord.fechaActualizacion = tipoJsoncogno.fechaActualizacion || null;
-                existingRecord.idPais = tipoJsoncogno.parroquia.canton.provincia.pais.idPais;
-                existingRecord.Pais = tipoJsoncogno.parroquia.canton.provincia.pais.nombre;
-                existingRecord.codigoAreaPais = tipoJsoncogno.parroquia.canton.provincia.pais.codigoArea;
-                existingRecord.codigoIso2 = tipoJsoncogno.parroquia.canton.provincia.pais.codigoIso2;
-                existingRecord.codigoIso3 = tipoJsoncogno.parroquia.canton.provincia.pais.codigoIso3;
-                existingRecord.codigoIso = tipoJsoncogno.parroquia.canton.provincia.pais.codigoIso;
-                existingRecord.idProvincia = tipoJsoncogno.parroquia.canton.provincia.idProvincia;
-                existingRecord.Provincia = tipoJsoncogno.parroquia.canton.provincia.nombre;
-                existingRecord.codigoAreaProvincia = tipoJsoncogno.parroquia.canton.provincia.codigoArea;
-                existingRecord.idCanton = tipoJsoncogno.parroquia.canton.idCanton;
-                existingRecord.Canton = tipoJsoncogno.parroquia.canton.nombre;
-                existingRecord.idParroquia = tipoJsoncogno.parroquia.idParroquia;
-                existingRecord.Parroquia = tipoJsoncogno.parroquia.nombre;
-                existingRecord.Tipo = Tipo;
-
-                //// tipo establesco como 0 
-
+                Object.assign(existingRecord, lugarData);
                 await this.cognoSolicitudLugarNacimientoRepository.save(existingRecord);
                 return existingRecord;
-            }
-            else {
-
-                const createCognolugarNacimientoDto: CreateCognolugarnacimientoDto = {
-                    idCognoSolicitudCredito: idCognoSolicitudCredito,
-                    idLugar: tipoJsoncogno.idLugar || 0,
-                    codigoPostal: tipoJsoncogno.codigoPostal,
-                    fechaActualizacion: tipoJsoncogno.fechaActualizacion || null,
-                    idPais: tipoJsoncogno.parroquia.canton.provincia.pais.idPais,
-                    Pais: tipoJsoncogno.parroquia.canton.provincia.pais.nombre,
-                    codigoAreaPais: tipoJsoncogno.parroquia.canton.provincia.pais.codigoArea,
-                    codigoIso2: tipoJsoncogno.parroquia.canton.provincia.pais.codigoIso2,
-                    codigoIso3: tipoJsoncogno.parroquia.canton.provincia.pais.codigoIso3,
-                    codigoIso: tipoJsoncogno.parroquia.canton.provincia.pais.codigoIso,
-                    idProvincia: tipoJsoncogno.parroquia.canton.provincia.idProvincia,
-                    Provincia: tipoJsoncogno.parroquia.canton.provincia.nombre,
-                    codigoAreaProvincia: tipoJsoncogno.parroquia.canton.provincia.codigoArea,
-                    idCanton: tipoJsoncogno.parroquia.canton.idCanton,
-                    Canton: tipoJsoncogno.parroquia.canton.nombre,
-                    idParroquia: tipoJsoncogno.parroquia.idParroquia,
-                    Parroquia: tipoJsoncogno.parroquia.nombre,
-                    Tipo: Tipo,
-                }
-                const newRecord = this.cognoSolicitudLugarNacimientoRepository.create(createCognolugarNacimientoDto);
+            } else {
+                const newRecord = this.cognoSolicitudLugarNacimientoRepository.create(lugarData);
                 await this.cognoSolicitudLugarNacimientoRepository.save(newRecord);
                 return newRecord;
             }
 
-        }
-        catch (error) {
+        } catch (error) {
             this.handleDBException(error);
         }
-
     }
+
 
     async createNacionalidades(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
         try {
@@ -503,14 +527,14 @@ export class AuthService {
 
     async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
 
-
+        console.log('createTrabajo', apiData, idCognoSolicitudCredito);
         try {
-            if (!apiData?.trabajos || !Array.isArray(apiData.trabajos) || apiData.trabajos.length === 0) {
-                console.error("Error: apiData.trabajos es undefined o vacío.");
-                throw new Error("Los datos de trabajo son inválidos o incompletos.");
+            if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+                console.error("Error: No se encontraron trabajos válidos en la respuesta de la API.");
+                throw new Error("La información laboral es obligatoria y no se obtuvo desde la API.");
             }
 
-            for (const trabajoData of apiData.trabajos) {
+            for (const trabajoData of apiData) {
 
                 const identificacionPatrono = trabajoData.personaPatrono?.identificacion ?? '';
 
@@ -582,7 +606,7 @@ export class AuthService {
                     existingRecord.celular = trabajoData.celular || '';
                     existingRecord.baseDate = trabajoData.baseDate || new Date().toISOString();
                 } else {
-                   
+
                     console.log('No existe el registro, se creará uno nuevo.');
                     console.log('idCognoSolicitudCredito:', idCognoSolicitudCredito);
                     console.log('trabajoData:', trabajoData);
@@ -660,7 +684,7 @@ export class AuthService {
         }
     }
 
-   
+
 
 
     private handleDBException(error: any) {

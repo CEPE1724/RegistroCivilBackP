@@ -21,8 +21,8 @@ export class AuthController {
         const apiDataTrabajo = await this.authService.getApiDataTrabajo(token, cedula);
         let bApiDataTrabajo = false;
         /* si apiDataTrabajo tiene datos  true caso contrario false */
-        if (apiDataTrabajo.trabajos) {
-            if (apiDataTrabajo.trabajos.length > 0) {
+        if (apiDataTrabajo.data.trabajos) {
+            if (apiDataTrabajo.data.trabajos.length > 0) {
                 bApiDataTrabajo = true;
             } else {
                 bApiDataTrabajo = false;
@@ -60,7 +60,7 @@ export class AuthController {
 
         await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
-        if (bApiDataTrabajo && apiDataTrabajo.trabajos.personaPatrono && apiDataTrabajo.trabajos.personaPatrono.identificacion) {
+        if (bApiDataTrabajo && apiDataTrabajo.data.trabajos.personaPatrono && apiDataTrabajo.data.trabajos.personaPatrono.identificacion) {
 
             await this.authService.createTrabajo(apiDataTrabajo, saveData.idCognoSolicitudCredito);
         }
