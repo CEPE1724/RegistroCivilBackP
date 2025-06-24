@@ -666,4 +666,11 @@ export class CreateWebSolicitudgrandeDto {
   @IsString()
   readonly CelularInmediato?: string;
 
+  @IsOptional()
+  @IsString()
+  readonly TelefonoNegocio?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly CelularNegocio?: string; 
 }
