@@ -6,18 +6,20 @@ import { Auth } from 'src/auth/decorators';
 export class OtpController {
   constructor(private readonly otpService: OtpcodigoService) {}
 
-
-  @Post('generate')
-  @Auth()
-  async generateOtp(@Body('phoneNumber') phoneNumber: string) {
-  
-    try {
-      const otpCode = await this.otpService.generateOtp(phoneNumber);
-      return { success: true, otpCode }; // OTP code to be sent via SMS in production
-    } catch (error) {
-      return { success: false, message: error.message };
-    }
+@Post('generate')
+// @Auth() ← Descomenta si quieres que requiera autenticación
+async generateOtp(
+  @Body('phoneNumber') phoneNumber: string,
+  @Body('email') email: string,
+  @Body('nombreCompleto') nombreCompleto: string,
+) {
+  try {
+    const otpCode = await this.otpService.generateOtp(phoneNumber, email, nombreCompleto);
+    return { success: true, otpCode }; // Opcionalmente no devuelvas el OTP en producción
+  } catch (error) {
+    return { success: false, message: error.message };
   }
+}
 
   @Post('verify')
   @Auth()

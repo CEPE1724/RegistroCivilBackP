@@ -12,7 +12,7 @@ import { EqfxidentificacionconsultadaService } from 'src/eqfxidentificacionconsu
 import { CreSolicitudwebWsGateway } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.gateway";
 import { CreSolicitudwebWsService } from 'src/cre_solicitudweb-ws/cre_solicitudweb-ws.service';
 import { SolicitudWebNotifierService } from './solicitud-web-notifier.service';
-
+import { EmailService } from 'src/email/email.service';
 import { Socket } from 'dgram';
 
 @Injectable()
@@ -27,7 +27,9 @@ export class CreSolicitudWebService {
     private readonly eqfxidentificacionconsultadaService: EqfxidentificacionconsultadaService,
     private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway,
     private readonly creSolicitudwebWsService: CreSolicitudwebWsService,
-    private readonly notifierService: SolicitudWebNotifierService
+    private readonly notifierService: SolicitudWebNotifierService,
+    private readonly emailService: EmailService,
+
   ) { }
 
   private async EquifaxData(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
@@ -65,7 +67,7 @@ export class CreSolicitudWebService {
     }
   }
 
-  async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+ async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     try {
       const cedula = createCreSolicitudWebDto.Cedula;
       let debeConsultarEquifax = false;
@@ -235,6 +237,7 @@ export class CreSolicitudWebService {
   }
 
 
+
   private readonly preposiciones = ['DE', 'DEL', 'LA', 'LOS', 'LAS'];
 
   private isPrepositional(word: string): boolean {
@@ -299,7 +302,7 @@ export class CreSolicitudWebService {
       const apiData = await this.authService.getApiDataFind(token, cedula);
 
       if (apiData.estado.codigo === "OK") {
-  
+
         const { identificacion, nombre, fechaNacimiento } = apiData.personaNatural;
         const partesNombre = this.splitNombreCompleto(nombre);
 
@@ -555,6 +558,18 @@ export class CreSolicitudWebService {
       };
       this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
       const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+
+
+
+
+
+
+
+
+
+
+
 
       await this.notifierService.emitirCambioSolicitudWeb({
         solicitud: updated,
