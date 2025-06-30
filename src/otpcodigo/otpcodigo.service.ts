@@ -4,12 +4,15 @@ import { MoreThan, Repository } from 'typeorm';
 import { Otpcodigo } from './entities/otpcodigo.entity';
 import * as crypto from 'crypto';
 import axios from 'axios';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class OtpcodigoService {
   constructor(
     @InjectRepository(Otpcodigo)
     private otpRepository: Repository<Otpcodigo>,
+    private readonly emailService: EmailService, // ⬅️ inyectamos EmailService
+
   ) {}
 
   // Función para enviar el mensaje con el OTP
@@ -42,7 +45,7 @@ export class OtpcodigoService {
   }
 
   // Generar un código OTP para el número de teléfono del usuario
-  async generateOtp(phoneNumber: string): Promise<string> {
+  async generateOtp(phoneNumber: string , email:string ,  nombreCompleto: string  ): Promise<string> {
     // Verificar si ya hay un OTP activo (no verificado o no expirado)
     const existingOtp = await this.otpRepository.findOne({
       where: {
@@ -57,6 +60,10 @@ export class OtpcodigoService {
       existingOtp.is_used = true;
       await this.otpRepository.save(existingOtp);
     }
+  
+
+
+
 
     const otpCode = Math.floor(10000 + Math.random() * 90000).toString(); // OTP de 5 dígitos
     const expiresAt = new Date();
@@ -71,8 +78,14 @@ export class OtpcodigoService {
 
     await this.otpRepository.save(otp);
 
+
+      try {
+    await this.emailService.sendOtpEmail(email, nombreCompleto, otpCode , phoneNumber);
+  } catch (err) {
+    console.error('Fallo al enviar OTP por correo:', err);
+  }
     // Enviar mensaje SMS con el OTP
-    const messageStatus = await this.sendOtpMessage(phoneNumber, otpCode);
+   //// const messageStatus = await this.sendOtpMessage(phoneNumber, otpCode);
   
     // Verificamos el estado de la respuesta de la API
 

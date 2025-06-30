@@ -11,6 +11,7 @@ import { CreSolicitudwebWsModule } from "../cre_solicitudweb-ws/cre_solicitudweb
 import { SolicitudWebNotifierService } from './solicitud-web-notifier.service';
 
 import { AuthModule } from 'src/auth/auth.module';
+import { EmailModule } from 'src/email/email.module';
 @Module({
   controllers: [CreSolicitudWebController],
   providers: [CreSolicitudWebService , SolicitudWebNotifierService], // ✅ Solo el servicio
@@ -20,6 +21,7 @@ import { AuthModule } from 'src/auth/auth.module';
     EqfxidentificacionconsultadaModule,
     CreSolicitudwebWsModule, // ✅ Este módulo ya provee el Gateway
     AuthModule,
+    EmailModule
     
   ],
 })

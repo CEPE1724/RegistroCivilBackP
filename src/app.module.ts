@@ -114,6 +114,8 @@ import { EqfxReporteBuroCreditoModule } from './eqfx-reporte-buro-credito/eqfx-r
 import { DispositivosAppModule } from './dispositivos-app/dispositivos-app.module';
 import { ListaNegraCedulaModule } from './lista-negra-cedula/lista-negra-cedula.module';
 import { ComAsignacionDeVendedoresModule } from './com_asignacion-de-vendedores/com_asignacion-de-vendedores.module';
+import { EmailService } from './email/email.service';
+import { EmailModule } from './email/email.module';
 
 
 
@@ -294,10 +296,13 @@ import { ComAsignacionDeVendedoresModule } from './com_asignacion-de-vendedores/
 
     ComAsignacionDeVendedoresModule,
 
+    EmailModule,
+
 
 
 
 
   ],
+  providers: [EmailService],
 })
 export class AppModule {}
