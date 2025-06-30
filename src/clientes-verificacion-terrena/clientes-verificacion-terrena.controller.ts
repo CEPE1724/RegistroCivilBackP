@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, Query } from '@nestjs/common';
 import { ClientesVerificacionTerrenaService } from './clientes-verificacion-terrena.service';
 import { CreateClientesVerificacionTerrenaDto } from './dto/create-clientes-verificacion-terrena.dto';
 import { UpdateClientesVerificacionTerrenaDto } from './dto/update-clientes-verificacion-terrena.dto';
@@ -30,10 +30,13 @@ export class ClientesVerificacionTerrenaController {
 	return this.clientesVerificacionTerrenaService.createVerificacionBasica(body);
   }
   
-  @Get()
+  @Get('allbyID/:id')
   @Auth()
-  findAll() {
-    return this.clientesVerificacionTerrenaService.findAll();
+  findAll(
+	@Param('id') idCre_Solicitud: number,
+	@Query('tipo') tipo: 'domicilio' | 'trabajo'
+) {
+    return this.clientesVerificacionTerrenaService.findAll(idCre_Solicitud, tipo);
   }
 
   @Get(':id/:Tipo')
@@ -42,9 +45,9 @@ export class ClientesVerificacionTerrenaController {
     return this.clientesVerificacionTerrenaService.findOne(id, Tipo);
   }
 
-  @Patch(':id')
+  @Patch('update/:id')
   @Auth()
-  update(@Param('id') id: string, @Body() updateClientesVerificacionTerrenaDto: UpdateClientesVerificacionTerrenaDto) {
+  update(@Param('id') id: number, @Body() updateClientesVerificacionTerrenaDto: UpdateClientesVerificacionTerrenaDto) {
     return this.clientesVerificacionTerrenaService.update(+id, updateClientesVerificacionTerrenaDto);
   }
 
