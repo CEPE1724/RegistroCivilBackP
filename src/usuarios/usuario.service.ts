@@ -5,12 +5,15 @@ import * as bcrypt from 'bcrypt';
 import { Usuario } from './usuario.entity';
 import { not } from 'joi';
 import { Console } from 'console';
+import { InfoSistemaService } from 'src/info-sistema/info-sistema.service';
 
 @Injectable()
 export class UsuarioService {
   constructor(
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
+    private readonly infoSistemaService: InfoSistemaService, 
+
   ) {}
 
   async findById(idUsuario: number): Promise<Usuario | string> {
@@ -92,4 +95,55 @@ export class UsuarioService {
     });
     return this.usuarioRepository.save(newUser);
   } */
+
+
+
+ async debeCambiarContrasena(nombreUsuario: string): Promise<boolean> {
+    const existe = await this.infoSistemaService.existeIngreso(nombreUsuario);
+    return !existe; // si no existe el ingreso, debe cambiar la contraseña
+  }
+
+  async registrarAcceso(nombreUsuario: string, direccionIP: string) {
+    await this.infoSistemaService.registrarIngreso({
+      Usuario: nombreUsuario,
+      DireccionIP: direccionIP,
+      Estacion: '',
+      Versionamiento: '',
+    });
+  }
+
+  // lógica para cambiar clave y registrar el acceso
+  async cambiarClave(nombreUsuario: string, nuevaClave: string, direccionIP: string) {
+    try {
+      console.log('Iniciando cambio de clave para usuario:', nombreUsuario);
+      
+      // Usar QueryBuilder para incluir la columna Clave (que tiene select: false)
+      const usuario = await this.usuarioRepository
+        .createQueryBuilder('usuario')
+        .addSelect('usuario.Clave')
+        .where('usuario.Nombre = :nombreUsuario', { nombreUsuario })
+        .getOne();
+      
+      if (!usuario) {
+        console.log('Usuario no encontrado:', nombreUsuario);
+        return 'Usuario no encontrado';
+      }
+
+      console.log('Usuario encontrado, procediendo a cambiar clave');
+
+      usuario.Clave = nuevaClave;
+      
+      await this.usuarioRepository.save(usuario);
+      console.log('Contraseña actualizada en base de datos');
+
+      await this.registrarAcceso(nombreUsuario, direccionIP);
+      console.log('Acceso registrado exitosamente');
+
+      return 'Contraseña cambiada y acceso registrado';
+    } catch (error) {
+      console.error('Error en cambiarClave:', error);
+      throw error;
+    }
+  }
+    
 }
