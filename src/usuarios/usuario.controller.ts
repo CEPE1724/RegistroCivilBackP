@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { UsuarioService } from './usuario.service';
 import { Usuario } from './usuario.entity';
 import { Auth } from 'src/auth/decorators';
@@ -55,6 +55,22 @@ async findUsuariosByGrupo(@Param('idGrupo') idGrupo: number): Promise<Partial<Us
   async findById(@Param('idUsuario') idUsuario: number): Promise<Usuario | string> {
 	const resultado = await this.usuarioService.findById(idUsuario);
 	return resultado;
+  }
+
+
+   @Get('verificar-cambio/:nombreUsuario')
+    @Auth()
+  async verificarCambio(@Param('nombreUsuario') nombre: string) {
+    const debeCambiar = await this.usuarioService.debeCambiarContrasena(nombre);
+    return { debeCambiar };
+  }
+
+  @Post('cambiar-clave')
+   @Auth()
+  async cambiarClave(
+    @Body() body: { nombreUsuario: string; nuevaClave: string; direccionIP: string },
+  ) {
+    return await this.usuarioService.cambiarClave(body.nombreUsuario, body.nuevaClave, body.direccionIP);
   }
 
 }

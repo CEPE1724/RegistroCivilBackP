@@ -116,6 +116,7 @@ import { ListaNegraCedulaModule } from './lista-negra-cedula/lista-negra-cedula.
 import { ComAsignacionDeVendedoresModule } from './com_asignacion-de-vendedores/com_asignacion-de-vendedores.module';
 import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
+import { InfoSistemaModule } from './info-sistema/info-sistema.module';
 
 
 
@@ -297,6 +298,8 @@ import { EmailModule } from './email/email.module';
     ComAsignacionDeVendedoresModule,
 
     EmailModule,
+
+    InfoSistemaModule,
 
 
 
