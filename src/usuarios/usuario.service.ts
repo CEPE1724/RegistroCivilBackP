@@ -113,37 +113,45 @@ export class UsuarioService {
   }
 
   // lógica para cambiar clave y registrar el acceso
-  async cambiarClave(nombreUsuario: string, nuevaClave: string, direccionIP: string) {
-    try {
-      console.log('Iniciando cambio de clave para usuario:', nombreUsuario);
-      
-      // Usar QueryBuilder para incluir la columna Clave (que tiene select: false)
-      const usuario = await this.usuarioRepository
-        .createQueryBuilder('usuario')
-        .addSelect('usuario.Clave')
-        .where('usuario.Nombre = :nombreUsuario', { nombreUsuario })
-        .getOne();
-      
-      if (!usuario) {
-        console.log('Usuario no encontrado:', nombreUsuario);
-        return 'Usuario no encontrado';
-      }
+ async cambiarClave(nombreUsuario: string, nuevaClave: string, direccionIP: string) {
+  try {
+    console.log('Iniciando cambio de clave para usuario:', nombreUsuario);
 
-      console.log('Usuario encontrado, procediendo a cambiar clave');
+    // Obtener el usuario con el campo Clave (que tiene select: false)
+    const usuario = await this.usuarioRepository
+      .createQueryBuilder('usuario')
+      .addSelect('usuario.Clave')
+      .where('usuario.Nombre = :nombreUsuario', { nombreUsuario })
+      .getOne();
 
-      usuario.Clave = nuevaClave;
-      
-      await this.usuarioRepository.save(usuario);
-      console.log('Contraseña actualizada en base de datos');
-
-      await this.registrarAcceso(nombreUsuario, direccionIP);
-      console.log('Acceso registrado exitosamente');
-
-      return 'Contraseña cambiada y acceso registrado';
-    } catch (error) {
-      console.error('Error en cambiarClave:', error);
-      throw error;
+    if (!usuario) {
+      console.log('Usuario no encontrado:', nombreUsuario);
+      return 'Usuario no encontrado';
     }
+
+    console.log('Usuario encontrado, procediendo a cambiar clave');
+    usuario.Clave = nuevaClave;
+
+    // Guardar el nuevo valor en la tabla
+    await this.usuarioRepository.save(usuario);
+    console.log('Contraseña actualizada en base de datos');
+
+    // Ejecutar procedimiento almacenado después de actualizar
+    await this.usuarioRepository.query(
+      `EXEC UsuarioModificaClave @Clave = @0, @Usuario = @1`,
+      [nuevaClave, nombreUsuario]
+    );
+    console.log('Procedimiento UsuarioModificaClave ejecutado');
+
+    await this.registrarAcceso(nombreUsuario, direccionIP);
+    console.log('Acceso registrado exitosamente');
+
+    return 'Contraseña cambiada, procedimiento ejecutado y acceso registrado';
+  } catch (error) {
+    console.error('Error en cambiarClave:', error);
+    throw error;
   }
+}
+
     
 }
