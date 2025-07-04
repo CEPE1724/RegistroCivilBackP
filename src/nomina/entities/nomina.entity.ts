@@ -29,5 +29,11 @@ export class Nomina {
     @Column({ type: 'nvarchar', length: 50, nullable: true })
     Codigo: string;
 
+    @Column({ type: 'nvarchar', length: 100, nullable: true })
+    EMail: string;
+
+    @Column({ type: 'int', nullable: true })
+    idCom_Estado: number;
+
 
 }
