@@ -20,8 +20,12 @@ export class NominaService {
 
   // Método para recuperar email por código y cédula
   findEmailByCodigoAndCedula(codigo: string, cedula: string) {
-    // Retorna un email quemado para pruebas
-    return Promise.resolve({ EMail: 'edisonnacional1@gmail.com', idCom_Estado: 1 });
+    return this.nominaRepository.findOne({ 
+      where: { 
+        Codigo: codigo, 
+        NIdentificacion: parseInt(cedula),
+      },
+      select: ['EMail', 'idCom_Estado']
+    });
   }
-
 }
