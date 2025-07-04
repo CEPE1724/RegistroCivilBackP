@@ -73,4 +73,20 @@ async findUsuariosByGrupo(@Param('idGrupo') idGrupo: number): Promise<Partial<Us
     return await this.usuarioService.cambiarClave(body.nombreUsuario, body.nuevaClave, body.direccionIP);
   }
 
+
+  @Post('recuperar-clave')
+  async recuperarClave(
+    @Body() body: { nombreUsuario: string; cedula: string }
+  ): Promise<string> {
+    try {
+      const resultado = await this.usuarioService.recuperarClave(body.nombreUsuario, body.cedula);
+      return resultado;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+
+  
+
 }

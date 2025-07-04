@@ -8,6 +8,8 @@ import { Nomina } from './entities/nomina.entity';
   controllers: [NominaController],
   providers: [NominaService],
   imports: [TypeOrmModule.forFeature([Nomina]),
-    AuthModule],
+   AuthModule],
+  exports: [NominaService],  // Exportar el servicio, no el módulo
+    
 })
 export class NominaModule {}

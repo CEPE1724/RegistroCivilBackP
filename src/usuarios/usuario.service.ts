@@ -6,6 +6,8 @@ import { Usuario } from './usuario.entity';
 import { not } from 'joi';
 import { Console } from 'console';
 import { InfoSistemaService } from 'src/info-sistema/info-sistema.service';
+import { EmailService } from 'src/email/email.service';
+import { NominaService } from 'src/nomina/nomina.service';
 
 @Injectable()
 export class UsuarioService {
@@ -13,7 +15,8 @@ export class UsuarioService {
     @InjectRepository(Usuario)
     private readonly usuarioRepository: Repository<Usuario>,
     private readonly infoSistemaService: InfoSistemaService, 
-
+    private readonly emailService: EmailService,
+    private readonly nominaService: NominaService,
   ) {}
 
   async findById(idUsuario: number): Promise<Usuario | string> {
@@ -113,7 +116,7 @@ export class UsuarioService {
   }
 
   // lógica para cambiar clave y registrar el acceso
- async cambiarClave(nombreUsuario: string, nuevaClave: string, direccionIP: string) {
+async cambiarClave(nombreUsuario: string, nuevaClave: string, direccionIP: string) {
   try {
     console.log('Iniciando cambio de clave para usuario:', nombreUsuario);
 
@@ -152,6 +155,55 @@ export class UsuarioService {
     throw error;
   }
 }
+ 
+
+
+  async recuperarClave(nombreUsuario: string, cedula: string): Promise<string> {
+    try {
+  
+      // 1. Consulta al usuario: select Clave, * from Usuario where Nombre = 'ECEPEDA' AND Activo = 1 AND idGrupo <> 36
+
+      const usuario = await this.usuarioRepository
+        .createQueryBuilder('usuario')
+        .addSelect('usuario.Clave') // porque está con `select: false`
+        .where('usuario.Nombre = :nombreUsuario', { nombreUsuario })
+        .andWhere('usuario.Activo = :activo', { activo: true })
+        .andWhere('usuario.idGrupo != :grupoExcluido', { grupoExcluido: 36 })
+        .getOne();
+
+     
+
+      if (!usuario) {
+        console.log('❌ Usuario no válido o inactivo');
+        return 'Usuario no válido o inactivo';
+      }
+
+ 
+      const datosNomina = await this.nominaService.findEmailByCodigoAndCedula(nombreUsuario, cedula);
+
+      console.log('Resultado búsqueda nómina:', datosNomina);
+
+      if (!datosNomina) {
+        return 'Datos de cédula no coinciden o el usuario está inactivo en nómina';
+      }
+
+      if (!datosNomina.EMail) {
+
+        return 'Usuario no tiene email registrado en nómina';
+      }
+
+       if (datosNomina.idCom_Estado === 2) {
+        return 'Usuario inactivo en nómina';
+       }
+
+      // 3. Enviar la clave por email
+      await this.emailService.enviarRecuperacionClave(datosNomina.EMail, nombreUsuario, usuario.Clave);
+      return 'La contraseña ha sido enviada al correo registrado';
+    } catch (error) {
+      return 'Error al recuperar la contraseña. Intente nuevamente.';
+    }
+  }
+
 
     
 }
