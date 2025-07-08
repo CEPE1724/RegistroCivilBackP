@@ -28,5 +28,4 @@ export class NominaService {
       select: ['EMail', 'idCom_Estado']
     });
   }
-
 }

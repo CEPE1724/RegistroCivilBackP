@@ -29,6 +29,27 @@ export class ClientesVerificacionTerrenaService {
 		Web?: number;
 	}): Promise<ClientesVerificacionTerrena> {
 		try {
+			let whereCondition: any = {
+				idCre_solicitud: data.idCre_solicitud,
+			};
+
+			if (data.bDomicilio) {
+				whereCondition.bDomicilio = true;
+			}
+
+			if (data.bTrabajo) {
+				whereCondition.bTrabajo = true;
+			}
+
+			const count = await this.clientesVerificacionTerrenaRepository.count({
+				where: whereCondition,
+			});
+
+			if (count >= 3) {
+				throw new BadRequestException(
+					`Ya existen 3 verificaciones de este tipo para la solicitud con ID ${data.idCre_solicitud}.`
+				);
+			}
 			const nuevaVerificacion = this.clientesVerificacionTerrenaRepository.create({
 				idCre_solicitud: data.idCre_solicitud,
 				idVerificador: data.idVerificador,
@@ -45,8 +66,22 @@ export class ClientesVerificacionTerrenaService {
 	}
 
 
-	findAll() {
-		return `This action returns all clientesVerificacionTerrena`;
+	findAll(idCre_Solicitud: number, tipo?: 'domicilio' | 'trabajo') {
+		let whereCondition: any = {
+			idCre_solicitud: idCre_Solicitud,
+		};
+
+		if (tipo === 'domicilio') {
+			whereCondition.bDomicilio = true;
+		}
+
+		if (tipo === 'trabajo') {
+			whereCondition.bTrabajo = true;
+		}
+
+		return this.clientesVerificacionTerrenaRepository.find({
+			where: whereCondition,
+		});
 	}
 
 	async findOne(idCreSolicitud: number, Tipo: number) {
@@ -55,7 +90,8 @@ export class ClientesVerificacionTerrenaService {
 			return await this.clientesVerificacionTerrenaRepository.findOne({
 				where: {
 					idCre_solicitud: idCreSolicitud, Web: 1,
-					bDomicilio: true
+					bDomicilio: true,
+					//iEstado: 0
 				},
 				select: ['idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
 			});
@@ -63,7 +99,8 @@ export class ClientesVerificacionTerrenaService {
 			return await this.clientesVerificacionTerrenaRepository.findOne({
 				where: {
 					idCre_solicitud: idCreSolicitud, Web: 1,
-					bTrabajo: true
+					bTrabajo: true,
+					//iEstado: 0
 				},
 				select: ['idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
 			});
@@ -71,7 +108,10 @@ export class ClientesVerificacionTerrenaService {
 		}
 	}
 	update(id: number, updateClientesVerificacionTerrenaDto: UpdateClientesVerificacionTerrenaDto) {
-		return `This action updates a #${id} clientesVerificacionTerrena`;
+		return this.clientesVerificacionTerrenaRepository.update(
+			{ idClienteVerificacion: id },
+			updateClientesVerificacionTerrenaDto
+		);
 	}
 
 	remove(id: number) {
