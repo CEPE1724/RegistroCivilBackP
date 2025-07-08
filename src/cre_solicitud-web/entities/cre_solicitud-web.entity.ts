@@ -131,6 +131,9 @@ export class CreSolicitudWeb {
     @Column('varchar')
     trabajoImages: string;
 
+    @Column('varchar')
+    PDFTerrena: string;
+
 
    
     
