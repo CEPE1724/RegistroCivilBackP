@@ -1,4 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { TerrenaGestionDomicilio } from 'src/terrena-gestion-domicilio/entities/terrena-gestion-domicilio.entity';
+import { TerrenaGestionTrabajo } from 'src/terrena-gestion-trabajo/entities/terrena-gestion-trabajo.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
 
 @Entity('ClientesVerificionTerrena')
 export class ClientesVerificacionTerrena {
@@ -121,4 +123,12 @@ export class ClientesVerificacionTerrena {
 
   @Column({ type: 'int', nullable: true })
   idCre_Tiempo?: number;
+
+  @OneToOne(() => TerrenaGestionDomicilio, { eager: false })
+  @JoinColumn({ name: 'idClienteVerificacion' })
+  gestionDomicilio?: TerrenaGestionDomicilio;
+
+  @OneToOne(() => TerrenaGestionTrabajo, { eager: false })
+  @JoinColumn({ name: 'idClienteVerificacion' })
+  gestionTrabajo?: TerrenaGestionTrabajo;
 }
