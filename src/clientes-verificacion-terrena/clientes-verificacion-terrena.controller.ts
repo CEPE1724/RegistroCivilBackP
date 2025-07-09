@@ -39,6 +39,12 @@ export class ClientesVerificacionTerrenaController {
     return this.clientesVerificacionTerrenaService.findAll(idCre_Solicitud, tipo);
   }
 
+  @Get('coordInforme/:id')
+  @Auth()
+  findAllFiltrados(@Param('id') id: number) {
+	return this.clientesVerificacionTerrenaService.findAllFilter(id);
+  }
+
   @Get(':id/:Tipo')
   @Auth()
   findOne(@Param('id') id: number, @Param('Tipo') Tipo: number) {

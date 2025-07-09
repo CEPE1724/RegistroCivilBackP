@@ -200,6 +200,10 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     trabajoImages: string;
 
+    @IsString()
+    @IsOptional()
+    PDFTerrena: string;
+
   
 
     

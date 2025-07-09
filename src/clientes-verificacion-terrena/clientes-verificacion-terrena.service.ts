@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { ClientesVerificacionTerrena } from './entities/clientes-verificacion-terrena.entity';
 import { TerrenaGestionDomicilio } from '../terrena-gestion-domicilio/entities/terrena-gestion-domicilio.entity';
+import { TerrenaGestionTrabajo } from '../terrena-gestion-trabajo/entities/terrena-gestion-trabajo.entity';
 
 @Injectable()
 export class ClientesVerificacionTerrenaService {
@@ -14,6 +15,10 @@ export class ClientesVerificacionTerrenaService {
 	constructor(
 		@InjectRepository(ClientesVerificacionTerrena)
 		private readonly clientesVerificacionTerrenaRepository: Repository<ClientesVerificacionTerrena>,
+		@InjectRepository(TerrenaGestionDomicilio)
+		private terrenaGestionDomicilioRepository: Repository<TerrenaGestionDomicilio>,
+		@InjectRepository(TerrenaGestionTrabajo)
+		private terrenaGestionTrabajoRepository: Repository<TerrenaGestionTrabajo>,
 	) { }
 
 	create(createClientesVerificacionTerrenaDto: CreateClientesVerificacionTerrenaDto) {
@@ -117,6 +122,47 @@ export class ClientesVerificacionTerrenaService {
 	remove(id: number) {
 		return `This action removes a #${id} clientesVerificacionTerrena`;
 	}
+
+	async findAllFilter(id: number) {
+    const whereCondition = [
+      {idCre_solicitud: id, iEstado: 1, bDomicilio: true },
+      {idCre_solicitud: id, iEstado: 1, bTrabajo: true }
+    ];
+
+    const registros = await this.clientesVerificacionTerrenaRepository.find({
+      where: whereCondition,
+      select: ['idClienteVerificacion', 'iEstado', 'bDomicilio', 'bTrabajo'],
+    });
+
+    const resultados = await Promise.all(
+      registros.map(async (registro) => {
+        const resultado = { 
+          ...registro,
+          gestionDomicilio: undefined as any,
+          gestionTrabajo: undefined as any
+        };
+
+        // Si bDomicilio es true, relación con TerrenaGestionDomicilio
+        if (registro.bDomicilio) {
+          resultado.gestionDomicilio = await this.terrenaGestionDomicilioRepository.findOne({
+            where: { idClienteVerificacion: registro.idClienteVerificacion, tipoVerificacion: 2 },
+			select: ['idClienteVerificacion', 'Latitud', 'Longitud']
+          });
+        }
+
+        // Si bTrabajo es true, relación con TerrenaGestionTrabajo
+        if (registro.bTrabajo) {
+          resultado.gestionTrabajo = await this.terrenaGestionTrabajoRepository.findOne({
+            where: { idClienteVerificacion: registro.idClienteVerificacion, tipoVerificacion: 2 },
+			select: ['idClienteVerificacion', 'Latitud', 'Longitud']
+          });
+        }
+
+        return resultado;
+      })
+    );
+    return resultados;
+  }
 
 	private handleDBException(error: any) {
 		if (error.code === '23505') {
