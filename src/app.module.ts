@@ -117,6 +117,8 @@ import { ComAsignacionDeVendedoresModule } from './com_asignacion-de-vendedores/
 import { EmailService } from './email/email.service';
 import { EmailModule } from './email/email.module';
 import { InfoSistemaModule } from './info-sistema/info-sistema.module';
+import { BasicReportsModule } from './basic-reports/basic-reports.module';
+import { PrinterModule } from './printer/printer.module';
 
 
 
@@ -300,6 +302,10 @@ import { InfoSistemaModule } from './info-sistema/info-sistema.module';
     EmailModule,
 
     InfoSistemaModule,
+
+    BasicReportsModule,
+
+    PrinterModule,
 
 
 

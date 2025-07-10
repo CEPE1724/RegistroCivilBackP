@@ -67,7 +67,7 @@ export class CreSolicitudWebService {
     }
   }
 
- async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+  async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     try {
       const cedula = createCreSolicitudWebDto.Cedula;
       let debeConsultarEquifax = false;
