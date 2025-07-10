@@ -89,6 +89,7 @@ import { VerificadorcreditoModule } from './verificadorcredito/verificadorcredit
 import { FechaVerificadorModule } from './fecha-verificador/fecha-verificador.module';
 
 import { ListaNegraCellModule } from './lista-negra-cell/lista-negra-cell.module';
+import { ListaNegraEmailModule } from './lista-negra-email/lista-negra-email.module';
 import { ListaNegraCedula } from './lista-negra-cedula/entities/lista-negra-cedula.entity';
 
 import { CreSolicitudwebWsModule } from './cre_solicitudweb-ws/cre_solicitudweb-ws.module';
@@ -251,6 +252,7 @@ import { InfoSistemaModule } from './info-sistema/info-sistema.module';
     FechaVerificadorModule,
 
     ListaNegraCellModule,
+    ListaNegraEmailModule,
     ListaNegraCedulaModule,
 
     CreSolicitudwebWsModule,
