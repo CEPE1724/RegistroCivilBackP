@@ -21,15 +21,16 @@ export class CiudadanoController {
   @Auth() 
   @Post('consulta')
   async consultarDactilar(
-    @Body() body: { cedula: string; dactilar: string },
+    @Body() body: { cedula: string; dactilar: string; usuario: string },
   ): Promise<any> {
-    const { cedula, dactilar } = body;
+    const { cedula, dactilar, usuario } = body;
 
     try {
       // Iniciar la consulta dactilar
       const ciudadanoGuardado = await this.ciudadanoService.consultarDactilar(
         cedula,
         dactilar,
+        usuario
       );
 
       if (!ciudadanoGuardado) {
