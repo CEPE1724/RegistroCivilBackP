@@ -108,7 +108,7 @@ export const phoneVerificationReport = (value: ReportValues): TDocumentDefinitio
                 style: 'tableExample',
                 table: {
 
-                    widths: [99, '*', 60, 70],
+                    widths: [99, 'auto', 60, 70],
                     body: [
                         [
                             { text: 'Nombre:', bold: true, },
@@ -119,7 +119,7 @@ export const phoneVerificationReport = (value: ReportValues): TDocumentDefinitio
                         ],
                         [
                             { text: 'Dirección:', bold: true },
-                            { text: data.Direccion, alignment: 'left' },
+                            { text: data.Direccion.toUpperCase(), alignment: 'left' },
                             { text: 'Celular:', bold: true, alignment: 'left' },
                             { text: data.Celular, alignment: 'right' }
                         ],
