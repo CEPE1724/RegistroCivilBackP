@@ -23,5 +23,9 @@ export class Cognotrabajocargo {
     })
     NombreCargo: string;
 
-  
+    @Column('int', {
+        nullable: true
+    })
+    idCargo: number;
+
 }

@@ -120,6 +120,8 @@ import { EmailModule } from './email/email.module';
 import { InfoSistemaModule } from './info-sistema/info-sistema.module';
 import { BasicReportsModule } from './basic-reports/basic-reports.module';
 import { PrinterModule } from './printer/printer.module';
+import { StoreReportsModule } from './store-reports/store-reports.module';
+import { StoreReportsPhoneVerificationModule } from './store-reports-phone-verification/store-reports-phone-verification.module';
 
 
 
@@ -308,6 +310,10 @@ import { PrinterModule } from './printer/printer.module';
     BasicReportsModule,
 
     PrinterModule,
+
+    StoreReportsModule,
+
+    StoreReportsPhoneVerificationModule,
 
 
 
