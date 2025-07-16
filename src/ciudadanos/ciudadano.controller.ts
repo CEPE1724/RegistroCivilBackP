@@ -21,7 +21,8 @@ export class CiudadanoController {
   @Auth() 
   @Post('consulta')
   async consultarDactilar(
-    @Body() body: { cedula: string; dactilar: string; usuario: string },
+    @Body() body: { cedula: string; dactilar: string;
+             usuario: string }, // local usuario
   ): Promise<any> {
     const { cedula, dactilar, usuario } = body;
 
