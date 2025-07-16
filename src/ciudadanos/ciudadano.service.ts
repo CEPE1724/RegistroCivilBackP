@@ -18,6 +18,7 @@ export class CiudadanoService {
 
   async guardarCiudadano(data: any, dactilar: string, usuario: string): Promise<Ciudadano> {
     try {
+      /* guarda ciudadanos*/
       const ciudadano = new Ciudadano();
       ciudadano.NUI = data.NUI;
       ciudadano.CODIGODACTILAR = dactilar;
