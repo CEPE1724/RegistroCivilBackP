@@ -4,3 +4,4 @@ export * from './employement-letter-by-id.report';
 export * from './countries.reports';
 export * from './order-by-id-reports';
 export * from './phone-verification.report';
+export * from './solicitudCredDirect.report';
