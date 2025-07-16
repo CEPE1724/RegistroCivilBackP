@@ -18,6 +18,7 @@ import { ValidRoles } from '../auth/interfaces';
 export class CiudadanoController {
   constructor(private readonly ciudadanoService: CiudadanoService) {}
 
+  
   @Auth() 
   @Post('consulta')
   async consultarDactilar(

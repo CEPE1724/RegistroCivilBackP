@@ -461,6 +461,9 @@ export class CreSolicitudWebService {
     // Obtener el conteo total de registros
     const totalCount = await queryBuilder.getCount();
 
+    // Ordenar por fecha de forma descendente (más recientes primero)
+    queryBuilder.orderBy('cre_solicitud_web.Fecha', 'DESC');
+
     // Aplicar la paginación
     queryBuilder.skip(offset).take(limit);
 
