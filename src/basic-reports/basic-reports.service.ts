@@ -3,8 +3,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Nomina } from 'src/nomina/entities/nomina.entity';
 import { PrinterService } from 'src/printer/printer.service';
-import { getCountryReport, getEmploymentLetterByIdReport, getEmploymentLetterReport, getHelloWorldReport } from 'src/reports';
+import { CreditoDirectoReport, getCountryReport, getEmploymentLetterByIdReport, getEmploymentLetterReport, getHelloWorldReport } from 'src/reports';
 import { Repository, LessThan } from 'typeorm';
+import { WebSolicitudgrande } from 'src/web_solicitudgrande/entities/web_solicitudgrande.entity';
 
 
 @Injectable()
@@ -15,6 +16,10 @@ export class BasicReportsService {
         @InjectRepository(Nomina)
         private readonly NominaRepository: Repository<Nomina>,
         private readonly printerService: PrinterService,
+
+		@InjectRepository(WebSolicitudgrande)
+		private readonly webSolicitudGrandeRepository: Repository<WebSolicitudgrande>
+		
     ) {
 
     }
@@ -71,4 +76,16 @@ export class BasicReportsService {
         return doc;
     }
 
+	async getCredDirectoReport( idCre_SolicitudWeb: number) {
+		const webSoliGra = await this.webSolicitudGrandeRepository.findOneBy({ idCre_SolicitudWeb });
+		console.log(webSoliGra);
+		if (!webSoliGra) {
+            this.logger.error(`Solicitud Grande with id ${idCre_SolicitudWeb} not found`);
+            throw new NotFoundException(`Solicitud Grande with id ${idCre_SolicitudWeb} not found`);
+        }
+
+		const docDefinition = CreditoDirectoReport(webSoliGra);
+		const doc = this.printerService.createPdf(docDefinition);
+		return doc;
+	}
 }
