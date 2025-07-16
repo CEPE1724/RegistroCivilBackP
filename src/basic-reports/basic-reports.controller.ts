@@ -51,4 +51,14 @@ export class BasicReportsController {
     pdfDoc.end();
   }
 
+  @Get('credito-directo/:idCre_SolicitudWeb')
+  async getCredDirectoReport(@Res() response: Response, @Param('idCre_SolicitudWeb') idCre_SolicitudWeb:string) {
+	const pdfDoc = await this.basicReportsService.getCredDirectoReport(+idCre_SolicitudWeb);
+
+	response.setHeader('Content-Type', 'application/pdf');
+	pdfDoc.info.Title = 'Credito Directo Report';
+	pdfDoc.pipe(response);
+	pdfDoc.end();
+  }
+
 }

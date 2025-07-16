@@ -4,9 +4,9 @@ import { DateFormatter } from "src/helpers";
 const logo: Content = {
     image: 'src/assets/Point.png',
     width: 100,
-    height: 50,
-    alignment: 'center',
-    margin: [0, 0, 0, 20],
+    height: 25,
+    //alignment: 'center',
+    margin: [25, 20, 0, 20],
 };
 
 const currentDate: Content = {
@@ -40,21 +40,21 @@ export const headerSection = (options: HeaderSectionOptions): Content => {
 
     const headerTitle: Content = title ? {
         stack: [{
-            text: subtitle,
+            text: title,
             alignment: 'center',
-            margin: [0, 15, 0, 0],
+            margin: [0, 20, 20, 0],
             style: {
-                fontSize: 22,
+                fontSize: 20,
                 bold: true,
             },
         },
         headerSubtitle,
-        ]
+        ],
     } : null;
 
 
 
     return {
-        columns: [headerLogo, headerTitle, headerDate]
+        columns: [headerLogo, headerTitle]
     };
 }
