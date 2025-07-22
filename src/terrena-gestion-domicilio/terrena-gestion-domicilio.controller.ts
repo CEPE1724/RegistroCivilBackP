@@ -15,4 +15,11 @@ export class TerrenaGestionDomicilioController {
   }
 
 
+@Patch(':id/tipo-verificacion')
+@Auth()
+async updateTipoVerificacion(@Param('id') id: number) {
+  return await this.terrenaGestionDomicilioService.updateTipoVerificacion(+id, 2);
+}
+
+
 }

@@ -18,5 +18,10 @@ export class TerrenaGestionDomicilioService {
   async findOne(id: number) {
     return await this.terrenaRepo.findOne({ where: { idTerrenaGestionDomicilio: id } });
   }
-  
+
+  async updateTipoVerificacion(id: number, tipoVerificacion: number) {
+    await this.terrenaRepo.update({ idTerrenaGestionDomicilio: id }, { tipoVerificacion });
+    return this.findOne(id);
+  }
+
 }
