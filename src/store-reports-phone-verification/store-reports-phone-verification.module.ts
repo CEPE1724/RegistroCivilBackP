@@ -10,7 +10,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cre_VerificacionTelefonica } from 'src/cre_verificacion-telefonica/entities/cre_verificacion-telefonica.entity';
 import { CreSolicitudverificaciontelefonica } from 'src/cre-solicitudverificaciontelefonica/entities/cre-solicitudverificaciontelefonica.entity';
 import { TiempoSolicitudesWeb } from 'src/tiemposolicitudesweb/entities/tiemposolicitudesweb.entity';
-import { AuthModule } from 'src/auth/auth.module';
 @Module({
   controllers: [StoreReportsPhoneVerificationController],
   providers: [StoreReportsPhoneVerificationService],
@@ -19,8 +18,7 @@ import { AuthModule } from 'src/auth/auth.module';
 
           CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb
         ]),
-        PrinterModule,
-        AuthModule,
+        PrinterModule
       ],
 })
 export class StoreReportsPhoneVerificationModule {}

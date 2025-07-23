@@ -1,4 +1,3 @@
-import { Col } from 'sequelize/types/utils';
 import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity('CiudadanosRegCivil')
@@ -81,7 +80,4 @@ export class Ciudadano {
 
   @Column({ type: 'datetime2' })
   FECHACONSULTA: Date;
-
-  @Column({ type: 'varchar', length: 255 })
-  USUARIO: string; // Usuario que realizó la consulta
 }

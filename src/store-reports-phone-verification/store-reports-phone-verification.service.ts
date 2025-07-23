@@ -1,6 +1,6 @@
-import { Injectable, Logger, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { FindOperator, In, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { CreSolicitudWeb } from 'src/cre_solicitud-web/entities/cre_solicitud-web.entity';
 import { WebSolicitudgrande } from 'src/web_solicitudgrande/entities/web_solicitudgrande.entity';
 import { PrinterService } from 'src/printer/printer.service';
@@ -9,145 +9,175 @@ import { CreSolicitudverificaciontelefonica } from 'src/cre-solicitudverificacio
 import { phoneVerificationReport } from 'src/reports';
 import { CreVerificacionTelefonicaMaestro } from 'src/cre_verificacion-telefonica-maestro/entities/cre_verificacion-telefonica-maestro.entity';
 import { TiempoSolicitudesWeb } from 'src/tiemposolicitudesweb/entities/tiemposolicitudesweb.entity';
-
 @Injectable()
 export class StoreReportsPhoneVerificationService {
-  private readonly logger = new Logger(StoreReportsPhoneVerificationService.name);
+    private readonly logger = new Logger('StoreReportsPhoneVerificationService');
+    constructor(
+        @InjectRepository(CreSolicitudWeb)
+        private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>,
+        @InjectRepository(WebSolicitudgrande)
+        private readonly webSolicitudgrandeRepository: Repository<WebSolicitudgrande>,
+        @InjectRepository(Cognotrabajocargo)
+        private readonly cognoTrabajoCargoRepository: Repository<Cognotrabajocargo>,
+        @InjectRepository(CreVerificacionTelefonicaMaestro)
+        private readonly creverificacionTelefonicaMaestroRepository: Repository<CreVerificacionTelefonicaMaestro>,
+        @InjectRepository(CreSolicitudverificaciontelefonica)
+        private readonly creSolicitudverificaciontelefonicaRepository: Repository<CreSolicitudverificaciontelefonica>,
+        @InjectRepository(TiempoSolicitudesWeb)
+        private readonly tiempoSolicitudesWebRepository: Repository<TiempoSolicitudesWeb>,
+        private readonly printerService: PrinterService,
+    ) { }
 
-  constructor(
-    @InjectRepository(CreSolicitudWeb)
-    private readonly creSolicitudWebRepository: Repository<CreSolicitudWeb>,
-    @InjectRepository(WebSolicitudgrande)
-    private readonly webSolicitudgrandeRepository: Repository<WebSolicitudgrande>,
-    @InjectRepository(Cognotrabajocargo)
-    private readonly cognoTrabajoCargoRepository: Repository<Cognotrabajocargo>,
-    @InjectRepository(CreVerificacionTelefonicaMaestro)
-    private readonly creverificacionTelefonicaMaestroRepository: Repository<CreVerificacionTelefonicaMaestro>,
-    @InjectRepository(CreSolicitudverificaciontelefonica)
-    private readonly creSolicitudverificaciontelefonicaRepository: Repository<CreSolicitudverificaciontelefonica>,
-    @InjectRepository(TiempoSolicitudesWeb)
-    private readonly tiempoSolicitudesWebRepository: Repository<TiempoSolicitudesWeb>,
-    private readonly printerService: PrinterService,
-  ) {}
+    async getCreSolicitudReport(orderId: number) {
+        this.logger.log(`Generating Cre Solicitud Report for orderId: ${orderId}`);
 
-  async getCreSolicitudReport(orderId: number) {
-    try {
-      const creSolicitud = await this.findCreSolicitud(orderId);
-      const webSolicitudGrande = await this.findWebSolicitudGrande(orderId);
+        const creSolicitud = await this.creSolicitudWebRepository.findOne({
+            where: { idCre_SolicitudWeb: orderId }
+        });
 
-      const cognoTrabajoCargo = creSolicitud.bAfiliado
-        ? await this.cognoTrabajoCargoRepository.findOne({ where: { idCognoTrabajoCargo: webSolicitudGrande.idCargo } })
-        : null;
+        if (!creSolicitud) {
+            this.logger.error(`Cre Solicitud with id ${orderId} not found`);
+            throw new Error(`Cre Solicitud with id ${orderId} not found`);
+        }
 
-      const titularMaestro = await this.findVerificacionMaestro(creSolicitud.idCre_SolicitudWeb, webSolicitudGrande.idWeb_SolicitudGrande, 3);
-      const informeTitular = await this.findVerificacionDetalle(titularMaestro.idCre_VerificacionTelefonicaMaestro);
+        const webSolicitudGrande = await this.webSolicitudgrandeRepository.findOne({
+            where: {
+                idCre_SolicitudWeb: creSolicitud.idCre_SolicitudWeb
+            },
 
-      const familiaMaestro = await this.findVerificacionMaestro(creSolicitud.idCre_SolicitudWeb, webSolicitudGrande.idWeb_SolicitudGrande, In([6, 8, 5]));
-      const informeFamiliares = await this.findVerificacionDetalle(familiaMaestro.idCre_VerificacionTelefonicaMaestro);
+        });
 
-      const referencias = await this.getVerificacionReferencias(creSolicitud.idCre_SolicitudWeb);
+        if (!webSolicitudGrande) {
+            this.logger.error(`Web Solicitud Grande with id ${creSolicitud.idCre_SolicitudWeb} not found`);
+            throw new Error(`Web Solicitud Grande with id ${creSolicitud.idCre_SolicitudWeb} not found`);
+        }
 
-      const analista = await this.tiempoSolicitudesWebRepository.findOne({
-        where: {
-          idCre_SolicitudWeb: creSolicitud.idCre_SolicitudWeb,
-          Tipo: 2,
-          idEstadoVerificacionDocumental: 3,
-        },
-      });
+        let cognoTrabajoCargo = null;
+        if (creSolicitud.bAfiliado) {
+            cognoTrabajoCargo = await this.cognoTrabajoCargoRepository.findOne({
+                where: { idCargo: webSolicitudGrande.idCargo }
+            });
+        }
 
-      if (!analista) {
-        throw new NotFoundException(`Analista not found for Solicitud ${creSolicitud.idCre_SolicitudWeb}`);
-      }
+        const cre_verificacionTelefonicaMaestro = await this.creverificacionTelefonicaMaestroRepository.findOne({
+            where: {
+                idCre_SolicitudWeb: creSolicitud.idCre_SolicitudWeb,
+                idWeb_SolicitudGrande: webSolicitudGrande.idWeb_SolicitudGrande,
+                idEstadoOrigenTelefonica: 3
+            }
+        });
 
-      const docDefinition = phoneVerificationReport({
-        title: 'INFORME DE VERIFICACION TELEFONICA',
-        subtitle: 'Details of the Cre Solicitud',
-        data: {
-          Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
-          Cedula: creSolicitud.Cedula,
-          Celular: creSolicitud.Celular,
-          Fecha: creSolicitud.Fecha,
-          Afiliacion: creSolicitud.bAfiliado ? 'SI' : 'NO',
-          Direccion: `${webSolicitudGrande.CallePrincipal} ${webSolicitudGrande.NumeroCasa} ${webSolicitudGrande.CalleSecundaria}`,
-          ReferenciaUbicacion: webSolicitudGrande.ReferenciaUbicacion,
-          EmpresaTrabaja: creSolicitud.bAfiliado ? webSolicitudGrande.NombreEmpresa : webSolicitudGrande.NombreNegocio,
-          Cargo: cognoTrabajoCargo?.NombreCargo || 'S/N',
-          Ingresos: creSolicitud.bAfiliado ? webSolicitudGrande.IngresosTrabajo : webSolicitudGrande.IngresosNegosio,
-          TelefonoTitular: titularMaestro.Telefono,
-          InformeTitular: informeTitular.Observaciones,
-          FechaVeriTitular: informeTitular.Fecha,
-          TelefonoNegocio: familiaMaestro.Telefono,
-          ContactoNegocio: informeFamiliares.Contacto,
-          cargoNegocio: informeFamiliares.idParentesco,
-          InformeNegocio: informeFamiliares.Observaciones,
-          CargoFamiliares: informeFamiliares.idParentesco,
-          AnalistaAprueba: analista.Usuario,
-        },
-        referencias,
-      });
+        if (!cre_verificacionTelefonicaMaestro) {
+            this.logger.error(`Cre Verificacion Telefonica Maestro with id ${creSolicitud.idCre_SolicitudWeb} not found`);
+            throw new Error(`Cre Verificacion Telefonica Maestro with id ${creSolicitud.idCre_SolicitudWeb} not found`);
+        }
 
-      return this.printerService.createPdf(docDefinition);
-    } catch (error) {
-      this.logger.error('Error generating report', error.stack);
-      throw new InternalServerErrorException(error.message || 'Unexpected error generating report');
+        const informeTitular = await this.creSolicitudverificaciontelefonicaRepository.findOne({
+            where: { idCre_VerificacionTelefonicaMaestro: cre_verificacionTelefonicaMaestro.idCre_VerificacionTelefonicaMaestro }
+        });
+
+        if (!informeTitular) {
+            this.logger.error(`Cre Solicitud Verificacion Telefonica with id ${cre_verificacionTelefonicaMaestro.idCre_VerificacionTelefonicaMaestro} not found`);
+            throw new Error(`Cre Solicitud Verificacion Telefonica with id ${cre_verificacionTelefonicaMaestro.idCre_VerificacionTelefonicaMaestro} not found`);
+        }
+
+        const cre_verificacionTelefonicaMaestroFamiliares = await this.creverificacionTelefonicaMaestroRepository.findOne({
+            where: {
+                idCre_SolicitudWeb: creSolicitud.idCre_SolicitudWeb,
+                idWeb_SolicitudGrande: webSolicitudGrande.idWeb_SolicitudGrande,
+                idEstadoOrigenTelefonica: 8
+            }
+        });
+
+        if (!cre_verificacionTelefonicaMaestroFamiliares) {
+            this.logger.error(`Cre Verificacion Telefonica Maestro for family with id ${creSolicitud.idCre_SolicitudWeb} not found`);
+            throw new Error(`Cre Verificacion Telefonica Maestro for family with id ${creSolicitud.idCre_SolicitudWeb} not found`);
+        }
+
+        const informeFamiliares = await this.creSolicitudverificaciontelefonicaRepository.findOne({
+            where: { idCre_VerificacionTelefonicaMaestro: cre_verificacionTelefonicaMaestroFamiliares.idCre_VerificacionTelefonicaMaestro },
+            order: {
+                idParentesco: 'ASC',
+            },
+        });
+
+        const referencias = await this.getVerificacionReferencias(creSolicitud.idCre_SolicitudWeb);
+        if (!referencias || referencias.length === 0) {
+            this.logger.warn(`No references found for Cre Solicitud with id ${creSolicitud.idCre_SolicitudWeb}`);
+        } else {
+            this.logger.log(`Found ${referencias.length} references for Cre Solicitud with id ${creSolicitud.idCre_SolicitudWeb}`);
+        }
+
+        
+       const Analista = await this.tiempoSolicitudesWebRepository.findOne({
+            where: { idCre_SolicitudWeb: creSolicitud.idCre_SolicitudWeb,
+                    Tipo: 2,
+                    idEstadoVerificacionDocumental: 3
+            }
+        });
+
+        if (!Analista) {
+            this.logger.error(`Analista not found for Cre Solicitud with id ${creSolicitud.idCre_SolicitudWeb}`);
+            throw new Error(`Analista not found for Cre Solicitud with id ${creSolicitud.idCre_SolicitudWeb}`);
+        }
+
+
+                    
+
+        const docDefinition = phoneVerificationReport({
+            title: 'INFORME DE VERIFICACION TELEFONICA',
+            subtitle: 'Details of the Cre Solicitud',
+            /*ApellidoPaterno	ApellidoMaterno	PrimerNombre	SegundoNombre*/
+            data: {
+                Nombre: creSolicitud.ApellidoPaterno + ' ' + creSolicitud.ApellidoMaterno + ' ' + creSolicitud.PrimerNombre + ' ' + creSolicitud.SegundoNombre,
+                Cedula: creSolicitud.Cedula,
+                Celular: creSolicitud.Celular,
+                Fecha: creSolicitud.Fecha,
+                Afiliacion: creSolicitud.bAfiliado ? 'SI' : 'NO',
+                Direccion: webSolicitudGrande.CallePrincipal + ' ' + webSolicitudGrande.NumeroCasa + ' ' + webSolicitudGrande.CalleSecundaria,
+                ReferenciaUbicacion: webSolicitudGrande.ReferenciaUbicacion,
+                EmpresaTrabaja: creSolicitud.bAfiliado ? webSolicitudGrande.NombreEmpresa : webSolicitudGrande.NombreNegocio,
+                Cargo: cognoTrabajoCargo ? cognoTrabajoCargo.NombreCargo : 'S/N',
+                Ingresos: creSolicitud.bAfiliado ? webSolicitudGrande.IngresosTrabajo : webSolicitudGrande.IngresosNegosio,
+                TelefonoTitular: cre_verificacionTelefonicaMaestro.Telefono,
+                InformeTitular: informeTitular.Observaciones,
+
+                FechaVeriTitular: informeTitular.Fecha,
+                TelefonoNegocio: cre_verificacionTelefonicaMaestroFamiliares.Telefono,
+                ContactoNegocio: informeFamiliares.Contacto,
+                cargoNegocio: informeFamiliares.idParentesco,
+                InformeNegocio: informeFamiliares.Observaciones,
+                CargoFamiliares: informeFamiliares.idParentesco,
+                AnalistaAprueba: Analista.Usuario,
+            },
+            referencias: referencias,
+
+
+        });
+
+
+
+        const doc = this.printerService.createPdf(docDefinition);
+
+        return doc;
     }
-  }
 
-  private async findCreSolicitud(id: number) {
-    const solicitud = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
-    if (!solicitud) {
-      throw new NotFoundException(`Cre Solicitud with id ${id} not found`);
+    async getVerificacionReferencias(orderId: number) {
+        return await this.creverificacionTelefonicaMaestroRepository
+            .createQueryBuilder('m')
+            .innerJoinAndSelect('m.cre_SolicitudVerificacionTelefonica', 'c')
+            .where('m.idCre_SolicitudWeb = :orderId', { orderId })
+            .andWhere('m.idEstadoOrigenTelefonica = :estadoOrigen', { estadoOrigen: 4 })
+            .andWhere('c.idEstadoGestns = :estadoGestion', { estadoGestion: 11 })
+            .select([
+                'm.Observacion AS observacionMaestro',
+                'm.Telefono AS telefonoMaestro',
+                'c.idParentesco AS parentesco',
+                'c.Fecha AS fechaVerificacion',
+                'c.Observaciones AS observacionesDetalle'
+            ])
+            .getRawMany();
     }
-    return solicitud;
-  }
 
-  private async findWebSolicitudGrande(id: number) {
-    const solicitud = await this.webSolicitudgrandeRepository.findOne({ where: { idCre_SolicitudWeb: id } });
-    if (!solicitud) {
-      throw new NotFoundException(`Web Solicitud Grande with id ${id} not found`);
-    }
-    return solicitud;
-  }
 
-  private async findVerificacionMaestro(idSolicitud: number, idWeb: number, estado: number | FindOperator<number>) {
-    const maestro = await this.creverificacionTelefonicaMaestroRepository.findOne({
-      where: {
-        idCre_SolicitudWeb: idSolicitud,
-        idWeb_SolicitudGrande: idWeb,
-        idEstadoOrigenTelefonica: estado,
-      },
-    });
-    if (!maestro) {
-      throw new NotFoundException(`Verificación telefónica maestro no encontrada para solicitud ${idSolicitud}`);
-    }
-    return maestro;
-  }
-
-  private async findVerificacionDetalle(idMaestro: number) {
-    const detalle = await this.creSolicitudverificaciontelefonicaRepository.findOne({
-      where: { idCre_VerificacionTelefonicaMaestro: idMaestro },
-      order: { idParentesco: 'ASC' },
-    });
-    if (!detalle) {
-      throw new NotFoundException(`Verificación telefónica detalle no encontrada para maestro ${idMaestro}`);
-    }
-    return detalle;
-  }
-
-  async getVerificacionReferencias(orderId: number) {
-    return await this.creverificacionTelefonicaMaestroRepository
-      .createQueryBuilder('m')
-      .innerJoinAndSelect('m.cre_SolicitudVerificacionTelefonica', 'c')
-      .where('m.idCre_SolicitudWeb = :orderId', { orderId })
-      .andWhere('m.idEstadoOrigenTelefonica = :estadoOrigen', { estadoOrigen: 4 })
-      .andWhere('c.idEstadoGestns = :estadoGestion', { estadoGestion: 11 })
-      .select([
-        'm.Observacion AS observacionMaestro',
-        'm.Telefono AS telefonoMaestro',
-        'c.idParentesco AS parentesco',
-        'c.Fecha AS fechaVerificacion',
-        'c.Observaciones AS observacionesDetalle',
-      ])
-      .getRawMany();
-  }
 }

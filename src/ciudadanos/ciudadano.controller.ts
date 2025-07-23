@@ -25,14 +25,13 @@ export class CiudadanoController {
     @Body() body: { cedula: string; dactilar: string;
              usuario: string }, // local usuario
   ): Promise<any> {
-    const { cedula, dactilar, usuario } = body;
+    const { cedula, dactilar } = body;
 
     try {
       // Iniciar la consulta dactilar
       const ciudadanoGuardado = await this.ciudadanoService.consultarDactilar(
         cedula,
         dactilar,
-        usuario
       );
 
       if (!ciudadanoGuardado) {

@@ -3,9 +3,19 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import { Nomina } from 'src/nomina/entities/nomina.entity';
 import { PrinterService } from 'src/printer/printer.service';
-import { CreditoDirectoReport, getCountryReport, getEmploymentLetterByIdReport, getEmploymentLetterReport, getHelloWorldReport } from 'src/reports';
+import { getCountryReport, getEmploymentLetterByIdReport, getEmploymentLetterReport, getHelloWorldReport, CreditoDirectoReport } from 'src/reports';
 import { Repository, LessThan } from 'typeorm';
 import { WebSolicitudgrande } from 'src/web_solicitudgrande/entities/web_solicitudgrande.entity';
+import { CreReferenciasclientesweb } from 'src/cre-referenciasclientesweb/entities/cre-referenciasclientesweb.entity'
+import { CreNacionalidad } from 'src/cre_nacionalidad/entities/cre_nacionalidad.entity'
+import { Bodega } from 'src/Bodega/Bodega.entity'
+import { CreProvincia } from 'src/cre_provincia/entities/cre_provincia.entity'
+import { CreCanton } from 'src/cre-canton/entities/cre-canton.entity'
+import { CreActividadeconomina } from 'src/cre_actividadeconomina/entities/cre_actividadeconomina.entity'
+import { CreParroquia } from 'src/cre_parroquia/entities/cre_parroquia.entity'
+import { CreBarrio } from 'src/cre_barrio/entities/cre_barrio.entity'
+import { CreProfesion } from 'src/cre_profesion/entities/cre_profesion.entity'
+
 
 
 @Injectable()
@@ -18,7 +28,34 @@ export class BasicReportsService {
         private readonly printerService: PrinterService,
 
 		@InjectRepository(WebSolicitudgrande)
-		private readonly webSolicitudGrandeRepository: Repository<WebSolicitudgrande>
+		private readonly webSolicitudGrandeRepository: Repository<WebSolicitudgrande>,
+
+		@InjectRepository(CreReferenciasclientesweb)
+		private readonly CreReferenciasclienteswebRepository: Repository<CreReferenciasclientesweb>,
+
+		@InjectRepository(CreNacionalidad)
+		private readonly CreNacionalidadRepository: Repository<CreNacionalidad>,
+
+		@InjectRepository(Bodega)
+		private readonly BodegaRepository: Repository<Bodega>,
+
+		@InjectRepository(CreProvincia)
+		private readonly CreProvinciaRepository: Repository<CreProvincia>,
+
+		@InjectRepository(CreCanton)
+		private readonly CreCantonRepository: Repository<CreCanton>,
+
+		@InjectRepository(CreActividadeconomina)
+		private readonly CreActividadeconominaRepository: Repository<CreActividadeconomina>,
+
+		@InjectRepository(CreParroquia)
+		private readonly CreParroquiaRepository: Repository<CreParroquia>,
+
+		@InjectRepository(CreBarrio)
+		private readonly CreBarrioRepository: Repository<CreBarrio>,
+
+		@InjectRepository(CreProfesion)
+		private readonly CreProfesionRepository: Repository<CreProfesion>
 		
     ) {
 
@@ -78,13 +115,24 @@ export class BasicReportsService {
 
 	async getCredDirectoReport( idCre_SolicitudWeb: number) {
 		const webSoliGra = await this.webSolicitudGrandeRepository.findOneBy({ idCre_SolicitudWeb });
+		const refer = await this.CreReferenciasclienteswebRepository.findBy({ idCre_SolicitudWeb });
+		const nacionalidades = await this.CreNacionalidadRepository.find();
+		const local = await this.BodegaRepository.findOneBy({Bodega: webSoliGra.Bodega});
+		const actEconomica = await this.CreActividadeconominaRepository.find()
+		const provincias = await this.CreProvinciaRepository.find();
+		const cantones = await this.CreCantonRepository.find();
+		const parroquias = await this.CreParroquiaRepository.find();
+		const barrios = await this.CreBarrioRepository.find();
+		const profesiones = await this.CreProfesionRepository.find()
+
 		console.log(webSoliGra);
+
 		if (!webSoliGra) {
             this.logger.error(`Solicitud Grande with id ${idCre_SolicitudWeb} not found`);
             throw new NotFoundException(`Solicitud Grande with id ${idCre_SolicitudWeb} not found`);
         }
 
-		const docDefinition = CreditoDirectoReport(webSoliGra);
+		const docDefinition = CreditoDirectoReport(webSoliGra, refer, nacionalidades, local, actEconomica, provincias, cantones, parroquias, barrios, profesiones);
 		const doc = this.printerService.createPdf(docDefinition);
 		return doc;
 	}
