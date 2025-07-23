@@ -17,6 +17,10 @@ private readonly logger = new Logger('TerrenaGestionTrabajoService');
   return await this.terrenaRepo.findOne({ where: { idTerrenaGestionTrabajo: id } });
  }
 
+   async updateTipoVerificacion(id: number, tipoVerificacion: number) {
+    await this.terrenaRepo.update({ idTerrenaGestionTrabajo: id }, { tipoVerificacion });
+    return this.findOne(id);
+  }
 }
 
 
