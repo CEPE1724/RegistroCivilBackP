@@ -16,9 +16,8 @@ export class CiudadanoService {
     private readonly configService: ConfigService,
   ) {}
 
-  async guardarCiudadano(data: any, dactilar: string): Promise<Ciudadano> {
+  async guardarCiudadano(data: any, dactilar: string, usuario: string): Promise<Ciudadano> {
     try {
-      /* guarda ciudadanos*/
       const ciudadano = new Ciudadano();
       ciudadano.NUI = data.NUI;
       ciudadano.CODIGODACTILAR = dactilar;
@@ -44,6 +43,7 @@ export class CiudadanoService {
       ciudadano.CONYUGE = data.CONYUGE.CONYUGE;
       ciudadano.FECHAMATRIMONIO = data.CONYUGE.FECHAMATRIMONIO;
       ciudadano.FECHAFALLECIMIENTO = data.DEFUNCION.FECHAFALLECIMIENTO;
+      ciudadano.USUARIO = usuario; // Guardar el usuario que realizó la consulta
       ciudadano.FECHACONSULTA = new Date();
       return await this.ciudadanoRepository.save(ciudadano);
     } catch (error) {
@@ -183,7 +183,7 @@ export class CiudadanoService {
 
 
   // Método para consultar el registro dactilar
-  async consultarDactilar(cedula: string, dactilar: string): Promise<any> {
+  async consultarDactilar(cedula: string, dactilar: string, usuario: string): Promise<any> {
     const tokenRC = await this.autenticarRegistroCivil();
     const dactilarTruncado = dactilar.slice(0, 6);
     const apiUrl = this.configService.get<string>('API_URL_ADC');
@@ -220,7 +220,7 @@ export class CiudadanoService {
   
       // Verificar si la respuesta fue exitosa
       if (dacResponse.data.codigo === '000') {
-        return await this.guardarCiudadano(dacResponse.data.ciudadano, dactilar);
+        return await this.guardarCiudadano(dacResponse.data.ciudadano, dactilar, usuario);
       } else {
         throw new HttpException(
           'Consulta fallida en Registro Civil',

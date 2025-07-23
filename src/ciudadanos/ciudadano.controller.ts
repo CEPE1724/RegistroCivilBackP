@@ -18,20 +18,19 @@ import { ValidRoles } from '../auth/interfaces';
 export class CiudadanoController {
   constructor(private readonly ciudadanoService: CiudadanoService) {}
 
-  
   @Auth() 
   @Post('consulta')
   async consultarDactilar(
-    @Body() body: { cedula: string; dactilar: string;
-             usuario: string }, // local usuario
+    @Body() body: { cedula: string; dactilar: string; usuario: string },
   ): Promise<any> {
-    const { cedula, dactilar } = body;
+    const { cedula, dactilar, usuario } = body;
 
     try {
       // Iniciar la consulta dactilar
       const ciudadanoGuardado = await this.ciudadanoService.consultarDactilar(
         cedula,
         dactilar,
+        usuario
       );
 
       if (!ciudadanoGuardado) {
