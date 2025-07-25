@@ -387,7 +387,7 @@ export class CreSolicitudWebService {
 
 
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
-    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud } = paginationDto;
+    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud, idTipoCliente = 0, idCompraEncuesta = 0 } = paginationDto;
 
 
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
@@ -457,6 +457,14 @@ export class CreSolicitudWebService {
           cre_solicitud_web.ApellidoMaterno LIKE :nombreBusqueda)`,
         { nombreBusqueda }
       );
+    }
+    // Filtro por idTipoCliente
+    if (idTipoCliente !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idTipoCliente = :idTipoCliente OR :idTipoCliente = 0)', { idTipoCliente });
+    }
+    // Filtro por idCompraEncuesta
+    if (idCompraEncuesta !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idCompraEncuesta = :idCompraEncuesta OR :idCompraEncuesta = 0)', { idCompraEncuesta });
     }
     // Obtener el conteo total de registros
     const totalCount = await queryBuilder.getCount();

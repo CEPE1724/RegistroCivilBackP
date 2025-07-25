@@ -74,4 +74,13 @@ numeroSolicitud?: string;
 @IsOptional()
 @IsString()
 nombres?: string; 
+
+
+@IsOptional()
+@Type(() => Number)
+idTipoCliente?: number;
+
+@IsOptional()
+@Type(() => Number)
+idCompraEncuesta?: number;
 }
