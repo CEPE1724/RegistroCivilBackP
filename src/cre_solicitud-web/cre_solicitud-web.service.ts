@@ -365,8 +365,10 @@ export class CreSolicitudWebService {
     const totalCount = await totalCountQueryBuilder.getCount();
 
     // Aplicar paginación a la consulta principal
-    queryBuilder = queryBuilder.skip(offset).take(limit);
-
+    // queryBuilder = queryBuilder.skip(offset).take(limit);
+    if (limit && limit > 0) {
+      queryBuilder.skip(offset).take(limit);
+    }
     // Ejecutar la consulta para obtener los resultados
     try {
       const creSolicitudWeb = await queryBuilder.getMany();
@@ -387,7 +389,7 @@ export class CreSolicitudWebService {
 
 
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
-    const { limit = 10, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud, idTipoCliente = 0, idCompraEncuesta = 0 } = paginationDto;
+    const { limit, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud, idTipoCliente = 0, idCompraEncuesta = 0 } = paginationDto;
 
 
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
