@@ -5,7 +5,7 @@ import { CreReferenciasclientesweb } from 'src/cre-referenciasclientesweb/entiti
 import { CreNacionalidad } from 'src/cre_nacionalidad/entities/cre_nacionalidad.entity'
 
 
-export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferenciasclientesweb[], nacionalidades: CreNacionalidad[], local, actEconomica, provincias, cantones,  parroquias, barrios, profesiones): TDocumentDefinitions => {
+export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferenciasclientesweb[], nacionalidades: CreNacionalidad[], local, actEconomica, provincias, cantones,  parroquias, barrios, profesiones, infoCompra): TDocumentDefinitions => {
 
 	const parentescos = [
 		{idParentesco:  1 , Nombre: 'ABUELO/ABUELA', },
@@ -58,38 +58,38 @@ export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferen
 		const year = d.getFullYear();
 		return `${day}/${month}/${year}`;
 	})();
-
+	const ingresos = data?.IngresosNegosio ? data?.IngresosNegosio : data?.IngresosTrabajo
+	const egresos = data?.EgresosNegocio ? data?.EgresosNegocio : data?.EgresosTrabajo
+	
 	const pagina1 = [
 
 
 		//INFORMACION SOLICITUD
 		{ text: fecha , absolutePosition: { x: 135, y: 70 }, fontSize: 10},
-		{ text: '000019238', absolutePosition: { x: 300, y: 70 }, fontSize: 10},
+		{ text: infoCompra.idCompra , absolutePosition: { x: 250, y: 70 }, fontSize: 10},
 		{ text: local.Nombre, absolutePosition: { x: 410, y: 70 }, fontSize: 10},
-		{ text: '1,073.43', absolutePosition: { x: 62, y: 93 }, fontSize: 9},
-		{ text: '18', absolutePosition: { x: 153, y: 93 }, fontSize: 10},
-		{ text: '12', absolutePosition: { x: 262, y: 93 }, fontSize: 10},
-		{ text: 'X', absolutePosition: { x: 353, y: 93 }, fontSize: 10},
+		{ text:  infoCompra.Total - infoCompra.CuotaEntrada, absolutePosition: { x: 63, y: 93 }, fontSize: 9},
+		{ text: infoCompra.NumCuotas, absolutePosition: { x: 153, y: 93 }, fontSize: 10},
+		//{ text: '12', absolutePosition: { x: 262, y: 93 }, fontSize: 10},
 
 		
 		//DATOS PERSONALES CLIENTE
 		...(data.idTipoDoc === 1
-    	? [{ text: 'X', absolutePosition: { x: 167, y: 160 }, fontSize: 12, }]
+    	? [{ text: 'X', absolutePosition: { x: 167, y: 160 }, fontSize: 10, }]
     	: data.idGenero === 2
-    	? [{ text: 'X', absolutePosition: { x: 210, y: 160 }, fontSize: 12, }]
+    	? [{ text: 'X', absolutePosition: { x: 210, y: 160 }, fontSize: 10, }]
     	: []),
-		{ text: data.Cedula, absolutePosition: { x: 48, y: 195 }, fontSize: 10},
-		{ text: data.ApellidoPaterno, absolutePosition: { x: 125, y: 195 }, fontSize: 10},
-		{ text: data.ApellidoMaterno, absolutePosition: { x: 210, y: 195 }, fontSize: 10},
-		{ text: `${data.PrimerNombre} ${data.SegundoNombre}`, absolutePosition: { x: 280, y: 195 }, fontSize: 10},
-		{ text: `${NombNacionalidad}`  , absolutePosition: { x: 400, y: 195 }, fontSize: 10},
-		{ text: provincias.find( p => p.idProvincia == data.idProvinciaNacimiento )?.Nombre, absolutePosition: { x: 465, y: 195 }, fontSize: 10},
+		{ text: data.Cedula, absolutePosition: { x: 33, y: 196 }, fontSize: 7},
+		{ text: data.ApellidoPaterno, absolutePosition: { x: 120, y: 196 }, fontSize: 7},
+		{ text: data.ApellidoMaterno, absolutePosition: { x: 197, y: 196 }, fontSize: 7},
+		{ text: `${data.PrimerNombre} ${data.SegundoNombre}`, absolutePosition: { x: 276, y: 196 }, fontSize: 7},
+		{ text: `${NombNacionalidad}`  , absolutePosition: { x: 395, y: 195 }, fontSize: 7},
 		...(data.idGenero === 1
-    	? [{ text: 'X', absolutePosition: { x: 550, y: 195 }, fontSize: 12, }]
+    	? [{ text: 'F', absolutePosition: { x: 550, y: 195 }, fontSize: 10, }]
     	: data.idGenero === 2
-    	? [{ text: 'X', absolutePosition: { x: 532, y: 195 }, fontSize: 12, }]
+    	? [{ text: 'M', absolutePosition: { x: 532, y: 195 }, fontSize: 10, }]
     	: []),
-		{ text: data?.FechaNacimiento ? `${data.FechaNacimiento}` : '' , absolutePosition: { x: 50, y: 237 }, fontSize: 10},
+		{ text: data?.FechaNacimiento ? `${data.FechaNacimiento}` : '' , absolutePosition: { x: 50, y: 237 }, fontSize: 7},
 		//estado civil
 		...(data.idEdoCivil === 3 //soltero
     	? [{ text: 'X', absolutePosition: { x: 148, y: 227 }, fontSize: 10, }]
@@ -98,11 +98,11 @@ export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferen
     	: data.idEdoCivil === 5 // viudo
     	? [{ text: 'X', absolutePosition: { x: 233, y: 227 }, fontSize: 10, }]
     	:data.idEdoCivil === 1 //casado
-    	? [{ text: 'X', absolutePosition: { x: 148, y: 237 }, fontSize: 10, }]
+    	? [{ text: 'X', absolutePosition: { x: 148, y: 238 }, fontSize: 10, }]
     	:data.idEdoCivil === 4 //union libre
-    	? [{ text: 'X', absolutePosition: { x: 185, y: 237 }, fontSize: 10, }]
+    	? [{ text: 'X', absolutePosition: { x: 185, y: 238 }, fontSize: 10, }]
     	: []),
-		{ text: data.NumeroHijos ? data.NumeroHijos : 0 , absolutePosition: { x: 285, y: 232 }, fontSize: 12},
+		{ text: data.NumeroHijos ? data.NumeroHijos : 0 , absolutePosition: { x: 285, y: 232 }, fontSize: 0},
 		//nivel estudio
 		...(data.idNivelEducacion === 3 //primario
     	? [{ text: 'X', absolutePosition: { x: 435, y: 227 }, fontSize: 10, }]
@@ -115,10 +115,9 @@ export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferen
     	:data.idNivelEducacion === 5 //tecnico
     	? [{ text: 'X', absolutePosition: { x: 482, y: 238 }, fontSize: 10, }]
     	: []),
-		{ text: provincias.find (p => p.idProvincia == data.idProvinciaDomicilio )?.Nombre , absolutePosition: { x: 42, y: 266 }, fontSize: 10},
-		{ text: cantones.find(c => c.idCanton == data.idCantonDomicilio )?.Nombre , absolutePosition: { x: 108, y: 266 }, fontSize: 10},
-		{ text: parroquias.find(p => p.idParroquia == data.idParroquiaDomicilio)?.Nombre , absolutePosition: { x: 180, y: 266 }, fontSize: 10},
-		{ text: barrios.find(b => b.idBarrio == data.idBarrioDomicilio)?.Nombre , absolutePosition: { x: 285, y: 266 }, fontSize: 10},
+		{ text: cantones.find(c => c.idCanton == data.idCantonDomicilio )?.Nombre , absolutePosition: { x: 108, y: 266 }, fontSize: 7},
+		{ text: parroquias.find(p => p.idParroquia == data.idParroquiaDomicilio)?.Nombre , absolutePosition: { x: 175, y: 266 }, fontSize: 7},
+		{ text: barrios.find(b => b.idBarrio == data.idBarrioDomicilio)?.Nombre , absolutePosition: { x: 285, y: 266 }, fontSize: 7},
 		//tipo vivienda
 		...(data.idTipoVivienda === 3 //propio
     	? [{ text: 'X', absolutePosition: { x: 393, y: 262 }, fontSize: 9, }]
@@ -135,28 +134,28 @@ export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferen
 		:data.idTipoVivienda === 6 //anticresis
     	? [{ text: 'X', absolutePosition: { x: 492, y: 272 }, fontSize: 9, }]
     	: []),
-		{ text: data.CallePrincipal , absolutePosition: { x: 40, y: 298 }, fontSize: 9},
-		{ text: data.NumeroCasa , absolutePosition: { x: 200, y: 298 }, fontSize: 8},
-		{ text: data.CalleSecundaria , absolutePosition: { x: 250, y: 298 }, fontSize: 10},
-		{ text: data.idCre_Tiempo === 1 ? '0-3 MESES' : data.idCre_Tiempo === 2 ? '3-6 MESES' : data.idCre_Tiempo === 3 ? '6-12 MESES' : data.idCre_Tiempo === 5 ? '1-5 AÑOS' : data.idCre_Tiempo === 6 ? '5-10 AÑOS' : data.idCre_Tiempo === 7 ? 'MAS DE 10 AÑOS' : ''  , absolutePosition: { x: 352, y: 298 }, fontSize: 8 },
-		{ text: data.NombreArrendador ? data.NombreArrendador : ''  , absolutePosition: { x: 425, y: 298 }, fontSize: 10},
-		{ text: data.TelefonoDomicilio ? data.TelefonoDomicilio : ''  , absolutePosition: { x: 25, y: 325 }, fontSize: 10},
-		{ text: data.TelefonoDomiliarDos ? data.TelefonoDomiliarDos : ''  , absolutePosition: { x: 78, y: 325 }, fontSize: 10},
-		{ text: data.Celular ? data.Celular : ''  , absolutePosition: { x: 137, y: 327 }, fontSize: 8},
-		{ text: 'ejemplo@hotmail.com', absolutePosition: {x: 200, y: 325}, fontSize: 10 },
-		{ text: data.ReferenciaUbicacion, absolutePosition: {x: 380, y: 325}, fontSize: 10 },
+		{ text: data.CallePrincipal , absolutePosition: { x: 30, y: 298 }, fontSize: 7},
+		{ text: data.NumeroCasa , absolutePosition: { x: 198, y: 298 }, fontSize: 7},
+		{ text: data.CalleSecundaria , absolutePosition: { x: 243, y: 298 }, fontSize: 7},
+		{ text: data.idCre_Tiempo === 1 ? '0-3 MESES' : data.idCre_Tiempo === 2 ? '3-6 MESES' : data.idCre_Tiempo === 3 ? '6-12 MESES' : data.idCre_Tiempo === 5 ? '1-5 AÑOS' : data.idCre_Tiempo === 6 ? '5-10 AÑOS' : data.idCre_Tiempo === 7 ? 'MAS DE 10 AÑOS' : ''  , absolutePosition: { x: 352, y: 298 }, fontSize: 7 },
+		{ text: data.NombreArrendador ? data.NombreArrendador : ''  , absolutePosition: { x: 425, y: 298 }, fontSize: 7},
+		{ text: data.TelefonoDomicilio ? data.TelefonoDomicilio : ''  , absolutePosition: { x: 25, y: 325 }, fontSize: 7},
+		{ text: data.TelefonoDomiliarDos ? data.TelefonoDomiliarDos : ''  , absolutePosition: { x: 78, y: 325 }, fontSize: 7},
+		{ text: data.Celular ? data.Celular : ''  , absolutePosition: { x: 137, y: 327 }, fontSize: 7},
+		//{ text: 'ejemplo@hotmail.com', absolutePosition: {x: 190, y: 325}, fontSize: 7 },
+		{ text: data.ReferenciaUbicacion, absolutePosition: {x: 377, y: 324}, fontSize: 7 },
 
 
 		//DATOS CONYUGUE (solo si estadocivil es 1 casado)
 		...(data.idEdoCivil === 1 ? [
-		{ text: data.CedulaConyuge, absolutePosition: {x: 35, y: 373}, fontSize: 10 },
-		{ text: data.ApellidoPaternoConyuge , absolutePosition: {x: 120, y: 373}, fontSize: 10 },
-		{ text: 'apellidomaterno', absolutePosition: {x: 220, y: 373}, fontSize: 10 },
-		{ text: data.PrimerNombreConyuge != null ? `${data.PrimerNombreConyuge} ${data.SegundoNombreConyuge}` : '', absolutePosition: {x: 330, y: 373}, fontSize: 10 },
-		{ text: nacionalidades.find( n => n.idNacionalidad == data.idNacionalidadConyuge).Nombre , absolutePosition: {x: 30, y: 410}, fontSize: 10 },
-		{ text: `${data.FechaNacimientoConyuge}`, absolutePosition: {x: 110, y: 410}, fontSize: 10 },
-		{ text: '097777777', absolutePosition: {x: 450, y: 405}, fontSize: 10 },
-		
+		{ text: data.CedulaConyuge, absolutePosition: {x: 35, y: 373}, fontSize: 7 },
+		{ text: data.ApellidoPaternoConyuge , absolutePosition: {x: 110, y: 373}, fontSize: 7 },
+		//{ text: 'apellidomaterno', absolutePosition: {x: 220, y: 373}, fontSize: 10 },
+		{ text: data.PrimerNombreConyuge != null ? `${data.PrimerNombreConyuge} ${data.SegundoNombreConyuge}` : '', absolutePosition: {x: 317, y: 373}, fontSize: 7 },
+		{ text: nacionalidades.find( n => n.idNacionalidad == data.idNacionalidadConyuge).Nombre , absolutePosition: {x: 30, y: 410}, fontSize: 7 },
+		{ text: `${data.FechaNacimientoConyuge}`, absolutePosition: {x: 110, y: 410}, fontSize: 7 },
+		//{ text: '097777777', absolutePosition: {x: 450, y: 405}, fontSize: 10 },
+
 		...(data.idNivelEducacionConyuge === 3 //primario  3
     	? [{ text: 'X', absolutePosition: { x: 311, y: 405 }, fontSize: 10, }]
     	: data.idNivelEducacionConyuge === 6 //superior 6
@@ -172,20 +171,20 @@ export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferen
 
 
 		//REFERENCIAS FAMILIARES
-		{ text: refer[0]?.ApellidoPaterno , absolutePosition: {x: 34, y: 550}, fontSize: 10 },
-		{ text: refer[0]?.PrimerNombre ? `${refer[0]?.PrimerNombre} ${refer[0]?.SegundoNombre}` : '' , absolutePosition: {x: 150, y: 550}, fontSize: 10 },
-		{ text: refer[0]?.Celular , absolutePosition: {x: 323, y: 550}, fontSize: 8 },
-		{ text: parentescos.find(p => p.idParentesco === refer[0]?.idParentesco)?.Nombre , absolutePosition: {x: 430, y: 550}, fontSize: 8 },
+		{ text: refer[0]?.ApellidoPaterno , absolutePosition: {x: 31, y: 548}, fontSize: 7 },
+		{ text: refer[0]?.PrimerNombre ? `${refer[0]?.PrimerNombre} ${refer[0]?.SegundoNombre}` : '' , absolutePosition: {x: 142, y: 548}, fontSize: 7 },
+		{ text: refer[0]?.Celular , absolutePosition: {x: 323, y: 548}, fontSize: 7 },
+		{ text: parentescos.find(p => p.idParentesco === refer[0]?.idParentesco)?.Nombre , absolutePosition: {x: 428, y: 548}, fontSize: 7 },
 
-		{ text: refer[1]?.ApellidoPaterno , absolutePosition: {x: 34, y: 605}, fontSize: 10 },
-		{ text: refer[1]?.PrimerNombre ? `${refer[1]?.PrimerNombre} ${refer[1]?.SegundoNombre}` : '' , absolutePosition: {x: 150, y: 605}, fontSize: 10 },
-		{ text: refer[1]?.Celular , absolutePosition: {x: 323, y: 605}, fontSize: 8 },
-		{ text: parentescos.find(p => p.idParentesco === refer[1]?.idParentesco)?.Nombre , absolutePosition: {x: 440, y: 605}, fontSize: 8 },
+		{ text: refer[1]?.ApellidoPaterno , absolutePosition: {x: 31, y: 605}, fontSize: 7 },
+		{ text: refer[1]?.PrimerNombre ? `${refer[1]?.PrimerNombre} ${refer[1]?.SegundoNombre}` : '' , absolutePosition: {x: 142, y: 605}, fontSize: 7 },
+		{ text: refer[1]?.Celular , absolutePosition: {x: 323, y: 605}, fontSize: 7 },
+		{ text: parentescos.find(p => p.idParentesco === refer[1]?.idParentesco)?.Nombre , absolutePosition: {x: 437, y: 605}, fontSize: 7 },
 		
-		{ text: refer[2]?.ApellidoPaterno , absolutePosition: {x: 34, y: 663}, fontSize: 10 },
-		{ text: refer[2]?.PrimerNombre ? `${refer[2]?.PrimerNombre} ${refer[2]?.SegundoNombre}` : '' , absolutePosition: {x: 150, y: 663}, fontSize: 10 },
-		{ text: refer[2]?.Celular , absolutePosition: {x: 323, y: 663}, fontSize: 8 },
-		{ text: parentescos.find(p => p.idParentesco === refer[2]?.idParentesco)?.Nombre , absolutePosition: {x: 440, y: 663}, fontSize: 8},
+		{ text: refer[2]?.ApellidoPaterno , absolutePosition: {x: 31, y: 663}, fontSize: 7 },
+		{ text: refer[2]?.PrimerNombre ? `${refer[2]?.PrimerNombre} ${refer[2]?.SegundoNombre}` : '' , absolutePosition: {x: 142, y: 663}, fontSize: 7 },
+		{ text: refer[2]?.Celular , absolutePosition: {x: 323, y: 663}, fontSize: 7 },
+		{ text: parentescos.find(p => p.idParentesco === refer[2]?.idParentesco)?.Nombre , absolutePosition: {x: 437, y: 663}, fontSize: 7},
 	]
 
 	const pagina2 = [
@@ -194,18 +193,18 @@ export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferen
 		
 		...(data.NombreNegocio !== null ? [
 		{ text: 'X', absolutePosition: {x: 295, y: 23}, fontSize: 10 },
-		{ text: data.NombreNegocio === null ? '' : data.NombreNegocio , absolutePosition: {x: 100, y: 68}, fontSize: 10 },
-		{ text: data.idCre_TiempoNegocio === 1 ? '0-3 MESES' : data.idCre_TiempoNegocio === 2 ? '3-6 MESES' : data.idCre_TiempoNegocio === 3 ? '6-12 MESES' : data.idCre_TiempoNegocio === 5 ? '1-5 AÑOS' : data.idCre_TiempoNegocio === 6 ? '5-10 AÑOS' : data.idCre_TiempoNegocio === 7 ? 'MAS DE 10 AÑOS' : ''  , absolutePosition: { x: 280, y: 68 }, fontSize: 10 }, 
-		{ text: provincias.find (p => p.idProvincia == data.idProvinciaNegocio )?.Nombre , absolutePosition: {x: 350, y: 68}, fontSize: 10 },
-		{ text: cantones.find(c => c.idCanton == data.idCantonNegocio )?.Nombre , absolutePosition: {x: 450, y: 68}, fontSize: 10 },
-		{ text: parroquias.find(p => p.idParroquia == data.idParroquiaNegocio)?.Nombre , absolutePosition: {x: 50, y: 96}, fontSize: 10 },
-		{ text: barrios.find(b => b.idBarrio == data.idBarrioNegocio)?.Nombre , absolutePosition: {x: 140, y: 96}, fontSize: 10 },
-		{ text: data.CallePrincipalNegocio , absolutePosition: {x: 250, y: 96}, fontSize: 10 },
-		{ text: data.NumeroCasaNegocio , absolutePosition: {x: 429, y: 96}, fontSize: 10 },
-		{ text: data.CalleSecundariaNegocio , absolutePosition: {x: 480, y: 96}, fontSize: 10 },
-		{ text: data.ReferenciaUbicacionNegocio , absolutePosition: {x: 47, y: 122}, fontSize: 10 },
-		{ text: data.TelefonoNegocio , absolutePosition: {x: 205, y: 122}, fontSize: 10 },
-		{ text: data.CelularNegocio , absolutePosition: {x: 260, y: 122}, fontSize: 10 },
+		{ text: data.NombreNegocio === null ? '' : data.NombreNegocio , absolutePosition: {x: 87, y: 67}, fontSize: 7 },
+		{ text: data.idCre_TiempoNegocio === 1 ? '0-3 MESES' : data.idCre_TiempoNegocio === 2 ? '3-6 MESES' : data.idCre_TiempoNegocio === 3 ? '6-12 MESES' : data.idCre_TiempoNegocio === 5 ? '1-5 AÑOS' : data.idCre_TiempoNegocio === 6 ? '5-10 AÑOS' : data.idCre_TiempoNegocio === 7 ? 'MAS DE 10 AÑOS' : ''  , absolutePosition: { x: 280, y: 68 }, fontSize: 7 }, 
+		// { text: provincias.find (p => p.idProvincia == data.idProvinciaNegocio )?.Nombre , absolutePosition: {x: 349, y: 68}, fontSize: 7 },
+		{ text: cantones.find(c => c.idCanton == data.idCantonNegocio )?.Nombre , absolutePosition: {x: 447, y: 68}, fontSize: 7 },
+		{ text: parroquias.find(p => p.idParroquia == data.idParroquiaNegocio)?.Nombre , absolutePosition: {x: 28, y: 96}, fontSize: 7 },
+		{ text: barrios.find(b => b.idBarrio == data.idBarrioNegocio)?.Nombre , absolutePosition: {x: 137, y: 96}, fontSize: 7 },
+		{ text: data.CallePrincipalNegocio , absolutePosition: {x: 250, y: 96}, fontSize: 7 },
+		{ text: data.NumeroCasaNegocio , absolutePosition: {x: 424, y: 96}, fontSize: 7 },
+		{ text: data.CalleSecundariaNegocio , absolutePosition: {x: 465, y: 96}, fontSize: 7 },
+		// { text: data.ReferenciaUbicacionNegocio , absolutePosition: {x: 28, y: 122}, fontSize: 7 },
+		{ text: data.TelefonoNegocio , absolutePosition: {x: 205, y: 122}, fontSize: 7 },
+		{ text: data.CelularNegocio , absolutePosition: {x: 260, y: 122}, fontSize: 7 },
 		
 		] :  []),
 
@@ -219,28 +218,33 @@ export const CreditoDirectoReport = (data: WebSolicitudgrande, refer: CreReferen
 		: data.idTipoContrato === 2
 		? [{ text: 'x', absolutePosition: {x: 465, y: 372}, fontSize: 10, }]
 		: []),
-		{ text: `${data.FechaIngresoEmpresa}` , absolutePosition: {x: 223, y: 400}, fontSize: 10 },
+		{ text: `${data.FechaIngresoEmpresa}` , absolutePosition: {x: 223, y: 398}, fontSize: 7 },
 		...(data.idTipoSueldo === 2
 		? [{ text: 'x', absolutePosition: {x: 405, y: 398}, fontSize: 10, }]
 		: data.idTipoSueldo === 1
 		? [{ text: 'x', absolutePosition: {x: 446, y: 398}, fontSize: 10, }]
 		: []),
-		{ text: data.DiaPago , absolutePosition: {x: 50, y: 425}, fontSize: 10 },
-		{ text: cargoCog.find( c => c.idCognoTrabajoCargo == data.idCargo).NombreCargo , absolutePosition: {x: 150, y: 425}, fontSize: 10 },
-		{ text: data.Departaento , absolutePosition: {x: 255, y: 425}, fontSize: 10 },
-		{ text: provincias.find (p => p.idProvincia == data.idProvinciaTrabajo )?.Nombre , absolutePosition: {x: 38, y: 452}, fontSize: 10 },
-		{ text: cantones.find(c => c.idCanton == data.idCantonTrabajo )?.Nombre , absolutePosition: {x: 110, y: 452}, fontSize: 10 },
-		{ text: parroquias.find(p => p.idParroquia == data.idParroquiaTrabajo)?.Nombre , absolutePosition: {x: 173, y: 452}, fontSize: 10 },
-		{ text: barrios.find(b => b.idBarrio == data.idBarrioTrabajo)?.Nombre , absolutePosition: {x: 282, y: 452}, fontSize: 9 },
-		{ text: data.ReferenciaUbicacionTrabajo , absolutePosition: {x: 400, y: 452}, fontSize: 7 },
-		{ text: data.CallePrincipalTrabajo , absolutePosition: {x: 37, y: 480}, fontSize: 8 },
-		{ text: data.NumeroCasaTrabajo , absolutePosition: {x: 200, y: 480}, fontSize: 8 },
-		{ text: data.CalleSecundariaTrabajo , absolutePosition: {x: 250, y: 480}, fontSize: 10 },
-		{ text: data.TelefonoTrabajo , absolutePosition: {x: 357, y: 480}, fontSize: 8 },
-		{ text: 'email@hotmail.com' , absolutePosition: {x: 450, y: 480}, fontSize: 10 },
-
-		
+		{ text: data.DiaPago , absolutePosition: {x: 50, y: 425}, fontSize: 7 },
+		{ text: cargoCog.find( c => c.idCognoTrabajoCargo == data.idCargo).NombreCargo , absolutePosition: {x: 143, y: 425}, fontSize: 7 },
+		{ text: data.Departaento , absolutePosition: {x: 253, y: 425}, fontSize: 7 },
+		{ text: cantones.find(c => c.idCanton == data.idCantonTrabajo )?.Nombre , absolutePosition: {x: 103, y: 452}, fontSize: 7 },
+		{ text: parroquias.find(p => p.idParroquia == data.idParroquiaTrabajo)?.Nombre , absolutePosition: {x: 170, y: 452}, fontSize: 7 },
+		{ text: barrios.find(b => b.idBarrio == data.idBarrioTrabajo)?.Nombre , absolutePosition: {x: 280, y: 452}, fontSize: 7 },
+		{ text: data.ReferenciaUbicacionTrabajo , absolutePosition: {x: 390, y: 450}, fontSize: 6 },
+		{ text: data.CallePrincipalTrabajo , absolutePosition: {x: 35, y: 480}, fontSize: 7 },
+		{ text: data.NumeroCasaTrabajo , absolutePosition: {x: 200, y: 480}, fontSize: 7 },
+		{ text: data.CalleSecundariaTrabajo , absolutePosition: {x: 247, y: 480}, fontSize: 7 },
+		{ text: data.TelefonoTrabajo , absolutePosition: {x: 357, y: 480}, fontSize: 7 },
+		{ text: data.Ext , absolutePosition: {x: 410, y: 480}, fontSize: 7 },
+		//{ text: 'email@hotmail.com' , absolutePosition: {x: 440, y: 480}, fontSize: 7 },	
 		] :  []),
+
+		//INFORMACION FINANCIERA
+		{ text: ingresos , absolutePosition: {x: 133, y: 523}, fontSize: 7},
+		{ text: ingresos , absolutePosition: {x: 133, y: 576}, fontSize: 7},
+		{ text: egresos , absolutePosition: {x: 133, y: 650}, fontSize: 7},
+		{ text: `${ingresos - egresos} $` , absolutePosition: {x: 133, y: 666}, fontSize: 7},
+
 
 
 
@@ -293,6 +297,38 @@ for (let j = 0; j <= 842; j += 50) { // Líneas horizontales cada 50 pt
     content: [
 		
 		...pagina1,
+
+		{
+		  table: {
+		    widths: [73],  
+		    body: [
+		      [
+		        {
+		          text: provincias.find (p => p.idProvincia == data.idProvinciaDomicilio )?.Nombre,
+		          fontSize: 6,
+		        }
+		      ]
+		    ]
+		  },
+		  layout: 'noBorders',
+		  absolutePosition: { x: 30, y: 263 },
+		},
+
+		{
+		  table: {
+		    widths: [70],  
+		    body: [
+		      [
+		        {
+		          text: provincias.find( p => p.idProvincia == data.idProvinciaNacimiento )?.Nombre,
+		          fontSize: 6,
+		        }
+		      ]
+		    ]
+		  },
+		  layout: 'noBorders',
+		  absolutePosition: { x: 463, y: 193 },
+		},
 		{
 		  table: {
 		    widths: [55],  
@@ -331,6 +367,23 @@ for (let j = 0; j <= 842; j += 50) { // Líneas horizontales cada 50 pt
 		// },
 
 		...pagina2,	
+
+		{
+		  table: {
+		    widths: [170],  
+		    body: [
+		      [
+		        {
+		          text: data.ReferenciaUbicacionNegocio,
+		          fontSize: 6,
+		        }
+		      ]
+		    ]
+		  },
+		  layout: 'noBorders',
+		  absolutePosition: { x: 28, y: 121 },
+		},
+
 		{
 		  table: {
 		    widths: [125],  
@@ -346,7 +399,38 @@ for (let j = 0; j <= 842; j += 50) { // Líneas horizontales cada 50 pt
 		  layout: 'noBorders',
 		  absolutePosition: { x: 93, y: 397 },
 		},
-		
+		{
+		  table: {
+		    widths: [65],  
+		    body: [
+		      [
+		        {
+		          text: provincias.find (p => p.idProvincia == data.idProvinciaTrabajo )?.Nombre,
+		          fontSize: 5,
+		        }
+		      ]
+		    ]
+		  },
+		  layout: 'noBorders',
+		  absolutePosition: { x: 33, y: 450 },
+		},
+		{
+		  table: {
+		    widths: [90],  
+		    body: [
+		      [
+		        {
+		          text: data.NombreNegocio !== null ? provincias.find (p => p.idProvincia == data.idProvinciaNegocio )?.Nombre : '' ,
+		          fontSize: 5,
+		        }
+		      ]
+		    ]
+		  },
+		  layout: 'noBorders',
+		  absolutePosition: { x: 349, y: 66 },
+		},
+
+		// { text: provincias.find (p => p.idProvincia == data.idProvinciaNegocio )?.Nombre , absolutePosition: {x: 349, y: 68}, fontSize: 7 },
 
   ]
     };
