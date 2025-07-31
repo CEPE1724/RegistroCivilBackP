@@ -123,6 +123,7 @@ import { PrinterModule } from './printer/printer.module';
 import { StoreReportsModule } from './store-reports/store-reports.module';
 import { StoreReportsPhoneVerificationModule } from './store-reports-phone-verification/store-reports-phone-verification.module';
 import { CreProductoSolicitudModule } from './cre-producto-solicitud/cre-producto-solicitud.module';
+import { CompraModule } from './compra/compra.module';
 
 
 
@@ -317,6 +318,8 @@ import { CreProductoSolicitudModule } from './cre-producto-solicitud/cre-product
     StoreReportsPhoneVerificationModule,
 
     CreProductoSolicitudModule,
+
+    CompraModule,
 
 
 

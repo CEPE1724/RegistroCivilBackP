@@ -15,6 +15,7 @@ import { CreActividadeconomina } from 'src/cre_actividadeconomina/entities/cre_a
 import { CreParroquia } from 'src/cre_parroquia/entities/cre_parroquia.entity'
 import { CreBarrio } from 'src/cre_barrio/entities/cre_barrio.entity'
 import { CreProfesion } from 'src/cre_profesion/entities/cre_profesion.entity'
+import { Compra } from '../compra/entities/compra.entity'
 
 
 
@@ -55,7 +56,10 @@ export class BasicReportsService {
 		private readonly CreBarrioRepository: Repository<CreBarrio>,
 
 		@InjectRepository(CreProfesion)
-		private readonly CreProfesionRepository: Repository<CreProfesion>
+		private readonly CreProfesionRepository: Repository<CreProfesion>,
+
+		@InjectRepository(Compra)
+		private readonly CompraRepository: Repository<Compra>
 		
     ) {
 
@@ -124,6 +128,7 @@ export class BasicReportsService {
 		const parroquias = await this.CreParroquiaRepository.find();
 		const barrios = await this.CreBarrioRepository.find();
 		const profesiones = await this.CreProfesionRepository.find()
+		const infoCompra = await this.CompraRepository.findOneBy({idCre_SolicitudWeb, idTipoFactura: 1 })
 
 		console.log(webSoliGra);
 
@@ -132,7 +137,7 @@ export class BasicReportsService {
             throw new NotFoundException(`Solicitud Grande with id ${idCre_SolicitudWeb} not found`);
         }
 
-		const docDefinition = CreditoDirectoReport(webSoliGra, refer, nacionalidades, local, actEconomica, provincias, cantones, parroquias, barrios, profesiones);
+		const docDefinition = CreditoDirectoReport(webSoliGra, refer, nacionalidades, local, actEconomica, provincias, cantones, parroquias, barrios, profesiones, infoCompra);
 		const doc = this.printerService.createPdf(docDefinition);
 		return doc;
 	}

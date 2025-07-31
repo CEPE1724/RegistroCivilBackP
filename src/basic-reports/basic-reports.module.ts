@@ -14,6 +14,7 @@ import { CreActividadeconomina } from 'src/cre_actividadeconomina/entities/cre_a
 import { CreParroquia } from 'src/cre_parroquia/entities/cre_parroquia.entity'
 import { CreBarrio } from 'src/cre_barrio/entities/cre_barrio.entity'
 import { CreProfesion } from 'src/cre_profesion/entities/cre_profesion.entity'
+import { Compra } from '../compra/entities/compra.entity'
 
 
 @Module({
@@ -21,7 +22,7 @@ import { CreProfesion } from 'src/cre_profesion/entities/cre_profesion.entity'
   providers: [BasicReportsService],
   exports: [BasicReportsService],
   imports: [
-    TypeOrmModule.forFeature([Nomina, WebSolicitudgrande, CreReferenciasclientesweb, CreNacionalidad, Bodega, CreProvincia, CreCanton, CreActividadeconomina, CreParroquia, CreBarrio, CreProfesion]),
+    TypeOrmModule.forFeature([Nomina, WebSolicitudgrande, CreReferenciasclientesweb, CreNacionalidad, Bodega, CreProvincia, CreCanton, CreActividadeconomina, CreParroquia, CreBarrio, CreProfesion, Compra]),
     PrinterModule
   ],
 })
