@@ -37,4 +37,29 @@ export class ExecSpService {
       throw new Error('Error al llamar al procedimiento FacturacionListaVendedoresWeb');
     }
   }
+
+
+  async findVendedoresByBodega(Bodega: number) {
+    try {
+      
+      // Consulta directa SIN filtro de fecha para obtener TODOS los vendedores de la bodega
+      const result = await this.queryRepository.query(`
+        SELECT DISTINCT n.idPersonal as idPersonal, 
+               (n.ApellidoPaterno + ' ' + n.ApellidoMaterno + ' ' + n.PrimerNombre + ' ' + n.SegundoNombre) As Nombre, 
+               n.Codigo
+        FROM DBO.Com_AsignacionDeVendedores a 
+        INNER JOIN DBO.Nomina n ON n.idPersonal = a.idPersonal
+        INNER JOIN dbo.Usuario u ON u.Nombre = n.Codigo
+        WHERE a.idCargo IN (2, 3, 7, 11, 20, 22, 23)
+          AND a.Bodega IN (@0, 82)
+        ORDER BY Nombre
+      `, [Bodega]);
+
+      
+      return result;
+    } catch (error) {
+      this.logger.error('Error al obtener todos los vendedores por bodega', error.stack);
+      throw new Error('Error al obtener vendedores por bodega');
+    }
+  }
 }

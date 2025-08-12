@@ -15,4 +15,10 @@ export class ExecSpController {
     return this.execSpService.findOne(Fecha, Bodega, Nivel);
   }
 
+  @Get('vendedores/bodega/:Bodega')
+  @Auth()
+  findVendedoresByBodega(@Param('Bodega') Bodega: number) {
+    return this.execSpService.findVendedoresByBodega(Bodega);
+  }
+
 }

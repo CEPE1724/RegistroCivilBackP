@@ -71,7 +71,7 @@ export class DocumentosSolicitudService {
 
     if (idEstadoVerificacionDocumental == 3) {
       return await this.documentosSolicitudRepository.find({
-        where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: In([5,4,1]) }
+        where: { idCre_SolicitudWeb: idSolicitud, idEstadoDocumento: In([5,4,1,2]) }
       });
     }
     
