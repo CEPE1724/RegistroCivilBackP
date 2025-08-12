@@ -98,7 +98,7 @@ export class CreateCreSolicitudWebDto {
     Celular: string;
 
     @IsString()
-    @MinLength(5)
+	@IsOptional()
     Email: string;
 
     @IsNumber()
