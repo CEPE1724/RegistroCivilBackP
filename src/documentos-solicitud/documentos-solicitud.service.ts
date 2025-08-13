@@ -178,7 +178,7 @@ export class DocumentosSolicitudService {
     const documentos = await this.documentosSolicitudRepository.find({
       where: {
         idCre_SolicitudWeb: idSolicitud,
-        idEstadoDocumento: 1, // Aprobado
+        idEstadoDocumento: In ([1, 2, 3]), // Consideramos documentos aprobados o en revisión
         idTipoDocumentoWEB: In([2, 12, 13, 26])
       }
     });
