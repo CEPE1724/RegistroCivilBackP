@@ -21,7 +21,7 @@ export class DocumentosSolicitudController {
   @Get('verificar-documentos-aprobados/:idSolicitud')
   @Auth()
 async verificarDocumentosAprobados(@Param('idSolicitud') idSolicitud: string) {
-  const result = await this.documentosSolicitudService.areThreeDocsApproved(Number(idSolicitud));
+  const result = await this.documentosSolicitudService.areRequiredDocsApproved(Number(idSolicitud));
   return { allThreeDocsApproved: result };
 }
 
