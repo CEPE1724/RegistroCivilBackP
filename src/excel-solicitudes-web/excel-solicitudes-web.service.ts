@@ -81,6 +81,8 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('AY3').value = 'Duración telefónica';
 	worksheet.getCell('AZ3').value = 'Nombre analista';
 	worksheet.getCell('BA3').value = 'Nombre operador';
+	worksheet.getCell('BB3').value = 'Persona que aprobó';
+	worksheet.getCell('BC3').value = 'Tiempo que aprobó';
 
 
     // formato encabezado
@@ -89,6 +91,12 @@ export class ExcelSolicitudesWebService {
     headerRow.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '4F81BD' } };
     headerRow.alignment = { horizontal: 'center', vertical: 'middle' };
 
+	//fechas a string
+	const toFechaHoraTexto = (value: any) => {
+  if (!value) return '';
+  const date = new Date(value);
+  return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.toTimeString().slice(0, 5)}`;
+};
 
     // 4. Insertar datos procedimiento almacenado
     data.forEach((item) => {
@@ -96,7 +104,7 @@ export class ExcelSolicitudesWebService {
     item.idCre_SolicitudWeb, 
     item.NumeroSolicitud, 
     item.Bodega, 
-    item.Fecha, 
+    toFechaHoraTexto(item.Fecha), 
     item.NombreCliente, 
     item.Cedula, 
     item.FechaNacimientoCliente,
@@ -110,42 +118,44 @@ export class ExcelSolicitudesWebService {
     item.EstadoCredito,
     item.Resultado,
     item.TipoCliente,
-    item.HoraInicioSolicitud,
+    toFechaHoraTexto(item.HoraInicioSolicitud),
     item.EstadoVerificacionSolicitud,
-    item.HoraFinSolicitud,
-    item.HoraCorreccionSolicitud_1,
-    item.HoraCorreccionSolicitud_2,
-    item.HoraCorreccionSolicitud_3,
-    item.HoraCorreccionSolicitud_4,
-    item.HoraCorreccionSolicitud_5,
-    item.HoraRevisionSolicitud_1,
-    item.HoraRevisionSolicitud_2,
-    item.HoraRevisionSolicitud_3,
-    item.HoraRevisionSolicitud_4,
-    item.HoraRevisionSolicitud_5,
-    item.HoraInicioDocumental,
+    toFechaHoraTexto(item.HoraFinSolicitud),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_1),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_2),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_3),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_4),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_5),
+    toFechaHoraTexto(item.HoraRevisionSolicitud_1),
+    toFechaHoraTexto(item.HoraRevisionSolicitud_2),
+    toFechaHoraTexto(item.HoraRevisionSolicitud_3),
+    toFechaHoraTexto(item.HoraRevisionSolicitud_4),
+    toFechaHoraTexto(item.HoraRevisionSolicitud_5),
+    toFechaHoraTexto(item.HoraInicioDocumental),
     item.EstadoVerificacionDocumental,
-    item.HorafinDocumental,
-    item.HoraCorreccionDocumental_1,
-    item.HoraCorreccionDocumental_2,
-    item.HoraCorreccionDocumental_3,
-    item.HoraCorreccionDocumental_4,
-    item.HoraCorreccionDocumental_5,
-    item.HoraRevisionDocumental_1,
-    item.HoraRevisionDocumental_2,
-    item.HoraRevisionDocumental_3,
-    item.HoraRevisionDocumental_4,
-    item.HoraRevisionDocumental_5,
-    item.HoraInicioTelefonica,
+    toFechaHoraTexto(item.HorafinDocumental),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_1),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_2),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_3),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_4),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_5),
+    toFechaHoraTexto(item.HoraRevisionDocumental_1),
+    toFechaHoraTexto(item.HoraRevisionDocumental_2),
+    toFechaHoraTexto(item.HoraRevisionDocumental_3),
+    toFechaHoraTexto(item.HoraRevisionDocumental_4),
+    toFechaHoraTexto(item.HoraRevisionDocumental_5),
+    toFechaHoraTexto(item.HoraInicioTelefonica),
     item.EstadoVerificacionTelefonica,
-    item.HoraFinTelefonica,
+    toFechaHoraTexto(item.HoraFinTelefonica),
     item.NombreVerificacionDomicilio,
     item.NombreVerificacionLaboral,
     item.DuracionSolicitud,
     item.Duraciondocumental,
     item.DuracionTelefonica,
     item.NombreAnalista,
-    item.NombreOperador
+    item.NombreOperador,
+	item.NombreAprobo,
+	toFechaHoraTexto(item.TiempoAprobo)
   ]);
 
   row.alignment = { horizontal: 'center', vertical: 'middle' };
