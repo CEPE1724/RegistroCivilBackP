@@ -161,11 +161,7 @@ export class CreSolicitudWebService {
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
       const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
-      // Emitir evento WebSocket
-      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
-        id: creSolicitudWeb.idCre_SolicitudWeb,
-        cambios: createCreSolicitudWebDto,
-      });
+      
 
       const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
 
@@ -176,34 +172,27 @@ export class CreSolicitudWebService {
           await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
         }
       }
-
       // Crear lugar de nacimiento primeor validar si exiten datos
       if (apiData.personaNatural.lugarNacimiento !== null && apiData.personaNatural.lugarNacimiento !== '') {
 
         await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
       }
-
       // Domicilio del cónyuge
       if (apiData.estadoCivil.estadoCivil.descripcion === 'CASADO') {
         console.log('Domicilio del cónyuge:', apiData);
         await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
         //  await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 2);
       }
-
       // Crear nacionalidades, profesiones y trabajos
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
-
 
       if (bApiDataTrabajo && trabajos && trabajos.length > 0 && trabajos[0].fechaActualizacion) {
         // Si tiene datos, se guarda la información
         console.log('Trabajos a guardar:', trabajos);
         await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
       }
-
       // 3. Si Equifax fue exitoso, crear y guardar la solicitud
-
-
 
       // 4. Ejecutar stored procedure
       const storedProcedureResult = await this.callStoredProcedureRetornaTipoCliente(cedula, idSolicitud);
@@ -215,6 +204,12 @@ export class CreSolicitudWebService {
       await this.creSolicitudWebRepository.update(idSolicitud, {
         idTipoCliente: tipoCliente || 0,
         Estado: estado,
+      });
+
+      // Emitir evento WebSocket
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+        id: creSolicitudWeb.idCre_SolicitudWeb,
+        cambios: createCreSolicitudWebDto,
       });
 
       return {
