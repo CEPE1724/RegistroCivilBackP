@@ -840,4 +840,14 @@ export class WebSolicitudgrande {
 	})
 	CelularInmediato: string;
 
+	@Column('varchar', {
+		default: ''
+	})
+	JefeInmediatoIndependiente: string;
+
+	@Column('varchar', {
+		default: ''
+	})
+	CelularInmediatoIndependiente: string;
+
 }
