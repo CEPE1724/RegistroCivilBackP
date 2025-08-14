@@ -74,15 +74,25 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('AR3').value = 'Hora inicio telefónica';
 	worksheet.getCell('AS3').value = 'Estado verificación telefónica';
 	worksheet.getCell('AT3').value = 'Hora fin telefónica';
-	worksheet.getCell('AU3').value = 'Nombre verificación domicilio';
-	worksheet.getCell('AV3').value = 'Nombre verificación laboral';
-	worksheet.getCell('AW3').value = 'Duración solicitud';
-	worksheet.getCell('AX3').value = 'Duración documental';
-	worksheet.getCell('AY3').value = 'Duración telefónica';
-	worksheet.getCell('AZ3').value = 'Nombre analista';
-	worksheet.getCell('BA3').value = 'Nombre operador';
-	worksheet.getCell('BB3').value = 'Persona que aprobó';
-	worksheet.getCell('BC3').value = 'Tiempo que aprobó';
+	worksheet.getCell('AU3').value = 'Hora corrección telefonica 1';
+	worksheet.getCell('AV3').value = 'Hora corrección telefonica 2';
+	worksheet.getCell('AW3').value = 'Hora corrección telefonica 3';
+	worksheet.getCell('AX3').value = 'Hora corrección telefonica 4';
+	worksheet.getCell('AY3').value = 'Hora corrección telefonica 5';
+	worksheet.getCell('AZ3').value = 'Hora revisión telefonica 1';
+	worksheet.getCell('BA3').value = 'Hora revisión telefonica 2';
+	worksheet.getCell('BB3').value = 'Hora revisión telefonica 3';
+	worksheet.getCell('BC3').value = 'Hora revisión telefonica 4';
+	worksheet.getCell('BD3').value = 'Hora revisión telefonica 5';
+	worksheet.getCell('BE3').value = 'Nombre verificación domicilio';
+	worksheet.getCell('BF3').value = 'Nombre verificación laboral';
+	worksheet.getCell('BG3').value = 'Duración solicitud';
+	worksheet.getCell('BH3').value = 'Duración documental';
+	worksheet.getCell('BI3').value = 'Duración telefónica';
+	worksheet.getCell('BJ3').value = 'Nombre analista';
+	worksheet.getCell('BK3').value = 'Nombre operador';
+	worksheet.getCell('BL3').value = 'Persona que aprobó';
+	worksheet.getCell('BM3').value = 'Tiempo que aprobó';
 
 
     // formato encabezado
@@ -147,6 +157,16 @@ export class ExcelSolicitudesWebService {
     toFechaHoraTexto(item.HoraInicioTelefonica),
     item.EstadoVerificacionTelefonica,
     toFechaHoraTexto(item.HoraFinTelefonica),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_1),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_2),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_3),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_4),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_5),
+	toFechaHoraTexto(item.HoraRevisionTelefonica_1),
+	toFechaHoraTexto(item.HoraRevisionTelefonica_2),
+	toFechaHoraTexto(item.HoraRevisionTelefonica_3),
+	toFechaHoraTexto(item.HoraRevisionTelefonica_4),
+	toFechaHoraTexto(item.HoraRevisionTelefonica_5),
     item.NombreVerificacionDomicilio,
     item.NombreVerificacionLaboral,
     item.DuracionSolicitud,

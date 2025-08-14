@@ -673,4 +673,12 @@ export class CreateWebSolicitudgrandeDto {
   @IsOptional()
   @IsString()
   readonly CelularNegocio?: string; 
+
+  @IsOptional()
+  @IsString()
+  readonly JefeInmediatoIndependiente?: string;
+
+  @IsOptional()
+  @IsString()
+  readonly CelularInmediatoIndependiente?: string;
 }
