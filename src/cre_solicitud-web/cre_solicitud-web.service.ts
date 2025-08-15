@@ -14,6 +14,7 @@ import { CreSolicitudwebWsService } from 'src/cre_solicitudweb-ws/cre_solicitudw
 import { SolicitudWebNotifierService } from './solicitud-web-notifier.service';
 import { EmailService } from 'src/email/email.service';
 import { Socket } from 'dgram';
+import { where } from 'sequelize';
 
 @Injectable()
 export class CreSolicitudWebService {
@@ -161,7 +162,7 @@ export class CreSolicitudWebService {
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
       const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
-      
+
 
       const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
 
@@ -322,6 +323,42 @@ export class CreSolicitudWebService {
     }
   }
 
+  async getMotivoContinuidad(Vendedor: number) {
+    // consultar solicitud web con idMotivoContinuidad = 0 i estado in [1,2] y devolver solo NumeroSolicitud-Cedula-Fecha and la fecha sea mayor a 13/08/2025 y menor al dia actual
+    //console .log('Vendedor:', Vendedor);
+    const fechaInicio = new Date('2025-08-17');
+    // Obtener la fecha actual en la zona horaria de Ecuador (UTC-5)
+    const fechaFin = new Date(
+      new Date(new Date().toLocaleString("en-US", { timeZone: "America/Guayaquil" }))
+        .setDate(new Date().getDate() - 1)
+    );
+    const queryBuilder = this.creSolicitudWebRepository
+      .createQueryBuilder('cre')
+      .select(['cre.NumeroSolicitud', 'cre.Cedula', 'cre.Fecha', 'cre.ApellidoMaterno',
+        'cre.ApellidoPaterno', 'cre.PrimerNombre', 'cre.SegundoNombre', 'cre.idCre_SolicitudWeb'
+
+
+      ])
+      .where('cre.idMotivoContinuidad = :idMotivoContinuidad', { idMotivoContinuidad: 0 })
+      .andWhere('cre.Estado IN (:...estados)', { estados: [1, 2] })
+      .andWhere('CONVERT(date, cre.Fecha) BETWEEN :fechaInicio AND :fechaFin', { fechaInicio, fechaFin });
+    
+    if (Vendedor > 0) {
+      queryBuilder.andWhere('cre.idVendedor = :Vendedor', { Vendedor });
+    }
+    
+    queryBuilder.orderBy('cre.Fecha', 'DESC');
+
+    // count de registros
+    const totalCount = await queryBuilder.getCount();
+    // Ejecutar la consulta para obtener los resultados
+    const creSolicitudWeb = await queryBuilder.getMany();
+    // Retornar los resultados con el total count
+    return {
+      totalCount,
+      data: creSolicitudWeb,
+    };
+  }
 
 
   async findAllFilter(filterCreSolicitudWebDto: FilterCreSolicitudWebDto) {

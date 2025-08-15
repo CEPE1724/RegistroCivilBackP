@@ -122,5 +122,10 @@ export class CreSolicitudWebController {
     return await this.creSolicitudWebService.getSolicitudCogno(Cedula);
   }
 
+  @Get('MotivoContinuidad/:Vendedor')
+  //@Auth()
+  async getMotivoContinuidad(@Param('Vendedor') Vendedor: number) {
+    return await this.creSolicitudWebService.getMotivoContinuidad(Vendedor);
+  }
 
 }
