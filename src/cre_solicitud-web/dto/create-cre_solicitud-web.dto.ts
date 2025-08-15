@@ -204,6 +204,10 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     PDFTerrena: string;
 
+    @IsNumber()
+    @IsOptional()
+    idMotivoContinuidad: number;
+
   
 
     

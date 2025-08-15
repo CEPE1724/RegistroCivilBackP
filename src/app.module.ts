@@ -125,6 +125,7 @@ import { StoreReportsPhoneVerificationModule } from './store-reports-phone-verif
 import { CreProductoSolicitudModule } from './cre-producto-solicitud/cre-producto-solicitud.module';
 import { CompraModule } from './compra/compra.module';
 import { ExcelSolicitudesWebModule } from './excel-solicitudes-web/excel-solicitudes-web.module';
+import { MotivoContinuidadModule } from './motivo-continuidad/motivo-continuidad.module';
 
 
 
@@ -323,6 +324,8 @@ import { ExcelSolicitudesWebModule } from './excel-solicitudes-web/excel-solicit
     CompraModule,
 
     ExcelSolicitudesWebModule,
+
+    MotivoContinuidadModule,
 
 
 

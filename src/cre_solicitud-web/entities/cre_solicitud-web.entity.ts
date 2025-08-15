@@ -134,9 +134,8 @@ export class CreSolicitudWeb {
     @Column('varchar')
     PDFTerrena: string;
 
-
-   
-    
+    @Column('int')
+    idMotivoContinuidad: number;
 
     @BeforeInsert()
     upperApellidos() {

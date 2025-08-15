@@ -13,7 +13,7 @@ export class CreSolicitudWebController {
   constructor(private readonly creSolicitudWebService: CreSolicitudWebService) { }
 
   @Post()
-  //@Auth()
+  @Auth()
   create(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
