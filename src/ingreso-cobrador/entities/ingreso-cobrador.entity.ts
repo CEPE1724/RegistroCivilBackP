@@ -27,6 +27,23 @@ export class IngresoCobrador {
 	})
 	Nombre: string;
 
+	@Column('datetime', {
+		nullable: true
+	})
+	FechaSalida: Date;
+
+	@Column('datetime', {
+		nullable: true
+	})
+	FechaIngreso: Date;
+  /* idCom_Estado */
+	
+	@Column('int', {
+		nullable: true
+	})
+	idCom_Estado: number;
+
+
 	@OneToMany(() => DispositivosApp, dispositivo => dispositivo.ingresoCobrador)
 	dispositivos: DispositivosApp[];
 }

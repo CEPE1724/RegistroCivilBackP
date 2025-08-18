@@ -15,18 +15,25 @@ export class IngresoCobradorService {
 		private readonly ingresoCobradorRepository: Repository<IngresoCobrador>,
 	) { }
 
-	findAll() {
-		return this.ingresoCobradorRepository.find({
-			where: { idIngresoCobrador: Not(271),},
-			relations: ['dispositivos'],
-			select: {
-				idIngresoCobrador: true,
-				Nombre: true,
-				dispositivos: {
-					TokenExpo: true
+	async findAll() {
+		try {
+			return await this.ingresoCobradorRepository.find({
+				where: {
+					idIngresoCobrador: Not(271),
+					idCom_Estado: Not(2)
+				},
+				relations: ['dispositivos'],
+				select: {
+					idIngresoCobrador: true,
+					Nombre: true,
+					dispositivos: {
+						TokenExpo: true
+					}
 				}
-			}
-		});
+			});
+		} catch (error) {
+			this.handleDBException(error);
+		}
 	}
 
 	private handleDBException(error: any) {
