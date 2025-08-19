@@ -18,6 +18,13 @@ export class IngresoCobradorController {
   findAll() {
     return this.ingresoCobradorService.findAll();
   }
+ // listado por zona CON DOS PARAMETROS idCre_SolicitudWeb e idDomicilio
+  @Get('zona/:idCre_SolicitudWeb/:idDomicilio')
+  @Auth()
+  findAllZona(@Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number, @Param('idDomicilio') idDomicilio: number) {
+    return this.ingresoCobradorService.findAllZona(idCre_SolicitudWeb, idDomicilio);
+  }
+  
 
 //   @Get(':id')
 //   findOne(@Param('id') id: string) {

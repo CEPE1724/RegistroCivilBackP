@@ -36,6 +36,41 @@ export class IngresoCobradorService {
 		}
 	}
 
+
+	/* PROCEIDMIENTO ALMACENADO PARA TRAER LOS COBRADORES POR ZONA */
+	/*ALTER PROCEDURE [dbo].[RetornaVerificadorSolicitudWeb]
+	@idCre_SolicitudWeb int, @iDomicilio int 
+AS*/
+	async findAllZona(idCre_SolicitudWeb: number, idDomicilio: number) {
+		if (idCre_SolicitudWeb == null || idCre_SolicitudWeb == undefined) {
+			throw new BadRequestException('El parámetro idCre_SolicitudWeb no puede ser nulo o indefinido');
+		}
+		if (idDomicilio == null || idDomicilio == undefined) {
+			throw new BadRequestException('El parámetro idDomicilio no puede ser nulo o indefinido');
+		}
+
+		try {
+			const query = `EXEC RetornaVerificadorSolicitudWeb @idCre_SolicitudWeb = ${idCre_SolicitudWeb}, @iDomicilio = ${idDomicilio}`;
+			const result = await this.ingresoCobradorRepository.query(query);
+
+			// Mapear el resultado al formato requerido
+			const mapped = result.map(row => ({
+				idIngresoCobrador: row.idIngresoCobrador,
+				Nombre: row.Nombre,
+				dispositivos: [
+					{
+						TokenExpo: row.TokenExpo || ""
+					}
+				]
+			}));
+
+			return mapped;
+		} catch (error) {
+			this.handleDBException(error);
+		}
+	}
+
+
 	private handleDBException(error: any) {
 		if (error.code === '23505') {
 			throw new BadRequestException(error.detail);
