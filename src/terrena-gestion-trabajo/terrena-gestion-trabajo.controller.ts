@@ -15,8 +15,13 @@ export class TerrenaGestionTrabajoController {
     return this.terrenaGestionTrabajoService.findOne(+id);
   }
 
-
-
+  @Patch('/tipo-verificacion/:id')
+  @Auth()
+  async updateTipoVerificacion(
+	@Param('id') id: number, 
+	@Body() {tipoVerificacion}: {tipoVerificacion: number}) {
+	return this.terrenaGestionTrabajoService.updateTipoVerificacion(+id, +tipoVerificacion);
+  }
 
 
 }

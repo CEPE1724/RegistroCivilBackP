@@ -137,6 +137,12 @@ export class CreSolicitudWeb {
     @Column('int')
     idMotivoContinuidad: number;
 
+	@Column('date')
+	FechaIngreso: Date;
+
+	@Column('date')
+	FechaAfiliacionHasta: Date;
+
     @BeforeInsert()
     upperApellidos() {
         if (this.ApellidoMaterno) {
