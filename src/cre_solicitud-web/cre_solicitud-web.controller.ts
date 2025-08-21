@@ -18,6 +18,12 @@ export class CreSolicitudWebController {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
+/* para el eccommerce*/
+  @Post('web')
+  createweb(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+
+    return this.creSolicitudWebService.create(createCreSolicitudWebDto);
+  }
 
   @Get('verificar-cedula-bodega')
   @Auth()
