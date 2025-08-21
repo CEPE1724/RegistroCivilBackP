@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Query, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ExcelSolicitudesWebService } from './excel-solicitudes-web.service';
 import { Auth } from 'src/auth/decorators';
@@ -9,7 +9,11 @@ export class ExcelSolicitudesWebController {
   
   @Get('export-excel')
   @Auth() 
-  async exportExcel(@Res() res: Response) {
-    await this.excelSolicitudesWebService.generateExcel(res);
+  async exportExcel(@Res() res: Response, @Query('BodegaId') BodegaId?: number,
+    @Query('Fecha') Fecha?: string,) {
+    await this.excelSolicitudesWebService.generateExcel(res, {
+      BodegaId,
+      Fecha,
+    });
   }
 }
