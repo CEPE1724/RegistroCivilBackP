@@ -9,9 +9,22 @@ export class ExcelSolicitudesWebService {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  async generateExcel(res: any) {
+  async generateExcel(res: any, filtros: { BodegaId?: number; Fecha?: string }) {
     // 1. Ejecutar el procedimiento almacenado "CrearReporteSolicitudesWeb"
-    const query = 'EXEC CrearReporteSolicitudesWeb';
+    let query = 'EXEC CrearReporteSolicitudesWeb';
+
+	const params: string[] = [];
+
+	if (filtros.BodegaId) {
+      params.push(`@BodegaId = ${filtros.BodegaId}`);
+    }
+    if (filtros.Fecha) {
+      params.push(`@Fecha = '${filtros.Fecha}'`);
+    }
+
+	if (params.length > 0) {
+      query += ' ' + params.join(', ');
+    }
 
     let data: any[] = [];
 
@@ -93,6 +106,8 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('BK3').value = 'Nombre operador';
 	worksheet.getCell('BL3').value = 'Persona que aprobó';
 	worksheet.getCell('BM3').value = 'Tiempo que aprobó';
+	worksheet.getCell('BN3').value = 'Verificación Domicilio';
+	worksheet.getCell('BO3').value = 'Verificación Laboral';
 
 
     // formato encabezado
@@ -175,7 +190,9 @@ export class ExcelSolicitudesWebService {
     item.NombreAnalista,
     item.NombreOperador,
 	item.NombreAprobo,
-	toFechaHoraTexto(item.TiempoAprobo)
+	toFechaHoraTexto(item.TiempoAprobo),
+	item.VerificacionDomicilio,
+	item.VerificacionLaboral,
   ]);
 
   row.alignment = { horizontal: 'center', vertical: 'middle' };
