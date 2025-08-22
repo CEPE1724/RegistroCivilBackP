@@ -1,5 +1,5 @@
 
-import { IsNotEmpty, IsString, IsBoolean } from 'class-validator';
+import { IsNotEmpty, IsString, IsBoolean, IsNumber } from 'class-validator';
 import { Length, Matches } from 'class-validator';
 export class CreateOtpcodigoDto {
     @IsString()
@@ -35,5 +35,10 @@ export class CreateOtpcodigoDto {
     @IsString()
     @Length(500, 500)
     mensaje: string;
+
+    @IsNumber()
+    @IsNotEmpty()
+    idTipoOTP: number;
+
 }
 

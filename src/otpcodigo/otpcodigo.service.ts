@@ -91,6 +91,7 @@ export class OtpcodigoService {
       errorinfo: smsResponse.errorinfo || '',
       refid: String(smsResponse.refid || ''),
       mensaje: smsResponse.mensaje || '',
+      idTipoOTP: 1, // Asignar un valor predeterminado o ajustarlo según tu lógica
     });
 
     try {

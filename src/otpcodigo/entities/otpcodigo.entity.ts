@@ -37,6 +37,9 @@ export class Otpcodigo {
     @Column({ type: 'nvarchar', length: 500, nullable: true })
     mensaje: string;
 
+    @Column({ type: 'int', nullable: false })
+    idTipoOTP: number;
+
 
 
 
