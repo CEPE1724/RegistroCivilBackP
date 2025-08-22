@@ -1,4 +1,5 @@
 
+import { Col } from 'sequelize/types/utils';
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
 @Entity('OTP_CODIGO')
@@ -23,6 +24,20 @@ export class Otpcodigo {
 
     @Column({ type: 'bit', nullable: false })
     is_verified: boolean;
+
+    @Column({ type: 'nvarchar', length: 50, nullable: true })
+    cod_error: string;
+
+    @Column({ type: 'nvarchar', length: 500, nullable: true })
+    errorinfo: string;
+
+    @Column({ type: 'nvarchar', length: 50, nullable: true })
+    refid: string;
+
+    @Column({ type: 'nvarchar', length: 500, nullable: true })
+    mensaje: string;
+
+
 
 
 }

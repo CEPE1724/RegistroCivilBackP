@@ -16,7 +16,7 @@ export class OtpcodigoService {
   ) { }
 
   // Función para enviar el mensaje con el OTP
-  private async sendOtpMessage(phoneNumber: string, otpCode: string): Promise<{ cod_error: number, errorinfo: string }> {
+  private async sendOtpMessage(phoneNumber: string, otpCode: string): Promise<{ cod_error: number, errorinfo: string, refid?: string, mensaje?: string }> {
     const postData = {
       user: "Point@massend.com",
       pass: "CompuPoint$2023",
@@ -32,15 +32,19 @@ export class OtpcodigoService {
       const response = await axios.post('https://api.massend.com/api/sms', postData, {
         headers: { 'Content-Type': 'application/json' }
       });
-
+      const { RefError = {}, RefEnvio = {} } = response.data || {};
       // Aquí devolvemos la respuesta esperada { cod_error, errorinfo }
       return {
-        cod_error: response.data.cod_error, // Se asume que esta propiedad existe en la respuesta
-        errorinfo: response.data.errorinfo || '', // Si errorinfo está vacío, se maneja como cadena vacía
+        cod_error: RefError.cod_error || 500, // Se asume que esta propiedad existe en la respuesta
+        errorinfo: RefError.errorinfo || '', // Si errorinfo está vacío, se maneja como cadena vacía
+        refid: RefEnvio.refid || '', // Si refid está vacío, se maneja como cadena vacía
+        mensaje: RefEnvio.mensaje || '' // Si mensaje está vacío, se maneja como cadena vacía
       };
     } catch (error) {
-      console.error("Error al enviar mensaje:", error);
-      return { cod_error: 500, errorinfo: "Error al enviar el mensaje." }; // 500 como código de error genérico en caso de fallo
+      return {
+        cod_error: 500, errorinfo: "Error al enviar el mensaje.",
+        refid: '', mensaje: ''
+      }; // 500 como código de error genérico en caso de fallo
     }
   }
 
@@ -61,35 +65,40 @@ export class OtpcodigoService {
       await this.otpRepository.save(existingOtp);
     }
 
-
-
-
-
     const otpCode = Math.floor(10000 + Math.random() * 90000).toString(); // OTP de 5 dígitos
     const expiresAt = new Date();
     expiresAt.setMinutes(expiresAt.getMinutes() + 5); // Expira en 5 minutos
 
+
+
+    // if email exists, send email
+    if (email) {
+      try {
+        await this.emailService.sendOtpEmail(email, nombreCompleto, otpCode, phoneNumber);
+      } catch (err) {
+        console.error('Fallo al enviar OTP por correo:', err);
+      }
+    }
+    // Enviar mensaje SMS con el OTP
+    const smsResponse = await this.sendOtpMessage(phoneNumber, otpCode);
+
     const otp = this.otpRepository.create({
-      phone_number: phoneNumber,
+      phone_number: phoneNumber, // asegúrate que exista como tal
       otp_code: otpCode,
       created_at: new Date(),
       expires_at: expiresAt,
+      cod_error: String(smsResponse.cod_error), // convertir si la entidad espera string
+      errorinfo: smsResponse.errorinfo || '',
+      refid: String(smsResponse.refid || ''),
+      mensaje: smsResponse.mensaje || '',
     });
 
-    await this.otpRepository.save(otp);
-
-
     try {
-      await this.emailService.sendOtpEmail(email, nombreCompleto, otpCode, phoneNumber);
-    } catch (err) {
-      console.error('Fallo al enviar OTP por correo:', err);
+      await this.otpRepository.save(otp);
+    } catch (error) {
+      console.error('Error al guardar OTP:', error);
+      throw new Error('Error interno al guardar el OTP');
     }
-    // Enviar mensaje SMS con el OTP
-    await this.sendOtpMessage(phoneNumber, otpCode);
-
-    // Verificamos el estado de la respuesta de la API
-
-
     return otpCode; // El OTP fue enviado correctamente
 
   }
