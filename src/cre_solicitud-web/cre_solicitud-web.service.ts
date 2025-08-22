@@ -70,6 +70,24 @@ export class CreSolicitudWebService {
 
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     try {
+
+
+      /* consultar cedula en cre_solicitud_web  con estado in (1,2)*/
+      const existingSolicitud = await this.creSolicitudWebRepository.findOne({
+        where: {
+          Cedula: createCreSolicitudWebDto.Cedula,
+          Estado: In([1, 2]),
+        },
+      });
+
+      if (existingSolicitud) {
+        return {
+          success: false,
+          mensaje: `Ya existe una solicitud activa (N° ${existingSolicitud.NumeroSolicitud}) para la cédula ${createCreSolicitudWebDto.Cedula}. No se puede crear una nueva solicitud.`,
+          errorOrigen: 'SolicitudExistente',
+          data: null,
+        };
+      }
       const cedula = createCreSolicitudWebDto.Cedula;
       let debeConsultarEquifax = false;
 

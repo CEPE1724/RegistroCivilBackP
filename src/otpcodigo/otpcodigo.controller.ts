@@ -7,7 +7,7 @@ export class OtpController {
   constructor(private readonly otpService: OtpcodigoService) {}
 
 @Post('generate')
-// @Auth() ← Descomenta si quieres que requiera autenticación
+@Auth() 
 async generateOtp(
   @Body('phoneNumber') phoneNumber: string,
   @Body('email') email: string,
