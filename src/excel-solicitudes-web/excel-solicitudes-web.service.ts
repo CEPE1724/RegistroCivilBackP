@@ -120,7 +120,7 @@ export class ExcelSolicitudesWebService {
 	const toFechaHoraTexto = (value: any) => {
   if (!value) return '';
   const date = new Date(value);
-  return `${date.getFullYear()}-${(date.getMonth()+1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.toTimeString().slice(0, 5)}`;
+  return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.toTimeString().slice(0, 8)}`;
 };
 
     // 4. Insertar datos procedimiento almacenado
