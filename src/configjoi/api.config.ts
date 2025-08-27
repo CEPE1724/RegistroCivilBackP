@@ -35,5 +35,12 @@ export const ApiConfig = () => ({
     google: {
       urlkeygoogle: process.env.GOOGLE_CLOUD_KEYFILE,
     },
+    equifax: {
+      EQFX_UAT: process.env.EQFX_UAT,
+      EQFX_UAT_url: process.env.EQFX_UAT_url,
+      EQFX_UAT_token: process.env.EQFX_UAT_token,
+
+    },
+    
   });
   

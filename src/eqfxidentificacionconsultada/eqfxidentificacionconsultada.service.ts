@@ -30,6 +30,24 @@ export class EqfxidentificacionconsultadaService {
     };
   }
 
+   async findOneUAT(NumeroDocumento: string) {
+    const result = await this.eqfxidentificacionconsultadaRepository.findOne({
+       where: { NumeroDocumento, UAT: 1 },
+       order: { idEQFX_IdentificacionConsultada: 'DESC' } });
+    if (!result) {
+      // Lanzamos una excepción si no se encuentra el documento
+      return {
+        success: false,
+        message: `No se encontró ningún documento con el número: ${NumeroDocumento}`,
+      };
+    }
+    return {
+      success: true,
+      data: result,
+    };
+  }
+
+
   private handleDBException(error: any) {
     if (error.code === '23505') {
       throw new BadRequestException(error.detail);

@@ -21,4 +21,7 @@ export const JoinValidationSchema = Joi.object({
   KEYCLOAK_USERNAME: Joi.string().required(),
   KEYCLOAK_PASSWORD: Joi.string().required(),
   GOOGLE_CLOUD_KEYFILE: Joi.string().required(),
+  EQFX_UAT: Joi.number().required(),
+  EQFX_UAT_url: Joi.string().required(),
+  EQFX_UAT_token: Joi.string().required(),
 });

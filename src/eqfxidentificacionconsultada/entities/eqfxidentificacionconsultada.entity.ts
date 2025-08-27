@@ -34,5 +34,7 @@ export class Eqfxidentificacionconsultada {
     @Column({ length: 50, default: () => 'SUSER_NAME()' })
     Usuario: string;
 
+    @Column({ type: 'int', nullable: true })
+    UAT: number;
 
 }

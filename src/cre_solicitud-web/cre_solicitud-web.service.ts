@@ -18,7 +18,9 @@ import { where } from 'sequelize';
 
 @Injectable()
 export class CreSolicitudWebService {
-
+  private readonly EQFX_UAT = process.env.EQFX_UAT;
+  private readonly EQFX_UAT_url = process.env.EQFX_UAT_url;
+  private readonly EQFX_UAT_token = process.env.EQFX_UAT_token;
   private readonly logger = new Logger('CreSolicitudWebService');
 
   constructor(
@@ -52,6 +54,26 @@ export class CreSolicitudWebService {
     }
   }
 
+   private async EquifaxDataUAT(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
+    const PostData = {
+      tipoDocumento: tipoDocumento,
+      numeroDocumento: numeroDocumento
+    };
+    try {
+      const response = await axios.post(this.EQFX_UAT_url, PostData, {
+        headers: { 'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.EQFX_UAT_token}`
+        }
+      });
+      return {
+        success: true,
+        message: response.data.message
+      };
+    } catch (error) {
+      console.error("Error al obtener datos de Equifax:", error);
+      return { success: false, message: "Error al obtener datos de Equifax." };
+    }
+  }
   private async callStoredProcedureRetornaTipoCliente(cedula: string, idSolicitud: number): Promise<any> {
     try {
 
@@ -70,8 +92,6 @@ export class CreSolicitudWebService {
 
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     try {
-
-
       /* consultar cedula en cre_solicitud_web  con estado in (1,2)*/
       const existingSolicitud = await this.creSolicitudWebRepository.findOne({
         where: {
@@ -90,9 +110,11 @@ export class CreSolicitudWebService {
       }
       const cedula = createCreSolicitudWebDto.Cedula;
       let debeConsultarEquifax = false;
-
+  
       // 1. Consultar Equifax local
-      const eqfxData = await this.eqfxidentificacionconsultadaService.findOne(cedula);
+      let eqfxData = this.EQFX_UAT
+        ? await this.eqfxidentificacionconsultadaService.findOneUAT(cedula)
+        : await this.eqfxidentificacionconsultadaService.findOne(cedula);
 
       if (eqfxData.success) {
         const FechaConsulta = eqfxData.data.FechaSistema;
@@ -110,7 +132,10 @@ export class CreSolicitudWebService {
 
       // 2. Si es necesario, consultar Equifax externo
       if (debeConsultarEquifax) {
-        const equifaxResult = await this.EquifaxData('C', cedula);
+         let equifaxResult = this.EQFX_UAT
+        ? await this.EquifaxDataUAT('C', cedula)
+        : await this.EquifaxData('C', cedula);
+      
 
         if (!equifaxResult.success) {
           // NO lanzar excepción. En su lugar, devolver respuesta clara al frontend.
@@ -360,11 +385,11 @@ export class CreSolicitudWebService {
       .where('cre.idMotivoContinuidad = :idMotivoContinuidad', { idMotivoContinuidad: 0 })
       .andWhere('cre.Estado IN (:...estados)', { estados: [1, 2] })
       .andWhere('CONVERT(date, cre.Fecha) BETWEEN :fechaInicio AND :fechaFin', { fechaInicio, fechaFin });
-    
+
     if (Vendedor > 0) {
       queryBuilder.andWhere('cre.idVendedor = :Vendedor', { Vendedor });
     }
-    
+
     queryBuilder.orderBy('cre.Fecha', 'DESC');
 
     // count de registros
