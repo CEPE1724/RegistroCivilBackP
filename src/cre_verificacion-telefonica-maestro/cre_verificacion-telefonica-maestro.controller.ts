@@ -20,4 +20,9 @@ export class CreVerificacionTelefonicaMaestroController {
   create(@Body() createCreVerificacionTelefonicaMaestroDto: CreateCreVerificacionTelefonicaMaestroDto) {
     return this.creVerificacionTelefonicaMaestroService.create(createCreVerificacionTelefonicaMaestroDto);
   }
+  @Patch(':idCre_VerificacionTelefonicaMaestro')
+  @Auth()
+  update(@Param('idCre_VerificacionTelefonicaMaestro') id: string, @Body() updateCreVerificacionTelefonicaMaestroDto: UpdateCreVerificacionTelefonicaMaestroDto) {
+    return this.creVerificacionTelefonicaMaestroService.update(+id, updateCreVerificacionTelefonicaMaestroDto);
+  }
 }

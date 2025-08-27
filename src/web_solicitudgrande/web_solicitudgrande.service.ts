@@ -17,16 +17,16 @@ export class WebSolicitudgrandeService {
   constructor(
     @InjectRepository(WebSolicitudgrande)
     private webSolicitudgrandeRepository: Repository<WebSolicitudgrande>,
-  ) {}
+  ) { }
 
   create(createWebSolicitudgrandeDto: CreateWebSolicitudgrandeDto) {
     try {
-		const dtoTransformado: any = {
-			...createWebSolicitudgrandeDto,
-			ValorInmmueble: createWebSolicitudgrandeDto.ValorInmmueble
-			  ? parseFloat(createWebSolicitudgrandeDto.ValorInmmueble)
-			  : undefined,
-		  };
+      const dtoTransformado: any = {
+        ...createWebSolicitudgrandeDto,
+        ValorInmmueble: createWebSolicitudgrandeDto.ValorInmmueble
+          ? parseFloat(createWebSolicitudgrandeDto.ValorInmmueble)
+          : undefined,
+      };
       const newSolicitud = this.webSolicitudgrandeRepository.create(dtoTransformado);
       return this.webSolicitudgrandeRepository.save(newSolicitud);
     } catch (error) {
@@ -34,23 +34,24 @@ export class WebSolicitudgrandeService {
       throw new InternalServerErrorException('Error en el servidor');
     }
   }
-   
+
   findAll() {
     return `This action returns all webSolicitudgrande`;
   }
 
   findOne(id: number, numerosolicitud: string) {
 
-    return this.webSolicitudgrandeRepository.findOne({ where: {  NumeroSolicitud:numerosolicitud } });
+    return this.webSolicitudgrandeRepository.findOne({ where: { NumeroSolicitud: numerosolicitud } });
   }
 
   update(id: number, updateWebSolicitudgrandeDto: UpdateWebSolicitudgrandeDto) {
-	const dtoTransformado: any = {
-		...updateWebSolicitudgrandeDto,
-		ValorInmmueble: updateWebSolicitudgrandeDto.ValorInmmueble
-		  ? parseFloat(updateWebSolicitudgrandeDto.ValorInmmueble)
-		  : undefined,
-	  };
+    console.log('DTO recibido para update:', updateWebSolicitudgrandeDto);
+    const dtoTransformado: any = {
+      ...updateWebSolicitudgrandeDto,
+      ValorInmmueble: updateWebSolicitudgrandeDto.ValorInmmueble
+        ? parseFloat(updateWebSolicitudgrandeDto.ValorInmmueble)
+        : undefined,
+    };
     return this.webSolicitudgrandeRepository.update(
       { idWeb_SolicitudGrande: id },
       { ...dtoTransformado },
@@ -59,49 +60,94 @@ export class WebSolicitudgrandeService {
 
   }
 
- //update al campo CuotaAsignada y Cupo
-async updateCuotayCupo(id: number, updateDto: UpdateCuotaYCupoDto) {
-  try {
-    // Verificar si la solicitud existe
-    const exists = await this.webSolicitudgrandeRepository.existsBy({ 
-      idWeb_SolicitudGrande: id 
-    });
-    
-    if (!exists) {
-      throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
-    }
-    // Actualizar solo los campos proporcionados
-    const updateData: Partial<WebSolicitudgrande> = {};
-    
-    if (updateDto.CuotaAsignada !== undefined) {
-      updateData.CuotaAsignada = updateDto.CuotaAsignada;
-    }
-    
-    if (updateDto.Cupo !== undefined) {
-      updateData.Cupo = updateDto.Cupo;
-    }
+  //update al campo CuotaAsignada y Cupo
+  async updateCuotayCupo(id: number, updateDto: UpdateCuotaYCupoDto) {
+    try {
+      // Verificar si la solicitud existe
+      const exists = await this.webSolicitudgrandeRepository.existsBy({
+        idWeb_SolicitudGrande: id
+      });
 
-    // Ejecutar la actualización
-    const result = await this.webSolicitudgrandeRepository.update(
-      { idWeb_SolicitudGrande: id },
-      updateData
-    );
+      if (!exists) {
+        throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      }
+      // Actualizar solo los campos proporcionados
+      const updateData: Partial<WebSolicitudgrande> = {};
 
-    if (result.affected === 0) {
-      throw new NotFoundException(`No se pudo actualizar la solicitud con ID ${id}`);
-    }
+      if (updateDto.CuotaAsignada !== undefined) {
+        updateData.CuotaAsignada = updateDto.CuotaAsignada;
+      }
 
-    return { success: true, message: 'Actualización exitosa' };
-  } catch (error) {
-    this.logger.error(error.message, error.stack);
-    if (error instanceof NotFoundException) {
-      throw error;
+      if (updateDto.Cupo !== undefined) {
+        updateData.Cupo = updateDto.Cupo;
+      }
+
+      // Ejecutar la actualización
+      const result = await this.webSolicitudgrandeRepository.update(
+        { idWeb_SolicitudGrande: id },
+        updateData
+      );
+
+      if (result.affected === 0) {
+        throw new NotFoundException(`No se pudo actualizar la solicitud con ID ${id}`);
+      }
+
+      return { success: true, message: 'Actualización exitosa' };
+    } catch (error) {
+      this.logger.error(error.message, error.stack);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error actualizando cuota y cupo');
     }
-    throw new InternalServerErrorException('Error actualizando cuota y cupo');
   }
+
+ 
+  async updateCamposWebSolicitud(id: number, updateDto: CreateWebSolicitudgrandeDto) {
+    try {
+      // Verificar si la solicitud existe
+      const exists = await this.webSolicitudgrandeRepository.existsBy({
+        idWeb_SolicitudGrande: id
+      });
+
+      if (!exists) {
+        throw new NotFoundException(`Solicitud con ID ${id} no encontrada`);
+      }
+      // Actualizar solo los campos proporcionados
+      const updateData: Partial<WebSolicitudgrande> = {
+        ...updateDto,
+        ValorInmmueble: updateDto.ValorInmmueble !== undefined
+          ? parseFloat(updateDto.ValorInmmueble as any)
+          : undefined,
+      };
+
+      // Ejecutar la actualización
+      const result = await this.webSolicitudgrandeRepository.update(
+        { idWeb_SolicitudGrande: id },
+        updateData
+      );
+
+      if (result.affected === 0) {
+        throw new NotFoundException(`No se pudo actualizar la solicitud con ID ${id}`);
+      }
+
+      return { success: true, message: 'Actualización exitosa' };
+    }
+    catch (error) {
+      this.logger.error(error.message, error.stack);
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+      throw new InternalServerErrorException('Error actualizando campos de la solicitud');
+    }
   }
+
+
+
 
   remove(id: number) {
     return `This action removes a #${id} webSolicitudgrande`;
   }
 }
+
+

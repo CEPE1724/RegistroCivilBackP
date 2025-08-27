@@ -7,7 +7,7 @@ import { Auth } from 'src/auth/decorators';
 
 @Controller('web-solicitudgrande')
 export class WebSolicitudgrandeController {
-  constructor(private readonly webSolicitudgrandeService: WebSolicitudgrandeService) {}
+  constructor(private readonly webSolicitudgrandeService: WebSolicitudgrandeService) { }
 
   @Post()
   @Auth()
@@ -33,14 +33,17 @@ export class WebSolicitudgrandeController {
     return this.webSolicitudgrandeService.update(+id, updateWebSolicitudgrandeDto);
   }
 
-@Patch('updatecuotaycupo/:id')
-@Auth()
-updateCuotayCupo(@Param('id') id: string, @Body() updateDto: UpdateCuotaYCupoDto) {
-  const idNumber = parseInt(id, 10);
-  if (isNaN(idNumber)) {
-    throw new BadRequestException('ID debe ser un número válido');
+  @Patch('updatecuotaycupo/:id')
+  @Auth()
+  updateCuotayCupo(@Param('id') id: string, @Body() updateDto: UpdateCuotaYCupoDto) {
+    const idNumber = parseInt(id, 10);
+    if (isNaN(idNumber)) {
+      throw new BadRequestException('ID debe ser un número válido');
+    }
+
+    return this.webSolicitudgrandeService.updateCuotayCupo(idNumber, updateDto);
   }
 
-  return this.webSolicitudgrandeService.updateCuotayCupo(idNumber, updateDto);
-  }
+ 
+
 }

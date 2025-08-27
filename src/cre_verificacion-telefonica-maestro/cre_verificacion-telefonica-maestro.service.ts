@@ -29,5 +29,14 @@ async create(createCreVerificacionTelefonicaMaestroDto: CreateCreVerificacionTel
   }
 
 }
+async update(idCre_VerificacionTelefonicaMaestro: number, updateCreVerificacionTelefonicaMaestroDto: UpdateCreVerificacionTelefonicaMaestroDto) {
+  try {
+    await this.creVerificacionTelefonicaMaestroRepository.update(idCre_VerificacionTelefonicaMaestro, updateCreVerificacionTelefonicaMaestroDto);
+    return await this.creVerificacionTelefonicaMaestroRepository.findOneBy({ idCre_VerificacionTelefonicaMaestro });
+  } catch (error) {
+    this.logger.error('Error updating record', error);
+    throw error;
+  }
+}
 }
 
