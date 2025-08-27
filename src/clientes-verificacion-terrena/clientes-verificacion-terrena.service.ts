@@ -98,7 +98,7 @@ export class ClientesVerificacionTerrenaService {
 					bDomicilio: true,
 					//iEstado: 0
 				},
-				select: ['idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
+				select: ['idClienteVerificacion', 'idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
 			});
 		} else {
 			return await this.clientesVerificacionTerrenaRepository.findOne({
@@ -107,7 +107,7 @@ export class ClientesVerificacionTerrenaService {
 					bTrabajo: true,
 					//iEstado: 0
 				},
-				select: ['idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
+				select: ['idClienteVerificacion', 'idTerrenaGestionDomicilio', 'idTerrenaGestionTrabajo'],
 			});
 
 		}
