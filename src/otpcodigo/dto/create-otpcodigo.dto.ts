@@ -40,5 +40,13 @@ export class CreateOtpcodigoDto {
     @IsNotEmpty()
     idTipoOTP: number;
 
+    @IsNumber()
+    @IsNotEmpty()
+    Bodega: number;
+
+    @IsString()
+    @Length(50, 50)
+    Cedula: string;
+
 }
 

@@ -49,7 +49,23 @@ export class OtpcodigoService {
   }
 
   // Generar un código OTP para el número de teléfono del usuario
-  async generateOtp(phoneNumber: string, email: string, nombreCompleto: string): Promise<string> {
+  async generateOtp(phoneNumber: string, email: string, nombreCompleto: string, cedula: string, bodega: number): Promise<string> {
+
+    // verificar si existe un otp con el mismo numero y que no este usado ni expirado y con la bodega y cedula
+    const existingOtpSameCedulaBodega = await this.otpRepository.findOne({
+      where: {
+        phone_number: phoneNumber,
+        is_verified: false, // El OTP aún no ha sido verificado
+        expires_at: MoreThan(new Date()), // El OTP no ha expirado
+        Cedula: cedula,
+        Bodega: bodega,
+      },
+    });
+    // si existe, retornar  el otp code
+    if (existingOtpSameCedulaBodega) {
+      return existingOtpSameCedulaBodega.otp_code;
+    }
+
     // Verificar si ya hay un OTP activo (no verificado o no expirado)
     const existingOtp = await this.otpRepository.findOne({
       where: {
@@ -92,6 +108,8 @@ export class OtpcodigoService {
       refid: String(smsResponse.refid || ''),
       mensaje: smsResponse.mensaje || '',
       idTipoOTP: 1, // Asignar un valor predeterminado o ajustarlo según tu lógica
+      Cedula: cedula,
+      Bodega: bodega,
     });
 
     try {
@@ -105,7 +123,7 @@ export class OtpcodigoService {
   }
 
   // Verificar si el OTP es válido para un número de teléfono
-  async verifyOtp(phoneNumber: string, otpCode: string): Promise<boolean> {
+  async verifyOtp(phoneNumber: string, otpCode: string, cedula: string, bodega: number): Promise<boolean> {
     const otpRecord = await this.otpRepository.findOne({
       where: { phone_number: phoneNumber, otp_code: otpCode, is_used: false },
     });
@@ -117,6 +135,8 @@ export class OtpcodigoService {
     // Marcar el OTP como verificado
     otpRecord.is_verified = true;
     otpRecord.is_used = true; // Se ha utilizado, no se puede volver a usar
+    otpRecord.Cedula = cedula;
+    otpRecord.Bodega = bodega;
     await this.otpRepository.save(otpRecord);
 
     return true;

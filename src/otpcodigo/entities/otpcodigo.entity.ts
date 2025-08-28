@@ -40,6 +40,15 @@ export class Otpcodigo {
     @Column({ type: 'int', nullable: false })
     idTipoOTP: number;
 
+    @Column({ type: 'int', nullable: false })
+    Bodega: number;
+    
+    @Column({ type: 'nvarchar', length: 50, nullable: true })
+    Cedula: string;
+
+
+
+
 
 
 
