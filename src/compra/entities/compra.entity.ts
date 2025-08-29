@@ -413,4 +413,18 @@ export class Compra {
 
     @Column({ type: 'int', nullable: true })
     idTipoFactura: number;
+
+	@Column({ type: 'int', nullable: true })
+	idFormaPago: number;
+
+	@Column({ type: 'int', nullable: true })
+	Estado: number;
+
+	@Column({ type: 'bit', nullable: true })
+	Borrar: boolean;
+
+	@Column({ type: 'int', nullable: true })
+	Bodega: number;
+
+
 }

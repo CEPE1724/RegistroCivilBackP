@@ -21,4 +21,10 @@ export class CompraController {
     return this.compraService.findOne(+id);
   }
 
+  @Get('ValidaEstadoCompra/:NumeroIdentificacion/:Bodega')
+  @Auth()
+  validaEstadoCompra(@Param('NumeroIdentificacion') numeroIdentificacion: string, @Param('Bodega') bodega: number) {
+    return this.compraService.validaEstadoCompra(numeroIdentificacion, bodega);
+  }
+
 }
