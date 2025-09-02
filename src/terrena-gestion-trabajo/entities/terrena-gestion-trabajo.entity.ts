@@ -65,4 +65,7 @@ export class TerrenaGestionTrabajo {
 
   @Column({ type: 'int' })
   tipoVerificacion: number;
+
+  @Column({type: 'varchar', length: 500})
+  Observacion: string
 }

@@ -34,6 +34,10 @@ export class PaginationDto {
 
  @IsOptional()
  @Type(() => Number)
+ operador?: number;
+
+ @IsOptional()
+ @Type(() => Number)
  EstadoSolicitud?: number;
 
  @IsOptional()

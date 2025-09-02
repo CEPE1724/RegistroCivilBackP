@@ -439,7 +439,7 @@ export class CreSolicitudWebService {
 
 
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
-    const { limit, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud, idTipoCliente = 0, idCompraEncuesta = 0 } = paginationDto;
+    const { limit, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud, idTipoCliente = 0, idCompraEncuesta = 0, operador = 0 } = paginationDto;
 
 
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
@@ -467,6 +467,9 @@ export class CreSolicitudWebService {
       queryBuilder.andWhere('(cre_solicitud_web.idAnalista = :analista OR :analista = 0)', { analista });
     }
 
+    if (operador !== undefined) {
+      queryBuilder.andWhere('(cre_solicitud_web.idOperador = :operador OR :operador = 0)', { operador });
+    }
 
 
     if (EstadoSolicitud !== undefined) {
