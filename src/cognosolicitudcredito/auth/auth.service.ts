@@ -487,7 +487,7 @@ export class AuthService {
         try {
             if (!apiData?.profesiones || !Array.isArray(apiData.profesiones) || apiData.profesiones.length === 0) {
                 console.error("Error: apiData.profesiones es undefined o vacío.");
-                throw new Error("Los datos de profesiones son inválidos o incompletos.");
+                return; // Salir temprano si no hay profesiones
             }
 
             for (const profesionData of apiData.profesiones) {
@@ -531,7 +531,7 @@ export class AuthService {
     try {
         if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
             console.error("Error: No se encontraron trabajos válidos en la respuesta de la API.");
-            throw new Error("La información laboral es obligatoria y no se obtuvo desde la API.");
+            return;
         }
 
         for (const trabajoData of apiData) {
