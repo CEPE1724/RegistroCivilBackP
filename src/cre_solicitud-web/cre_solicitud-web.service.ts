@@ -55,7 +55,7 @@ export class CreSolicitudWebService {
   }
 
    private async EquifaxDataUAT(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
-    console.log('Consultando Equifax UAT para:', tipoDocumento, numeroDocumento);
+   
     const PostData = {
       tipoDocumento: tipoDocumento,
       numeroDocumento: numeroDocumento
