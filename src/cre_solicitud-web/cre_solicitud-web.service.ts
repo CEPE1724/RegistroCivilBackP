@@ -55,6 +55,7 @@ export class CreSolicitudWebService {
   }
 
    private async EquifaxDataUAT(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
+    console.log('Consultando Equifax UAT para:', tipoDocumento, numeroDocumento);
     const PostData = {
       tipoDocumento: tipoDocumento,
       numeroDocumento: numeroDocumento
@@ -115,7 +116,7 @@ export class CreSolicitudWebService {
      /* let eqfxData = this.EQFX_UAT
         ? await this.eqfxidentificacionconsultadaService.findOneUAT(cedula)
         : await this.eqfxidentificacionconsultadaService.findOne(cedula);*/
-       let eqfxData =  await this.eqfxidentificacionconsultadaService.findOne(cedula);
+       let eqfxData =  await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
 
       if (eqfxData.success) {
         const FechaConsulta = eqfxData.data.FechaSistema;
@@ -133,7 +134,7 @@ export class CreSolicitudWebService {
 
       // 2. Si es necesario, consultar Equifax externo
       if (debeConsultarEquifax) {
-         let equifaxResult =  await this.EquifaxData('C', cedula);
+         let equifaxResult =  await this.EquifaxDataUAT('C', cedula);
       
 
         if (!equifaxResult.success) {
