@@ -61,42 +61,42 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('R3').value = 'Hora inicio solicitud';
 	worksheet.getCell('S3').value = 'Estado solicitud';
 	worksheet.getCell('T3').value = 'Hora fin solicitud';
-	worksheet.getCell('U3').value = 'Hora corrección solicitud 1';
-	worksheet.getCell('V3').value = 'Hora corrección solicitud 2';
-	worksheet.getCell('W3').value = 'Hora corrección solicitud 3';
-	worksheet.getCell('X3').value = 'Hora corrección solicitud 4';
-	worksheet.getCell('Y3').value = 'Hora corrección solicitud 5';
-	worksheet.getCell('Z3').value = 'Hora revisión solicitud 1';
-	worksheet.getCell('AA3').value = 'Hora revisión solicitud 2';
-	worksheet.getCell('AB3').value = 'Hora revisión solicitud 3';
-	worksheet.getCell('AC3').value = 'Hora revisión solicitud 4';
-	worksheet.getCell('AD3').value = 'Hora revisión solicitud 5';
+	worksheet.getCell('U3').value = 'Hora revisión solicitud 1';
+	worksheet.getCell('V3').value = 'Hora corrección solicitud 1';
+	worksheet.getCell('W3').value = 'Hora revisión solicitud 2';
+	worksheet.getCell('X3').value = 'Hora corrección solicitud 2';
+	worksheet.getCell('Y3').value = 'Hora revisión solicitud 3';
+	worksheet.getCell('Z3').value = 'Hora corrección solicitud 3';
+	worksheet.getCell('AA3').value = 'Hora revisión solicitud 4';
+	worksheet.getCell('AB3').value = 'Hora corrección solicitud 4';
+	worksheet.getCell('AC3').value = 'Hora revisión solicitud 5';
+	worksheet.getCell('AD3').value = 'Hora corrección solicitud 5';
 	worksheet.getCell('AE3').value = 'Hora inicio documental';
 	worksheet.getCell('AF3').value = 'Estado verificación documental';
 	worksheet.getCell('AG3').value = 'Hora fin documental';
-	worksheet.getCell('AH3').value = 'Hora corrección documental 1';
-	worksheet.getCell('AI3').value = 'Hora corrección documental 2';
-	worksheet.getCell('AJ3').value = 'Hora corrección documental 3';
-	worksheet.getCell('AK3').value = 'Hora corrección documental 4';
-	worksheet.getCell('AL3').value = 'Hora corrección documental 5';
-	worksheet.getCell('AM3').value = 'Hora revisión documental 1';
-	worksheet.getCell('AN3').value = 'Hora revisión documental 2';
-	worksheet.getCell('AO3').value = 'Hora revisión documental 3';
-	worksheet.getCell('AP3').value = 'Hora revisión documental 4';
-	worksheet.getCell('AQ3').value = 'Hora revisión documental 5';
+	worksheet.getCell('AH3').value = 'Hora revisión documental 1';
+	worksheet.getCell('AI3').value = 'Hora corrección documental 1';
+	worksheet.getCell('AJ3').value = 'Hora revisión documental 2';
+	worksheet.getCell('AK3').value = 'Hora corrección documental 2';
+	worksheet.getCell('AL3').value = 'Hora revisión documental 3';
+	worksheet.getCell('AM3').value = 'Hora corrección documental 3';
+	worksheet.getCell('AN3').value = 'Hora revisión documental 4';
+	worksheet.getCell('AO3').value = 'Hora corrección documental 4';
+	worksheet.getCell('AP3').value = 'Hora revisión documental 5';
+	worksheet.getCell('AQ3').value = 'Hora corrección documental 5';
 	worksheet.getCell('AR3').value = 'Hora inicio telefónica';
 	worksheet.getCell('AS3').value = 'Estado verificación telefónica';
 	worksheet.getCell('AT3').value = 'Hora fin telefónica';
-	worksheet.getCell('AU3').value = 'Hora corrección telefonica 1';
-	worksheet.getCell('AV3').value = 'Hora corrección telefonica 2';
-	worksheet.getCell('AW3').value = 'Hora corrección telefonica 3';
-	worksheet.getCell('AX3').value = 'Hora corrección telefonica 4';
-	worksheet.getCell('AY3').value = 'Hora corrección telefonica 5';
-	worksheet.getCell('AZ3').value = 'Hora revisión telefonica 1';
-	worksheet.getCell('BA3').value = 'Hora revisión telefonica 2';
-	worksheet.getCell('BB3').value = 'Hora revisión telefonica 3';
-	worksheet.getCell('BC3').value = 'Hora revisión telefonica 4';
-	worksheet.getCell('BD3').value = 'Hora revisión telefonica 5';
+	worksheet.getCell('AU3').value = 'Hora revisión telefonica 1';
+	worksheet.getCell('AV3').value = 'Hora corrección telefonica 1';
+	worksheet.getCell('AW3').value = 'Hora revisión telefonica 2';
+	worksheet.getCell('AX3').value = 'Hora corrección telefonica 2';
+	worksheet.getCell('AY3').value = 'Hora revisión telefonica 3';
+	worksheet.getCell('AZ3').value = 'Hora corrección telefonica 3';
+	worksheet.getCell('BA3').value = 'Hora revisión telefonica 4';
+	worksheet.getCell('BB3').value = 'Hora corrección telefonica 4';
+	worksheet.getCell('BC3').value = 'Hora revisión telefonica 5';
+	worksheet.getCell('BD3').value = 'Hora corrección telefonica 5';
 	worksheet.getCell('BE3').value = 'Nombre verificación domicilio';
 	worksheet.getCell('BF3').value = 'Nombre verificación laboral';
 	worksheet.getCell('BG3').value = 'Duración solicitud';
@@ -108,6 +108,8 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('BM3').value = 'Tiempo que aprobó';
 	worksheet.getCell('BN3').value = 'Verificación Domicilio';
 	worksheet.getCell('BO3').value = 'Verificación Laboral';
+	worksheet.getCell('BP3').value = 'Cuota Asignada';
+	worksheet.getCell('BQ3').value = 'Motivo Continuidad';
 
 
     // formato encabezado
@@ -146,42 +148,42 @@ export class ExcelSolicitudesWebService {
     toFechaHoraTexto(item.HoraInicioSolicitud),
     item.EstadoVerificacionSolicitud,
     toFechaHoraTexto(item.HoraFinSolicitud),
-    toFechaHoraTexto(item.HoraCorreccionSolicitud_1),
-    toFechaHoraTexto(item.HoraCorreccionSolicitud_2),
-    toFechaHoraTexto(item.HoraCorreccionSolicitud_3),
-    toFechaHoraTexto(item.HoraCorreccionSolicitud_4),
-    toFechaHoraTexto(item.HoraCorreccionSolicitud_5),
     toFechaHoraTexto(item.HoraRevisionSolicitud_1),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_1),
     toFechaHoraTexto(item.HoraRevisionSolicitud_2),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_2),
     toFechaHoraTexto(item.HoraRevisionSolicitud_3),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_3),
     toFechaHoraTexto(item.HoraRevisionSolicitud_4),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_4),
     toFechaHoraTexto(item.HoraRevisionSolicitud_5),
+    toFechaHoraTexto(item.HoraCorreccionSolicitud_5),
     toFechaHoraTexto(item.HoraInicioDocumental),
     item.EstadoVerificacionDocumental,
     toFechaHoraTexto(item.HorafinDocumental),
-    toFechaHoraTexto(item.HoraCorreccionDocumental_1),
-    toFechaHoraTexto(item.HoraCorreccionDocumental_2),
-    toFechaHoraTexto(item.HoraCorreccionDocumental_3),
-    toFechaHoraTexto(item.HoraCorreccionDocumental_4),
-    toFechaHoraTexto(item.HoraCorreccionDocumental_5),
     toFechaHoraTexto(item.HoraRevisionDocumental_1),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_1),
     toFechaHoraTexto(item.HoraRevisionDocumental_2),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_2),
     toFechaHoraTexto(item.HoraRevisionDocumental_3),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_3),
     toFechaHoraTexto(item.HoraRevisionDocumental_4),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_4),
     toFechaHoraTexto(item.HoraRevisionDocumental_5),
+    toFechaHoraTexto(item.HoraCorreccionDocumental_5),
     toFechaHoraTexto(item.HoraInicioTelefonica),
     item.EstadoVerificacionTelefonica,
     toFechaHoraTexto(item.HoraFinTelefonica),
-	toFechaHoraTexto(item.HoraCorreccionTelefonica_1),
-	toFechaHoraTexto(item.HoraCorreccionTelefonica_2),
-	toFechaHoraTexto(item.HoraCorreccionTelefonica_3),
-	toFechaHoraTexto(item.HoraCorreccionTelefonica_4),
-	toFechaHoraTexto(item.HoraCorreccionTelefonica_5),
 	toFechaHoraTexto(item.HoraRevisionTelefonica_1),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_1),
 	toFechaHoraTexto(item.HoraRevisionTelefonica_2),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_2),
 	toFechaHoraTexto(item.HoraRevisionTelefonica_3),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_3),
 	toFechaHoraTexto(item.HoraRevisionTelefonica_4),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_4),
 	toFechaHoraTexto(item.HoraRevisionTelefonica_5),
+	toFechaHoraTexto(item.HoraCorreccionTelefonica_5),
     item.NombreVerificacionDomicilio,
     item.NombreVerificacionLaboral,
     item.DuracionSolicitud,
@@ -193,6 +195,8 @@ export class ExcelSolicitudesWebService {
 	toFechaHoraTexto(item.TiempoAprobo),
 	item.VerificacionDomicilio,
 	item.VerificacionLaboral,
+	item.CuotaAsignada,
+	item.MotivoContinuidad
   ]);
 
   row.alignment = { horizontal: 'center', vertical: 'middle' };
