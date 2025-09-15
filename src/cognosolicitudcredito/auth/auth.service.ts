@@ -651,8 +651,9 @@ export class AuthService {
                     apellidoDos: pp?.apellidoDos ?? '',
 
                     valor: trabajoData.personaIngreso?.valor ?? 0,
-                    tipoIngreso: trabajoData.personaIngreso?.tipoIngreso ?? '',
-                    frecuenciaIngreso: trabajoData.personaIngreso?.frecuenciaIngreso ?? '',
+                    tipoIngreso: trabajoData.personaIngreso?.tipoIngreso?.nombre ?? '',
+                    frecuenciaIngreso: trabajoData.personaIngreso?.frecuenciaIngreso?.descripcion ?? '',
+                    
                     valorRango: trabajoData.personaIngreso?.valorRango ?? '',
                     idCargo: trabajoData.cargo?.idCargo ?? 0,
                     nombreCargo: trabajoData.cargo?.nombre ?? '',
