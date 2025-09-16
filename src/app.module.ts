@@ -126,6 +126,20 @@ import { CreProductoSolicitudModule } from './cre-producto-solicitud/cre-product
 import { CompraModule } from './compra/compra.module';
 import { ExcelSolicitudesWebModule } from './excel-solicitudes-web/excel-solicitudes-web.module';
 import { MotivoContinuidadModule } from './motivo-continuidad/motivo-continuidad.module';
+import { UatEqfxEntidadesConsultadosModule } from './uat_eqfx_entidades_consultados/uat_eqfx_entidades_consultados.module';
+import { UatEqfxResultadoPoliticasModule } from './uat_eqfx_resultado_politicas/uat_eqfx_resultado_politicas.module';
+import { UatEqfxScoreInclusionModule } from './uat_eqfx_score_inclusion/uat_eqfx_score_inclusion.module';
+import { UatEqfxDetalleDeudaActualSbModule } from './uat_eqfx_detalle_deuda_actual_sb/uat_eqfx_detalle_deuda_actual_sb.module';
+import { UatEqfxDetalleTarjetasModule } from './uat_eqfx_detalle_tarjetas/uat_eqfx_detalle_tarjetas.module';
+import { UatEqfxDeudaHistoricaModule } from './uat_eqfx_deuda_historica/uat_eqfx_deuda_historica.module';
+import { UatEqfxIdentificadorPerfilRiesgoDirectoModule } from './uat_eqfx_identificador_perfil_riesgo_directo/uat_eqfx_identificador_perfil_riesgo_directo.module';
+import { UatEqfxIdentificadorPerfilRiesgoDirecto6MesesModule } from './uat_eqfx_identificador_perfil_riesgo_directo_6_meses/uat_eqfx_identificador_perfil_riesgo_directo_6_meses.module';
+import { UatEqfxDetalleEstructuraVencimientoModule } from './uat_eqfx_detalle_estructura_vencimiento/uat_eqfx_detalle_estructura_vencimiento.module';
+import { UatEqfxValorDeuda3SistemasModule } from './uat_eqfx_valor_deuda_3_sistemas/uat_eqfx_valor_deuda_3_sistemas.module';
+import { UatEqfxSaldosPorVencerModule } from './uat_eqfx_saldos_por_vencer/uat_eqfx_saldos_por_vencer.module';
+import { UatEqfxEstructuraVencimientoModule } from './uat_eqfx_estructura_vencimiento/uat_eqfx_estructura_vencimiento.module';
+import { UatEqfxCreditosOtorgadosModule } from './uat_eqfx_creditos_otorgados/uat_eqfx_creditos_otorgados.module';
+import { UatEqfxOperacionesCanceladasModule } from './uat_eqfx_operaciones_canceladas/uat_eqfx_operaciones_canceladas.module';
 
 
 
@@ -326,6 +340,34 @@ import { MotivoContinuidadModule } from './motivo-continuidad/motivo-continuidad
     ExcelSolicitudesWebModule,
 
     MotivoContinuidadModule,
+
+    UatEqfxEntidadesConsultadosModule,
+
+    UatEqfxResultadoPoliticasModule,
+
+    UatEqfxScoreInclusionModule,
+
+    UatEqfxDetalleDeudaActualSbModule,
+
+    UatEqfxDetalleTarjetasModule,
+
+    UatEqfxDeudaHistoricaModule,
+
+    UatEqfxIdentificadorPerfilRiesgoDirectoModule,
+
+    UatEqfxIdentificadorPerfilRiesgoDirecto6MesesModule,
+
+    UatEqfxDetalleEstructuraVencimientoModule,
+
+    UatEqfxValorDeuda3SistemasModule,
+
+    UatEqfxSaldosPorVencerModule,
+
+    UatEqfxEstructuraVencimientoModule,
+
+    UatEqfxCreditosOtorgadosModule,
+
+    UatEqfxOperacionesCanceladasModule,
 
 
 
