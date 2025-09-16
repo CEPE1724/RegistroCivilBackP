@@ -147,7 +147,7 @@ export class CreateCreSolicitudWebDto {
     idTipoCliente?: number;
 
     @IsString()
-    @MinLength(2)
+    //@MinLength(2)
     @IsOptional()
     otp_code: string;
 
