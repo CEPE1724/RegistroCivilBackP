@@ -15,6 +15,7 @@ import { SolicitudWebNotifierService } from './solicitud-web-notifier.service';
 import { EmailService } from 'src/email/email.service';
 import { Socket } from 'dgram';
 import { where } from 'sequelize';
+import { Console } from 'console';
 
 @Injectable()
 export class CreSolicitudWebService {
@@ -350,6 +351,8 @@ export class CreSolicitudWebService {
       if (apiData.estado.codigo === "OK") {
         const apiLaboral = await this.authService.getApiDataTrabajo(token, cedula);
         let afiliado = false;
+        let afiliadoVoluntario = false;
+
         if (
           apiLaboral?.success === true &&
           apiLaboral?.data?.estado?.codigo === 'OK' &&
@@ -357,11 +360,23 @@ export class CreSolicitudWebService {
           apiLaboral.data.trabajos.length > 0
         ) {
           afiliado = true;
+
+          const trabajos = apiLaboral?.data?.trabajos;
+
+          if (Array.isArray(trabajos) && trabajos.length > 0) {
+            const cargoNombre = trabajos[0].cargo?.nombre || '';
+
+            if (cargoNombre.toUpperCase().includes('VOLUNTA')) {
+              afiliado = false;
+              afiliadoVoluntario = true;
+            }
+          }
+
         } else {
           afiliado = false;
         }
 
-        console.log('API Laboral:', apiLaboral);
+
         const { identificacion, nombre, fechaNacimiento } = apiData.personaNatural;
         const partesNombre = this.splitNombreCompleto(nombre);
 
@@ -375,7 +390,7 @@ export class CreSolicitudWebService {
         }
 
         return {
-          identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo, afiliado: afiliado,
+          identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo, afiliado: afiliado, afiliadoVoluntario: afiliadoVoluntario,
           ...partesNombre
         };
       }
