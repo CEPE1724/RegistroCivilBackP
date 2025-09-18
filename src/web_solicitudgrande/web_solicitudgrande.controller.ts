@@ -44,6 +44,11 @@ export class WebSolicitudgrandeController {
     return this.webSolicitudgrandeService.updateCuotayCupo(idNumber, updateDto);
   }
 
+  @Get(':id')
+  findOneId(@Param('id') id: string){
+	return this.webSolicitudgrandeService.findOneId(+id)
+  }
+
  
 
 }
