@@ -54,15 +54,16 @@ export class CreSolicitudWebService {
     }
   }
 
-   private async EquifaxDataUAT(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
-   
+  private async EquifaxDataUAT(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
+
     const PostData = {
       tipoDocumento: tipoDocumento,
       numeroDocumento: numeroDocumento
     };
     try {
       const response = await axios.post(this.EQFX_UAT_url, PostData, {
-        headers: { 'Content-Type': 'application/json',
+        headers: {
+          'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.EQFX_UAT_token}`
         }
       });
@@ -111,12 +112,12 @@ export class CreSolicitudWebService {
       }
       const cedula = createCreSolicitudWebDto.Cedula;
       let debeConsultarEquifax = false;
-  
+
       // 1. Consultar Equifax local
-     /* let eqfxData = this.EQFX_UAT
-        ? await this.eqfxidentificacionconsultadaService.findOneUAT(cedula)
-        : await this.eqfxidentificacionconsultadaService.findOne(cedula);*/
-       let eqfxData =  await this.eqfxidentificacionconsultadaService.findOne(cedula);
+      /* let eqfxData = this.EQFX_UAT
+         ? await this.eqfxidentificacionconsultadaService.findOneUAT(cedula)
+         : await this.eqfxidentificacionconsultadaService.findOne(cedula);*/
+      let eqfxData = await this.eqfxidentificacionconsultadaService.findOne(cedula);
 
       if (eqfxData.success) {
         const FechaConsulta = eqfxData.data.FechaSistema;
@@ -135,8 +136,8 @@ export class CreSolicitudWebService {
       // 2. Si es necesario, consultar Equifax externo
       // let equifaxResult =  await this.EquifaxDataUAT('C', cedula);
       if (debeConsultarEquifax) {
-         let equifaxResult =  await this.EquifaxData('C', cedula);
-      
+        let equifaxResult = await this.EquifaxData('C', cedula);
+
 
         if (!equifaxResult.success) {
           // NO lanzar excepción. En su lugar, devolver respuesta clara al frontend.
@@ -251,7 +252,7 @@ export class CreSolicitudWebService {
         Estado: estado,
       });
 
-	  // Traer la información actualizada de la solicitud
+      // Traer la información actualizada de la solicitud
       const updatedSolicitud = await this.creSolicitudWebRepository.findOne({
         where: { idCre_SolicitudWeb: idSolicitud },
       });
@@ -347,7 +348,20 @@ export class CreSolicitudWebService {
       const apiData = await this.authService.getApiDataFind(token, cedula);
 
       if (apiData.estado.codigo === "OK") {
+        const apiLaboral = await this.authService.getApiDataTrabajo(token, cedula);
+        let afiliado = false;
+        if (
+          apiLaboral?.success === true &&
+          apiLaboral?.data?.estado?.codigo === 'OK' &&
+          Array.isArray(apiLaboral.data.trabajos) &&
+          apiLaboral.data.trabajos.length > 0
+        ) {
+          afiliado = true;
+        } else {
+          afiliado = false;
+        }
 
+        console.log('API Laboral:', apiLaboral);
         const { identificacion, nombre, fechaNacimiento } = apiData.personaNatural;
         const partesNombre = this.splitNombreCompleto(nombre);
 
@@ -361,11 +375,14 @@ export class CreSolicitudWebService {
         }
 
         return {
-          identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo,
+          identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo, afiliado: afiliado,
           ...partesNombre
         };
       }
-      return { codigo: false }; // Devuelve falso si el estado no es "OK"
+      return {
+        codigo: false,
+
+      }; // Devuelve falso si el estado no es "OK"
     } catch (error) {
       this.logger.error('Error al obtener la solicitud de Cogno', error);
       return { codigo: false }; // Devuelve falso en caso de error
@@ -781,10 +798,10 @@ export class CreSolicitudWebService {
       where: { Cedula: cedula, Estado: In([1, 2]) },
     });
 
-    return { 
-		existe: !!solicitudExistente,
-		solicitud: solicitudExistente || null,
-	};
+    return {
+      existe: !!solicitudExistente,
+      solicitud: solicitudExistente || null,
+    };
   }
 
 

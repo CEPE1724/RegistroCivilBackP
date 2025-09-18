@@ -41,6 +41,10 @@ export const ApiConfig = () => ({
       EQFX_UAT_token: process.env.EQFX_UAT_token,
 
     },
+    cogno: {
+      API_COGNOPN_INF_BASICA: process.env.API_COGNOPN_INF_BASICA,
+      API_COGNOPN_TRABAJOS: process.env.API_COGNOPN_TRABAJOS,
+    }
     
   });
   

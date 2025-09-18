@@ -28,8 +28,8 @@ export class AuthService {
     private readonly clientId = process.env.KEYCLOAK_CLIENT_ID;
     private readonly username = process.env.KEYCLOAK_USERNAME;
     private readonly password = process.env.KEYCLOAK_PASSWORD;
-    private readonly apiUrl = 'http://app.cognoconsultas.com/consultas/pn_inf_basica/'; // API externa
-    private readonly apiUrl2 = 'http://app.cognoconsultas.com/consultas/pn_trabajos/'; // API externa
+    private readonly apiCognopn_inf_basica = process.env.API_COGNOPN_INF_BASICA;
+    private readonly apiCognopn_trabajos = process.env.API_COGNOPN_TRABAJOS;
     constructor(
         @InjectRepository(Cognosolicitudcredito)
         private readonly cognosolicitudcreditoRepository: Repository<Cognosolicitudcredito>,
@@ -81,7 +81,7 @@ export class AuthService {
     // Método para consumir la API externa usando el token y la cédula como parámetro en la URL
     async getApiData(token: string, cedula: string): Promise<any> {
         try {
-            const url = `${this.apiUrl}${cedula}`;
+            const url = `${this.apiCognopn_inf_basica}${cedula}`;
 
             const response = await axios.get(url, {
                 headers: {
@@ -110,7 +110,7 @@ export class AuthService {
 
         try {
             // Realizamos la solicitud a la API externa usando el token
-            const url = `${this.apiUrl}${cedula}`;  // Concatenamos la cédula en la URL
+            const url = `${this.apiCognopn_inf_basica}${cedula}`;  // Concatenamos la cédula en la URL
 
             const response = await axios.get(url, {
                 headers: {
@@ -131,7 +131,7 @@ export class AuthService {
 
     async getApiDataTrabajo(token: string, cedula: string): Promise<{ success: boolean, mensaje?: string, data?: any }> {
         try {
-            const url = `${this.apiUrl2}${cedula}`;
+            const url = `${this.apiCognopn_trabajos}${cedula}`;
 
             const response = await axios.get(url, {
                 headers: {
@@ -140,7 +140,7 @@ export class AuthService {
             });
 
             const data = response.data;
-            console.log('Response from API Trabajo:', data.trabajos);
+           // console.log('Response from API Trabajo:', data.trabajos);
 
             // Si el API responde con un error de negocio
             if (data?.estado?.codigo === 'ERROR') {
@@ -167,7 +167,7 @@ export class AuthService {
 
     async create(apiData: any, bApiDataTrabajo: boolean, numberId: number): Promise<Cognosolicitudcredito> {
         try {
-  console.log('create edison',  numberId);
+ 
             const existingRecord = await this.cognosolicitudcreditoRepository.findOne({
                 where: { Cedula: apiData.personaNatural.identificacion, idCre_SolicitudWeb: numberId },
             });
