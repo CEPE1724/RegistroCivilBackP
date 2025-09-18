@@ -142,6 +142,10 @@ export class WebSolicitudgrandeService {
     }
   }
 
+  findOneId(id: number) {
+    return this.webSolicitudgrandeRepository.findOne({ where: { idCre_SolicitudWeb: id } });
+  }
+
 
 
 

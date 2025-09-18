@@ -28,10 +28,9 @@ export class CreSolicitudWebController {
   @Get('verificar-cedula-bodega')
   @Auth()
   async verificarCedulaBodega(
-    @Query('cedula') cedula: string,
-    @Query('bodega') bodega: number,
-  ): Promise<{ existe: boolean }> {
-    return this.creSolicitudWebService.verificarCedulaBodega(cedula, bodega);
+    @Query('cedula') cedula: string
+  ): Promise<{ existe: boolean, solicitud: object }> {
+    return this.creSolicitudWebService.verificarCedulaBodega(cedula);
   }
 
 

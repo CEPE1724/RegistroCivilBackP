@@ -251,6 +251,11 @@ export class CreSolicitudWebService {
         Estado: estado,
       });
 
+	  // Traer la información actualizada de la solicitud
+      const updatedSolicitud = await this.creSolicitudWebRepository.findOne({
+        where: { idCre_SolicitudWeb: idSolicitud },
+      });
+
       // Emitir evento WebSocket
       this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
         id: creSolicitudWeb.idCre_SolicitudWeb,
@@ -260,7 +265,7 @@ export class CreSolicitudWebService {
       return {
         success: true,
         mensaje: `Solicitud N° ${creSolicitudWeb.NumeroSolicitud} creada exitosamente.`,
-        data: creSolicitudWeb
+        data: updatedSolicitud,
       };
 
 
@@ -771,12 +776,15 @@ export class CreSolicitudWebService {
       this.handleDBException(error);
     }
   }
-  async verificarCedulaBodega(cedula: string, bodega: number): Promise<{ existe: boolean }> {
+  async verificarCedulaBodega(cedula: string): Promise<{ existe: boolean, solicitud: object }> {
     const solicitudExistente = await this.creSolicitudWebRepository.findOne({
-      where: { Cedula: cedula, Bodega: bodega, Estado: In([1, 2]) },
+      where: { Cedula: cedula, Estado: In([1, 2]) },
     });
 
-    return { existe: !!solicitudExistente };
+    return { 
+		existe: !!solicitudExistente,
+		solicitud: solicitudExistente || null,
+	};
   }
 
 
