@@ -26,4 +26,7 @@ export const JoinValidationSchema = Joi.object({
   EQFX_UAT_token: Joi.string().required(),
   API_COGNOPN_INF_BASICA: Joi.string().required(),
   API_COGNOPN_TRABAJOS: Joi.string().required(),
+  API_COGNOPN_DEUDAS_EMOV: Joi.string().required(),
+  API_COGNOEMP_PN_AFILILIACION_ISSFAC_CERT_MEDICO: Joi.string().required(),
+  API_COGNOEMP_PN_AFILILIACION_IESS: Joi.string().required(),
 });

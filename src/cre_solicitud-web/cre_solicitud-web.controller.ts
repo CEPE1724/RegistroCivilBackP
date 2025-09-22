@@ -133,4 +133,9 @@ export class CreSolicitudWebController {
     return await this.creSolicitudWebService.getMotivoContinuidad(Vendedor);
   }
 
+  @Get('procesarDatosCogno/:Cedula')
+  async procesarDatosCogno(@Param('Cedula') Cedula: string) {
+    return await this.creSolicitudWebService.procesarDatosCogno(Cedula);
+  }
+
 }

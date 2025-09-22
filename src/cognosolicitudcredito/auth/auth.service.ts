@@ -8,8 +8,6 @@ import axios from 'axios';
 import * as qs from 'qs';  // Asegúrate de tener instalado qs
 import { CreateCognosolicitudcreditoDto } from '../dto/create-cognosolicitudcredito.dto';
 import { CreateCognopersonanaturalDto } from '../dto/create-cognopersonanatural.dto';
-import { CreateCognolugarnacimientoDto } from '../dto/create-cognolugarnacimiento.dto';
-import { UpdateCognosolicitudcreditoDto } from '../dto/update-cognosolicitudcredito.dto';
 import { CreateCognosolicitudnacionalidadesDto } from '../dto/create-cognosolicitudnacionalidades.dto';
 import { Cognosolicitudcredito } from '../entities/cognosolicitudcredito.entity';
 import { CognoPersonaNatural } from '../entities/cognopersonanatural.entity';
@@ -19,6 +17,18 @@ import { CognoSolicitudLugarNacimiento } from '../entities/cognosolicitudlugarna
 import { CognoSolicitudProfesiones } from '../entities/cognosolicitudprofesiones.entity';
 import { CognoTrabajo } from '../entities/cognotrabajo.entity';
 import { CreateCognoTrabajoDto } from '../dto/create-cognotrabajo.dto';
+import { CognoDeudaEmov } from '../entities/deudaEmov/cognoDeudaEmov.entity';
+import { CognoInfraccion } from '../entities/deudaEmov/cognoInfraccion.entity';
+import { CognoDetalleRubro } from '../entities/deudaEmov/cognoDetalleRubro.entity';
+import { CognoIssfacCertMedico } from '../entities/afiliaciones/cognoIssfacCertMedico.entity';
+import { CognoAfiliacionIess } from '../entities/afiliacion_iess/cognoAfiliacionIess.entity';
+import { CognoAfiliacionIessEmpresa } from '../entities/afiliacion_iess/cognoAfiliacionIessEmpresa.entity';
+
+import { DeudaEmovDto } from '../dto/deudaEmov/deuda-emov.dto';
+import { AfiliacionesDto } from '../dto/afiliaciones/afiliaciones.dto';
+import { AfiliacionIessDto } from '../dto/afiliacion_iess/afiliacionesIess.dto';
+
+
 import { InjectRepository } from '@nestjs/typeorm';
 import { Console } from 'console';
 @Injectable()
@@ -30,6 +40,9 @@ export class AuthService {
     private readonly password = process.env.KEYCLOAK_PASSWORD;
     private readonly apiCognopn_inf_basica = process.env.API_COGNOPN_INF_BASICA;
     private readonly apiCognopn_trabajos = process.env.API_COGNOPN_TRABAJOS;
+    private readonly apiCognopn_deudas_emov = process.env.API_COGNOPN_DEUDAS_EMOV;
+    private readonly apiCognopn_afiliciacion_issfac_cert_medico = process.env.API_COGNOEMP_PN_AFILILIACION_ISSFAC_CERT_MEDICO;
+    private readonly apiCognopn_afiliciacion_iess = process.env.API_COGNOEMP_PN_AFILILIACION_IESS;
     constructor(
         @InjectRepository(Cognosolicitudcredito)
         private readonly cognosolicitudcreditoRepository: Repository<Cognosolicitudcredito>,
@@ -48,6 +61,24 @@ export class AuthService {
 
         @InjectRepository(CognoTrabajo)
         private readonly cognoTrabajoRepository: Repository<CognoTrabajo>,
+
+        @InjectRepository(CognoDeudaEmov)
+        private readonly cognoDeudaEmovRepository: Repository<CognoDeudaEmov>,
+
+        @InjectRepository(CognoInfraccion)
+        private readonly cognoInfraccionRepository: Repository<CognoInfraccion>,
+
+        @InjectRepository(CognoDetalleRubro)
+        private readonly cognoDetalleRubroRepository: Repository<CognoDetalleRubro>,
+
+        @InjectRepository(CognoIssfacCertMedico)
+        private readonly cognoIssfacCertMedicoRepository: Repository<CognoIssfacCertMedico>,
+
+        @InjectRepository(CognoAfiliacionIess)
+        private readonly cognoAfiliacionIessRepository: Repository<CognoAfiliacionIess>,
+
+        @InjectRepository(CognoAfiliacionIessEmpresa)
+        private readonly cognoAfiliacionIessEmpresaRepository: Repository<CognoAfiliacionIessEmpresa>,
 
     ) { }
 
@@ -140,7 +171,7 @@ export class AuthService {
             });
 
             const data = response.data;
-           // console.log('Response from API Trabajo:', data.trabajos);
+            // console.log('Response from API Trabajo:', data.trabajos);
 
             // Si el API responde con un error de negocio
             if (data?.estado?.codigo === 'ERROR') {
@@ -164,10 +195,112 @@ export class AuthService {
         }
     }
 
+    async getApiIssfacCertMedico(token: string, cedula: string): Promise<{ success: boolean, mensaje?: string, data?: any }> {
+        try {
+            const url = `${this.apiCognopn_afiliciacion_issfac_cert_medico}${cedula}`;
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = response.data;
+            // console.log('Response from API Deuda Emov:', data);
+
+            // Si el API responde con un error de negocio
+            if (data?.estado?.codigo === 'ERROR') {
+                return {
+                    success: false,
+                    mensaje: data.estado.mensaje || 'Error en API de deuda EMOV',
+                };
+            }
+
+            // Aunque trabajos esté vacío, si el estado es OK, es válido
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
+            console.error('Error al obtener datos de deuda EMOV desde API:', error.message);
+            return {
+                success: false,
+                mensaje: 'No se pudo conectar con la API de deuda EMOV',
+            };
+        }
+    }
+
+    async getafilicacion_iess(token: string, cedula: string): Promise<{ success: boolean, mensaje?: string, data?: any }> {
+        try {
+            const url = `${this.apiCognopn_afiliciacion_iess}${cedula}`;
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+            const data = response.data;
+            // console.log('Response from API Deuda Emov:', data);
+
+            // Si el API responde con un error de negocio
+            if (data?.estado?.codigo === 'ERROR') {
+                return {
+                    success: false,
+                    mensaje: data.estado.mensaje || 'Error en API de deuda afilicacion_iess',
+                };
+            }
+
+            // Aunque trabajos esté vacío, si el estado es OK, es válido
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
+            console.error('Error al obtener datos de deuda EMOV desde API:', error.message);
+            return {
+                success: false,
+                mensaje: 'No se pudo conectar con la API de deuda EMOV',
+            };
+        }
+    }
+
+
+    async getApiDataDeudaEmov(token: string, cedula: string): Promise<{ success: boolean, mensaje?: string, data?: any }> {
+        try {
+            const url = `${this.apiCognopn_deudas_emov}${cedula}`;
+
+            const response = await axios.get(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+            });
+
+            const data = response.data;
+            // console.log('Response from API Deuda Emov:', data);
+
+            // Si el API responde con un error de negocio
+            if (data?.estado?.codigo === 'ERROR') {
+                return {
+                    success: false,
+                    mensaje: data.estado.mensaje || 'Error en API de deuda EMOV',
+                };
+            }
+
+            // Aunque trabajos esté vacío, si el estado es OK, es válido
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
+            console.error('Error al obtener datos de deuda EMOV desde API:', error.message);
+            return {
+                success: false,
+                mensaje: 'No se pudo conectar con la API de deuda EMOV',
+            };
+        }
+    }
+
 
     async create(apiData: any, bApiDataTrabajo: boolean, numberId: number): Promise<Cognosolicitudcredito> {
         try {
- 
+
             const existingRecord = await this.cognosolicitudcreditoRepository.findOne({
                 where: { Cedula: apiData.personaNatural.identificacion, idCre_SolicitudWeb: numberId },
             });
@@ -526,159 +659,294 @@ export class AuthService {
     }
 
     async createTrabajo(apiData: any, idCognoSolicitudCredito: number): Promise<void> {
-    console.log('createTrabajo', apiData, idCognoSolicitudCredito);
+        console.log('createTrabajo', apiData, idCognoSolicitudCredito);
 
-    try {
-        if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
-            console.error("Error: No se encontraron trabajos válidos en la respuesta de la API.");
-            return;
+        try {
+            if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+                console.error("Error: No se encontraron trabajos válidos en la respuesta de la API.");
+                return;
+            }
+
+            for (const trabajoData of apiData) {
+                const pp = trabajoData.personaPatrono;
+                const ti = pp?.tipoIdentificacion;
+                const tc = pp?.tipoCompania;
+                const oc = pp?.oficinaControl;
+                const pr = oc?.provincia;
+                const pa = pr?.pais;
+                const sl = pp?.situacionLegal;
+
+                const identificacionPatrono = pp?.identificacion ?? '';
+
+                const existingRecord = await this.cognoTrabajoRepository.findOne({
+                    where: {
+                        idCognoSolicitudCredito: idCognoSolicitudCredito,
+                        identificacionPersonaPatrono: identificacionPatrono,
+                    },
+                });
+
+                if (existingRecord) {
+                    existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || 0;
+                    existingRecord.fechaActualizacion = trabajoData.fechaActualizacion || 0;
+                    existingRecord.fechaIngreso = trabajoData.fechaIngreso || 0;
+                    existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta || new Date();
+
+                    existingRecord.identificacionPersonaPatrono = pp?.identificacion ?? '';
+                    existingRecord.nombrePatrono = pp?.nombre ?? '';
+                    existingRecord.nombreUno = pp?.nombreUno ?? '';
+                    existingRecord.nombreDos = pp?.nombreDos ?? '';
+                    existingRecord.idTipoIdentificacion = ti?.idTipoIdentificacion ?? 0;
+                    existingRecord.descripcion = ti?.descripcion ?? '';
+                    existingRecord.plazoSocial = pp?.plazoSocial ?? new Date();
+                    existingRecord.expediente = pp?.expediente ?? 0;
+                    existingRecord.fechaConstitucion = pp?.fechaConstitucion ?? new Date();
+                    existingRecord.nombreComercial = pp?.nombreComercial ?? '';
+                    existingRecord.idTipoCompania = tc?.idTipoCompania ?? 0;
+                    existingRecord.nombretipoCompania = tc?.nombre ?? '';
+                    existingRecord.idCanton = oc?.idCanton ?? 0;
+                    existingRecord.nombreCanton = oc?.nombre ?? '';
+                    existingRecord.idProvincia = pr?.idProvincia ?? 0;
+                    existingRecord.nombreProvincia = pr?.nombre ?? '';
+                    existingRecord.codigoArea = pr?.codigoArea ?? '';
+                    existingRecord.idPais = pa?.idPais ?? 0;
+                    existingRecord.nombrePais = pa?.nombre ?? '';
+                    existingRecord.codigoAreaPais = pa?.codigoArea ?? '';
+                    existingRecord.codigoIso2 = pa?.codigoIso2 ?? '';
+                    existingRecord.codigoIso3 = pa?.codigoIso3 ?? '';
+                    existingRecord.codigoIso = pa?.codigoIso ?? '';
+                    existingRecord.nombreSituacionLegal = sl?.nombre ?? '';
+                    existingRecord.proveedoraEstado = pp?.proveedoraEstado ?? '';
+                    existingRecord.pagoRemesas = pp?.pagoRemesas ?? '';
+                    existingRecord.vendeCredito = pp?.vendeCredito ?? '';
+                    existingRecord.capitalSuscrito = pp?.capitalSuscrito ?? 0;
+                    existingRecord.capitalAutorizado = pp?.capitalAutorizado ?? 0;
+                    existingRecord.valorNominal = pp?.valorNominal ?? 0;
+                    existingRecord.perteneceMv = pp?.perteneceMv ?? '';
+                    existingRecord.apellidoUno = pp?.apellidoUno ?? '';
+                    existingRecord.apellidoDos = pp?.apellidoDos ?? '';
+
+                    existingRecord.valor = trabajoData.personaIngreso?.valor ?? 0;
+                    existingRecord.tipoIngreso = trabajoData.personaIngreso?.tipoIngreso?.nombre ?? '';
+                    existingRecord.frecuenciaIngreso = trabajoData.personaIngreso?.frecuenciaIngreso?.descripcion ?? '';
+
+                    existingRecord.valorRango = trabajoData.personaIngreso?.valorRango ?? '';
+
+                    existingRecord.idCargo = trabajoData.cargo?.idCargo ?? 0;
+                    existingRecord.nombreCargo = trabajoData.cargo?.nombre ?? '';
+
+                    existingRecord.tipoAfiliado = trabajoData.tipoAfiliado ?? '';
+                    existingRecord.telefonoOfi = trabajoData.telefonoOfi ?? '';
+                    existingRecord.telefonoAfi = trabajoData.telefonoAfi ?? '';
+                    existingRecord.direccionOfi = trabajoData.direccionOfi ?? '';
+                    existingRecord.direccionAfi = trabajoData.direccionAfi ?? '';
+                    existingRecord.celular = trabajoData.celular ?? '';
+                    existingRecord.baseDate = trabajoData.baseDate ?? new Date().toISOString();
+
+                    await this.cognoTrabajoRepository.save(existingRecord);
+                } else {
+                    const createCognoTrabajoDto: CreateCognoTrabajoDto = {
+                        idCognoSolicitudCredito: idCognoSolicitudCredito || 0,
+                        fechaActualizacion: trabajoData.fechaActualizacion || 0,
+                        fechaIngreso: trabajoData.fechaIngreso || 0,
+                        fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta || 0,
+
+                        identificacionPersonaPatrono: pp?.identificacion ?? '',
+                        nombrePatrono: pp?.nombre ?? '',
+                        nombreUno: pp?.nombreUno ?? '',
+                        nombreDos: pp?.nombreDos ?? '',
+                        idTipoIdentificacion: ti?.idTipoIdentificacion ?? 0,
+                        descripcion: ti?.descripcion ?? '',
+                        plazoSocial: pp?.plazoSocial ?? new Date(),
+                        expediente: pp?.expediente ?? 0,
+                        fechaConstitucion: pp?.fechaConstitucion ?? new Date(),
+                        nombreComercial: pp?.nombreComercial ?? '',
+                        idTipoCompania: tc?.idTipoCompania ?? 0,
+                        nombretipoCompania: tc?.nombre ?? '',
+                        idCanton: oc?.idCanton ?? 0,
+                        nombreCanton: oc?.nombre ?? '',
+                        idProvincia: pr?.idProvincia ?? 0,
+                        nombreProvincia: pr?.nombre ?? '',
+                        codigoArea: pr?.codigoArea ?? '',
+                        idPais: pa?.idPais ?? 0,
+                        nombrePais: pa?.nombre ?? '',
+                        codigoAreaPais: pa?.codigoArea ?? '',
+                        codigoIso2: pa?.codigoIso2 ?? '',
+                        codigoIso3: pa?.codigoIso3 ?? '',
+                        codigoIso: pa?.codigoIso ?? '',
+                        nombreSituacionLegal: sl?.nombre ?? '',
+                        proveedoraEstado: pp?.proveedoraEstado ?? '',
+                        pagoRemesas: pp?.pagoRemesas ?? '',
+                        vendeCredito: pp?.vendeCredito ?? '',
+                        capitalSuscrito: pp?.capitalSuscrito ?? 0,
+                        capitalAutorizado: pp?.capitalAutorizado ?? 0,
+                        valorNominal: pp?.valorNominal ?? 0,
+                        perteneceMv: pp?.perteneceMv ?? '',
+                        apellidoUno: pp?.apellidoUno ?? '',
+                        apellidoDos: pp?.apellidoDos ?? '',
+
+                        valor: trabajoData.personaIngreso?.valor ?? 0,
+                        tipoIngreso: trabajoData.personaIngreso?.tipoIngreso?.nombre ?? '',
+                        frecuenciaIngreso: trabajoData.personaIngreso?.frecuenciaIngreso?.descripcion ?? '',
+
+                        valorRango: trabajoData.personaIngreso?.valorRango ?? '',
+                        idCargo: trabajoData.cargo?.idCargo ?? 0,
+                        nombreCargo: trabajoData.cargo?.nombre ?? '',
+                        tipoAfiliado: trabajoData.tipoAfiliado ?? '',
+                        telefonoOfi: trabajoData.telefonoOfi ?? '',
+                        telefonoAfi: trabajoData.telefonoAfi ?? '',
+                        direccionOfi: trabajoData.direccionOfi ?? '',
+                        direccionAfi: trabajoData.direccionAfi ?? '',
+                        celular: trabajoData.celular ?? '',
+                        baseDate: trabajoData.baseDate ?? new Date().toISOString(),
+                    };
+
+                    const newRecord = this.cognoTrabajoRepository.create(createCognoTrabajoDto);
+                    await this.cognoTrabajoRepository.save(newRecord);
+                }
+            }
+        } catch (error) {
+            console.error("Error en createTrabajo:", error);
+            this.handleDBException(error);
         }
+    }
 
-        for (const trabajoData of apiData) {
-            const pp = trabajoData.personaPatrono;
-            const ti = pp?.tipoIdentificacion;
-            const tc = pp?.tipoCompania;
-            const oc = pp?.oficinaControl;
-            const pr = oc?.provincia;
-            const pa = pr?.pais;
-            const sl = pp?.situacionLegal;
+    async saveCognoAfiliacionIess(afiliacion: AfiliacionIessDto, idCognoSolicitudCredito: number): Promise<void> {
+        try {
+            console.log('📥 Afiliación recibida:', JSON.stringify(afiliacion, null, 2));
 
-            const identificacionPatrono = pp?.identificacion ?? '';
+            if (!afiliacion.cedula || !afiliacion.empresas) {
+                throw new Error('Datos incompletos en la afiliación');
+            }
 
-            const existingRecord = await this.cognoTrabajoRepository.findOne({
-                where: {
-                    idCognoSolicitudCredito: idCognoSolicitudCredito,
-                    identificacionPersonaPatrono: identificacionPatrono,
-                },
+            const afiliacionEntity = this.cognoAfiliacionIessRepository.create({
+                cedula: afiliacion.cedula,
+                nombre: afiliacion.nombre,
+                corte: afiliacion.corte,
+                estado: afiliacion.estado,
+                idCognoSolicitudCredito,
             });
 
-            if (existingRecord) {
-                existingRecord.idCognoSolicitudCredito = idCognoSolicitudCredito || 0;
-                existingRecord.fechaActualizacion = trabajoData.fechaActualizacion || 0;
-                existingRecord.fechaIngreso = trabajoData.fechaIngreso || 0;
-                existingRecord.fechaAfiliacionHasta = trabajoData.fechaAfiliacionHasta || new Date();
+            const savedAfiliacion = await this.cognoAfiliacionIessRepository.save(afiliacionEntity);
 
-                existingRecord.identificacionPersonaPatrono = pp?.identificacion ?? '';
-                existingRecord.nombrePatrono = pp?.nombre ?? '';
-                existingRecord.nombreUno = pp?.nombreUno ?? '';
-                existingRecord.nombreDos = pp?.nombreDos ?? '';
-                existingRecord.idTipoIdentificacion = ti?.idTipoIdentificacion ?? 0;
-                existingRecord.descripcion = ti?.descripcion ?? '';
-                existingRecord.plazoSocial = pp?.plazoSocial ?? new Date();
-                existingRecord.expediente = pp?.expediente ?? 0;
-                existingRecord.fechaConstitucion = pp?.fechaConstitucion ?? new Date();
-                existingRecord.nombreComercial = pp?.nombreComercial ?? '';
-                existingRecord.idTipoCompania = tc?.idTipoCompania ?? 0;
-                existingRecord.nombretipoCompania = tc?.nombre ?? '';
-                existingRecord.idCanton = oc?.idCanton ?? 0;
-                existingRecord.nombreCanton = oc?.nombre ?? '';
-                existingRecord.idProvincia = pr?.idProvincia ?? 0;
-                existingRecord.nombreProvincia = pr?.nombre ?? '';
-                existingRecord.codigoArea = pr?.codigoArea ?? '';
-                existingRecord.idPais = pa?.idPais ?? 0;
-                existingRecord.nombrePais = pa?.nombre ?? '';
-                existingRecord.codigoAreaPais = pa?.codigoArea ?? '';
-                existingRecord.codigoIso2 = pa?.codigoIso2 ?? '';
-                existingRecord.codigoIso3 = pa?.codigoIso3 ?? '';
-                existingRecord.codigoIso = pa?.codigoIso ?? '';
-                existingRecord.nombreSituacionLegal = sl?.nombre ?? '';
-                existingRecord.proveedoraEstado = pp?.proveedoraEstado ?? '';
-                existingRecord.pagoRemesas = pp?.pagoRemesas ?? '';
-                existingRecord.vendeCredito = pp?.vendeCredito ?? '';
-                existingRecord.capitalSuscrito = pp?.capitalSuscrito ?? 0;
-                existingRecord.capitalAutorizado = pp?.capitalAutorizado ?? 0;
-                existingRecord.valorNominal = pp?.valorNominal ?? 0;
-                existingRecord.perteneceMv = pp?.perteneceMv ?? '';
-                existingRecord.apellidoUno = pp?.apellidoUno ?? '';
-                existingRecord.apellidoDos = pp?.apellidoDos ?? '';
+            if (Array.isArray(afiliacion.empresas) && afiliacion.empresas.length > 0) {
+                const empresasEntities = afiliacion.empresas.map((empresa) =>
+                    this.cognoAfiliacionIessEmpresaRepository.create({
+                        idCognoAfiliacionIess: savedAfiliacion.idCognoAfiliacionIess,
+                        nombreEmpresa: empresa.nombreEmpresa,
+                        ruc: empresa.ruc,
+                    }),
+                );
 
-                existingRecord.valor = trabajoData.personaIngreso?.valor ?? 0;
-                existingRecord.tipoIngreso = trabajoData.personaIngreso?.tipoIngreso ?? '';
-                existingRecord.frecuenciaIngreso = trabajoData.personaIngreso?.frecuenciaIngreso ?? '';
-                existingRecord.valorRango = trabajoData.personaIngreso?.valorRango ?? '';
-
-                existingRecord.idCargo = trabajoData.cargo?.idCargo ?? 0;
-                existingRecord.nombreCargo = trabajoData.cargo?.nombre ?? '';
-
-                existingRecord.tipoAfiliado = trabajoData.tipoAfiliado ?? '';
-                existingRecord.telefonoOfi = trabajoData.telefonoOfi ?? '';
-                existingRecord.telefonoAfi = trabajoData.telefonoAfi ?? '';
-                existingRecord.direccionOfi = trabajoData.direccionOfi ?? '';
-                existingRecord.direccionAfi = trabajoData.direccionAfi ?? '';
-                existingRecord.celular = trabajoData.celular ?? '';
-                existingRecord.baseDate = trabajoData.baseDate ?? new Date().toISOString();
-
-                await this.cognoTrabajoRepository.save(existingRecord);
-            } else {
-                const createCognoTrabajoDto: CreateCognoTrabajoDto = {
-                    idCognoSolicitudCredito: idCognoSolicitudCredito || 0,
-                    fechaActualizacion: trabajoData.fechaActualizacion || 0,
-                    fechaIngreso: trabajoData.fechaIngreso || 0,
-                    fechaAfiliacionHasta: trabajoData.fechaAfiliacionHasta || 0,
-
-                    identificacionPersonaPatrono: pp?.identificacion ?? '',
-                    nombrePatrono: pp?.nombre ?? '',
-                    nombreUno: pp?.nombreUno ?? '',
-                    nombreDos: pp?.nombreDos ?? '',
-                    idTipoIdentificacion: ti?.idTipoIdentificacion ?? 0,
-                    descripcion: ti?.descripcion ?? '',
-                    plazoSocial: pp?.plazoSocial ?? new Date(),
-                    expediente: pp?.expediente ?? 0,
-                    fechaConstitucion: pp?.fechaConstitucion ?? new Date(),
-                    nombreComercial: pp?.nombreComercial ?? '',
-                    idTipoCompania: tc?.idTipoCompania ?? 0,
-                    nombretipoCompania: tc?.nombre ?? '',
-                    idCanton: oc?.idCanton ?? 0,
-                    nombreCanton: oc?.nombre ?? '',
-                    idProvincia: pr?.idProvincia ?? 0,
-                    nombreProvincia: pr?.nombre ?? '',
-                    codigoArea: pr?.codigoArea ?? '',
-                    idPais: pa?.idPais ?? 0,
-                    nombrePais: pa?.nombre ?? '',
-                    codigoAreaPais: pa?.codigoArea ?? '',
-                    codigoIso2: pa?.codigoIso2 ?? '',
-                    codigoIso3: pa?.codigoIso3 ?? '',
-                    codigoIso: pa?.codigoIso ?? '',
-                    nombreSituacionLegal: sl?.nombre ?? '',
-                    proveedoraEstado: pp?.proveedoraEstado ?? '',
-                    pagoRemesas: pp?.pagoRemesas ?? '',
-                    vendeCredito: pp?.vendeCredito ?? '',
-                    capitalSuscrito: pp?.capitalSuscrito ?? 0,
-                    capitalAutorizado: pp?.capitalAutorizado ?? 0,
-                    valorNominal: pp?.valorNominal ?? 0,
-                    perteneceMv: pp?.perteneceMv ?? '',
-                    apellidoUno: pp?.apellidoUno ?? '',
-                    apellidoDos: pp?.apellidoDos ?? '',
-
-                    valor: trabajoData.personaIngreso?.valor ?? 0,
-                    tipoIngreso: trabajoData.personaIngreso?.tipoIngreso?.nombre ?? '',
-                    frecuenciaIngreso: trabajoData.personaIngreso?.frecuenciaIngreso?.descripcion ?? '',
-                    
-                    valorRango: trabajoData.personaIngreso?.valorRango ?? '',
-                    idCargo: trabajoData.cargo?.idCargo ?? 0,
-                    nombreCargo: trabajoData.cargo?.nombre ?? '',
-                    tipoAfiliado: trabajoData.tipoAfiliado ?? '',
-                    telefonoOfi: trabajoData.telefonoOfi ?? '',
-                    telefonoAfi: trabajoData.telefonoAfi ?? '',
-                    direccionOfi: trabajoData.direccionOfi ?? '',
-                    direccionAfi: trabajoData.direccionAfi ?? '',
-                    celular: trabajoData.celular ?? '',
-                    baseDate: trabajoData.baseDate ?? new Date().toISOString(),
-                };
-
-                const newRecord = this.cognoTrabajoRepository.create(createCognoTrabajoDto);
-                await this.cognoTrabajoRepository.save(newRecord);
+                await this.cognoAfiliacionIessEmpresaRepository.save(empresasEntities);
             }
+
+            this.logger.log(`✅ Afiliación IESS guardada para solicitud ${idCognoSolicitudCredito}`);
+        } catch (error) {
+            this.logger.error(`❌ Error al guardar afiliación IESS: ${error.message}`);
+            throw new InternalServerErrorException('Error al guardar afiliación IESS');
         }
-    } catch (error) {
-        console.error("Error en createTrabajo:", error);
-        this.handleDBException(error);
     }
-}
 
+    async guardarDeudaEmovConInfracciones(
+        deudaData: DeudaEmovDto,
+        idCognoSolicitudCredito: number
+    ): Promise<void> {
+        try {
+            this.logger.log('💾 Guardando deuda EMOV para:', deudaData.cedula);
+            console.log('deudaData', JSON.stringify(deudaData, null, 2));
+            // 1. Guardar deuda principal
+            const deuda = this.cognoDeudaEmovRepository.create({
+                idCognoSolicitudCredito,
+                cedula: deudaData.cedula,
+                tipo_busqueda: deudaData.tipoBusqueda,
+                valor_adeudado: deudaData.valorAdeudado,
+                fecha_actualizacion: deudaData.fechaActualizacion,
+            });
 
+            const deudaSaved = await this.cognoDeudaEmovRepository.save(deuda);
 
+            // 2. Recorrer infracciones
+            for (const infraccionDto of deudaData.infraccion) {
+                const infraccion = this.cognoInfraccionRepository.create({
+                    rubro: infraccionDto.rubro,
+                    detalle: infraccionDto.detalle,
+                    total: infraccionDto.total,
+                    idDeudaEmov: deudaSaved.idDeudaEmov,
+                });
 
+                const infraccionSaved = await this.cognoInfraccionRepository.save(infraccion);
+                const dr = infraccionDto.detalleRubro;
+                console.log('lugar length:', dr.lugar?.length);
+                console.log('articulo length:', dr.articulo?.length);
+                // etc para observaciones, placa, etc
+
+                // 🔍 Validar que detalleRubro sea objeto y no array
+                const detalleRubroData = Array.isArray(infraccionDto.detalleRubro)
+                    ? infraccionDto.detalleRubro[0] // o recorrerlos todos si esperas múltiples
+                    : infraccionDto.detalleRubro;
+
+                if (!detalleRubroData || typeof detalleRubroData !== 'object') {
+                    this.logger.warn(`⚠️ detalleRubro inválido para infracción: ${infraccionDto.detalle}`);
+                    continue;
+                }
+
+                const detalle = this.cognoDetalleRubroRepository.create({
+                    ...detalleRubroData,
+                    id_infraccion: infraccionSaved.id_infraccion,
+                });
+
+                await this.cognoDetalleRubroRepository.save(detalle);
+            }
+
+            this.logger.log(`✅ Datos de deuda EMOV guardados para cédula ${deudaData.cedula}`);
+        } catch (error) {
+            this.logger.error(`❌ Error al guardar deuda EMOV: ${error.message}`);
+            throw new InternalServerErrorException('Error al guardar datos de deuda EMOV');
+        }
+    }
+
+    async saveCognoIssfacCertMedico(apiData: AfiliacionesDto, idCognoSolicitudCredito: number): Promise<void> {
+        try {
+            console.log('saveCognoIssfacCertMedico', JSON.stringify(apiData, null, 2));
+            if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+                console.warn('⚠️ No se encontraron datos de afiliaciones válidos');
+                return;
+            }
+
+            for (const afiliacion of apiData) {
+                const {
+                    cedula,
+                    nombre,
+                    edad,
+                    categoria,
+                    cobertura,
+                    fechaActualizacion
+                } = afiliacion;
+
+                // Convertir la fecha a tipo Date (formato: dd/mm/yyyy -> yyyy-mm-dd)
+                const fechaActualizacionDate = fechaActualizacion
+                    ? new Date(fechaActualizacion.split('/').reverse().join('-'))
+                    : null;
+
+                const cert = this.cognoIssfacCertMedicoRepository.create({
+                    idCognoSolicitudCredito,
+                    cedula,
+                    nombre,
+                    edad,
+                    categoria,
+                    cobertura,
+                    fechaActualizacion: fechaActualizacionDate
+                });
+
+                await this.cognoIssfacCertMedicoRepository.save(cert);
+            }
+
+            console.log(`✅ Certificados médicos guardados correctamente para solicitud ${idCognoSolicitudCredito}`);
+        } catch (error) {
+            console.error('❌ Error al guardar certificados médicos:', error);
+            throw error;
+        }
+    }
 
     private handleDBException(error: any) {
         if (error.code === '23505') {

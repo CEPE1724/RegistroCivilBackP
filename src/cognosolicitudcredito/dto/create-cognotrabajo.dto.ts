@@ -245,5 +245,4 @@ export class CreateCognoTrabajoDto {
     @IsString()
     @IsOptional()
     baseDate?: string;
-
 }
