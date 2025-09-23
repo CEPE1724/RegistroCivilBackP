@@ -126,10 +126,11 @@ export class CreSolicitudWebService {
         const FechaConsulta = eqfxData.data.FechaSistema;
         const fechaActual = new Date();
         const fechaSistema = new Date(FechaConsulta);
-        const diferenciaTiempo = fechaActual.getTime() - fechaSistema.getTime();
-        const diferenciaMeses = diferenciaTiempo / (1000 * 60 * 60 * 24 * 30);
 
-        if (diferenciaMeses > 3) {
+        const mismoMes = fechaActual.getMonth() === fechaSistema.getMonth();
+        const mismoAnio = fechaActual.getFullYear() === fechaSistema.getFullYear();
+
+        if (!(mismoMes && mismoAnio)) {
           debeConsultarEquifax = true;
         }
       } else {
@@ -183,7 +184,7 @@ export class CreSolicitudWebService {
       const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
       const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
       const deudaData: DeudaEmovDto = deudaEmovResult.data.deudaEmov[0];
-    
+
 
 
       if (idSituacionLaboral === 1) {
@@ -240,7 +241,7 @@ export class CreSolicitudWebService {
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
-      await this.authService.guardarDeudaEmovConInfracciones( deudaData, saveData.idCognoSolicitudCredito);
+      await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);
 
       if (bApiDataTrabajo && trabajos && trabajos.length > 0 && trabajos[0].fechaActualizacion) {
         // Si tiene datos, se guarda la información
@@ -292,118 +293,118 @@ export class CreSolicitudWebService {
   }
 
   async procesarDatosCogno(cedula: string) {
-  try {
-    /** ────────────────────────────────
-     * 🔐 1. Obtener token COGNO
-     * ──────────────────────────────── */
-    const token = await this.authService.getToken(cedula);
-    if (!token) {
+    try {
+      /** ────────────────────────────────
+       * 🔐 1. Obtener token COGNO
+       * ──────────────────────────────── */
+      const token = await this.authService.getToken(cedula);
+      if (!token) {
+        return {
+          success: false,
+          mensaje: 'Error al obtener token de COGNO.',
+          errorOrigen: 'AuthService',
+          data: null,
+        };
+      }
+
+      /** ────────────────────────────────
+       * 🧠 2. Consultar datos generales COGNO
+       * ──────────────────────────────── */
+      const apiResult = await this.authService.getApiData(token, cedula);
+      if (!apiResult.success) {
+        return {
+          success: false,
+          mensaje: `Error desde API externa: ${apiResult.mensaje}`,
+          errorOrigen: 'ApiExterna',
+          data: null,
+        };
+      }
+      const apiData = apiResult.data;
+
+      /** ────────────────────────────────
+       * 💼 3. Consultar datos laborales y deuda EMOV
+       * ──────────────────────────────── */
+      const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
+
+      const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
+      const deudaData: DeudaEmovDto = deudaEmovResult.data?.deudaEmov?.[0];
+
+      const IssfacCertMedico = await this.authService.getApiIssfacCertMedico(token, cedula);
+      const IssfacCertMedicoData: AfiliacionesDto = IssfacCertMedico.data?.afiliaciones || [];
+
+      const afiliacionIess = await this.authService.getafilicacion_iess(token, cedula);
+      const afiliacionIessData: AfiliacionIessDto = afiliacionIess.data?.afiliacionIess?.[0];
+
+      console.log('Afiliacion IESS Data:', afiliacionIess);
+      const trabajos = trabajoResult.data?.trabajos || [];
+      const bApiDataTrabajo = trabajos.length > 0;
+
+      /** ────────────────────────────────
+       * 💾 4. Guardar datos de COGNO
+       * ──────────────────────────────── */
+      const saveData = await this.authService.create(apiData, bApiDataTrabajo, 0);
+
+      // Guardar persona natural
+      await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
+
+      // Guardar conyugue si existe
+      const conyuge = apiData.personaNaturalConyuge?.personaConyuge;
+      if (conyuge?.identificacion && conyuge?.nombre) {
+        await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
+      }
+
+      // Guardar lugar nacimiento si existe
+      const lugarNacimiento = apiData.personaNatural?.lugarNacimiento;
+      if (lugarNacimiento) {
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
+      }
+
+      // Si está casado, guardar domicilio conyuge
+      if (apiData.estadoCivil?.estadoCivil?.descripcion === 'CASADO') {
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
+      }
+
+      // Nacionalidades y profesiones
+      await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
+      await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
+
+      // Deuda EMOV
+      if (deudaData) {
+        await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);
+      }
+
+      // Afiliaciones ISSFAC
+      if (IssfacCertMedicoData) {
+        await this.authService.saveCognoIssfacCertMedico(IssfacCertMedicoData, saveData.idCognoSolicitudCredito);
+      }
+
+      // Afiliacion IESS
+      if (afiliacionIessData) {
+        await this.authService.saveCognoAfiliacionIess(afiliacionIessData, saveData.idCognoSolicitudCredito);
+      }
+
+      // Trabajos (si existen)
+      if (bApiDataTrabajo && trabajos[0]?.fechaActualizacion) {
+        await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
+      }
+
+
+
+      return {
+        success: true,
+        mensaje: 'Datos de COGNO procesados correctamente.',
+        data: saveData,
+      };
+    } catch (error) {
+      this.logger.error(`❌ Error al procesar datos COGNO: ${error.message}`);
       return {
         success: false,
-        mensaje: 'Error al obtener token de COGNO.',
-        errorOrigen: 'AuthService',
-        data: null,
+        mensaje: 'Error al procesar datos de COGNO.',
+        error: error.message,
+        errorOrigen: 'Cogno',
       };
     }
-
-    /** ────────────────────────────────
-     * 🧠 2. Consultar datos generales COGNO
-     * ──────────────────────────────── */
-    const apiResult = await this.authService.getApiData(token, cedula);
-    if (!apiResult.success) {
-      return {
-        success: false,
-        mensaje: `Error desde API externa: ${apiResult.mensaje}`,
-        errorOrigen: 'ApiExterna',
-        data: null,
-      };
-    }
-    const apiData = apiResult.data;
-
-    /** ────────────────────────────────
-     * 💼 3. Consultar datos laborales y deuda EMOV
-     * ──────────────────────────────── */
-    const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
-
-    const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
-    const deudaData: DeudaEmovDto = deudaEmovResult.data?.deudaEmov?.[0];
-
-    const IssfacCertMedico = await this.authService.getApiIssfacCertMedico(token, cedula);
-    const IssfacCertMedicoData: AfiliacionesDto = IssfacCertMedico.data?.afiliaciones || [];
-
-    const afiliacionIess = await this.authService.getafilicacion_iess(token, cedula);
-    const afiliacionIessData: AfiliacionIessDto = afiliacionIess.data?.afiliacionIess?.[0];
-
-    console.log('Afiliacion IESS Data:', afiliacionIess);
-    const trabajos = trabajoResult.data?.trabajos || [];
-    const bApiDataTrabajo = trabajos.length > 0;
-
-    /** ────────────────────────────────
-     * 💾 4. Guardar datos de COGNO
-     * ──────────────────────────────── */
-    const saveData = await this.authService.create(apiData, bApiDataTrabajo, 0);
-
-    // Guardar persona natural
-    await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
-
-    // Guardar conyugue si existe
-    const conyuge = apiData.personaNaturalConyuge?.personaConyuge;
-    if (conyuge?.identificacion && conyuge?.nombre) {
-      await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
-    }
-
-    // Guardar lugar nacimiento si existe
-    const lugarNacimiento = apiData.personaNatural?.lugarNacimiento;
-    if (lugarNacimiento) {
-      await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
-    }
-
-    // Si está casado, guardar domicilio conyuge
-    if (apiData.estadoCivil?.estadoCivil?.descripcion === 'CASADO') {
-      await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
-    }
-
-    // Nacionalidades y profesiones
-    await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
-    await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
-
-    // Deuda EMOV
-    if (deudaData) {
-      await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);
-    }
-
-    // Afiliaciones ISSFAC
-    if (IssfacCertMedicoData) {
-      await this.authService.saveCognoIssfacCertMedico(IssfacCertMedicoData, saveData.idCognoSolicitudCredito);
-    }
-
-    // Afiliacion IESS
-    if (afiliacionIessData) {
-      await this.authService.saveCognoAfiliacionIess(afiliacionIessData, saveData.idCognoSolicitudCredito);
-    }
-
-    // Trabajos (si existen)
-    if (bApiDataTrabajo && trabajos[0]?.fechaActualizacion) {
-      await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
-    }
-
-   
-
-    return {
-      success: true,
-      mensaje: 'Datos de COGNO procesados correctamente.',
-      data: saveData,
-    };
-  } catch (error) {
-    this.logger.error(`❌ Error al procesar datos COGNO: ${error.message}`);
-    return {
-      success: false,
-      mensaje: 'Error al procesar datos de COGNO.',
-      error: error.message,
-      errorOrigen: 'Cogno',
-    };
   }
-}
 
 
 
