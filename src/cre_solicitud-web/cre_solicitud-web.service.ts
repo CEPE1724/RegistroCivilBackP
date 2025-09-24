@@ -19,6 +19,7 @@ import { DeudaEmovDto } from 'src/cognosolicitudcredito/dto/deudaEmov/deuda-emov
 import { AfiliacionesDto } from 'src/cognosolicitudcredito/dto/afiliaciones/afiliaciones.dto';
 import { AfiliacionIessDto } from 'src/cognosolicitudcredito/dto/afiliacion_iess/afiliacionesIess.dto';
 
+
 @Injectable()
 export class CreSolicitudWebService {
   private readonly EQFX_UAT = process.env.EQFX_UAT;
@@ -182,9 +183,9 @@ export class CreSolicitudWebService {
       let trabajos = [];
       const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
       const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
-      const deudaData: DeudaEmovDto = deudaEmovResult.data.deudaEmov[0];
+      const deudaData: DeudaEmovDto = deudaEmovResult.data?.deudaEmov?.[0];
 
-
+ 
 
       if (idSituacionLaboral === 1) {
         // Obligatorio: debe tener datos y éxito
@@ -239,7 +240,7 @@ export class CreSolicitudWebService {
       // Crear nacionalidades, profesiones y trabajos
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
-
+        
        // Deuda EMOV
       if (deudaData) {
         await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);

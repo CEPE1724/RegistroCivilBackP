@@ -852,7 +852,7 @@ export class AuthService {
         idCognoSolicitudCredito: number
     ): Promise<void> {
         try {
-            this.logger.log('💾 Guardando deuda EMOV para:', deudaData.cedula);
+            this.logger.log('💾 Guardando deuda EMOV para:', deudaData);
             console.log('deudaData', JSON.stringify(deudaData, null, 2));
             // 1. Guardar deuda principal
             const deuda = this.cognoDeudaEmovRepository.create({
