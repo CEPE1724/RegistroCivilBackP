@@ -180,7 +180,6 @@ export class CreSolicitudWebService {
       // 3.  Consultar API externa Datos laborales
       const idSituacionLaboral = createCreSolicitudWebDto.idSituacionLaboral;
       let trabajos = [];
-      let deudaEmov = [];
       const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
       const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
       const deudaData: DeudaEmovDto = deudaEmovResult.data.deudaEmov[0];
@@ -241,7 +240,10 @@ export class CreSolicitudWebService {
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
 
-      await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);
+       // Deuda EMOV
+      if (deudaData) {
+        await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);
+      }
 
       if (bApiDataTrabajo && trabajos && trabajos.length > 0 && trabajos[0].fechaActualizacion) {
         // Si tiene datos, se guarda la información
