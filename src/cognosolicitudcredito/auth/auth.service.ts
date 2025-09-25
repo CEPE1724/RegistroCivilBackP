@@ -27,7 +27,7 @@ import { CognoAfiliacionIessEmpresa } from '../entities/afiliacion_iess/cognoAfi
 import { DeudaEmovDto } from '../dto/deudaEmov/deuda-emov.dto';
 import { AfiliacionesDto } from '../dto/afiliaciones/afiliaciones.dto';
 import { AfiliacionIessDto } from '../dto/afiliacion_iess/afiliacionesIess.dto';
-
+import { JubiladoResponse } from '../interfaces/jubilado-response.interfaces';
 
 import { InjectRepository } from '@nestjs/typeorm';
 import { Console } from 'console';
@@ -43,6 +43,7 @@ export class AuthService {
     private readonly apiCognopn_deudas_emov = process.env.API_COGNOPN_DEUDAS_EMOV;
     private readonly apiCognopn_afiliciacion_issfac_cert_medico = process.env.API_COGNOEMP_PN_AFILILIACION_ISSFAC_CERT_MEDICO;
     private readonly apiCognopn_afiliciacion_iess = process.env.API_COGNOEMP_PN_AFILILIACION_IESS;
+    private readonly apiCognopn_jubilado = process.env.API_COGNOPN_JUBILADO;
     constructor(
         @InjectRepository(Cognosolicitudcredito)
         private readonly cognosolicitudcreditoRepository: Repository<Cognosolicitudcredito>,
@@ -173,6 +174,41 @@ export class AuthService {
             const data = response.data;
             // console.log('Response from API Trabajo:', data.trabajos);
 
+            // Si el API responde con un error de negocio
+            if (data?.estado?.codigo === 'ERROR') {
+                return {
+                    success: false,
+                    mensaje: data.estado.mensaje || 'Error en API de trabajo',
+                };
+            }
+
+            // Aunque trabajos esté vacío, si el estado es OK, es válido
+            return {
+                success: true,
+                data,
+            };
+        } catch (error) {
+            console.error('Error al obtener datos de empleo desde API:', error.message);
+            return {
+                success: false,
+                mensaje: 'No se pudo conectar con la API de empleo',
+            };
+        }
+    }
+
+    async getApiDataJubilado(token: string, cedula: string): Promise<JubiladoResponse> {
+        try {
+            const url = `${this.apiCognopn_jubilado}${cedula}`;
+
+            const response = await axios.get(url, {
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+            });
+
+            const data = response.data;
+            // console.log('Response from API Trabajo:', data.trabajos);
+            console.log('Response from API Jubilado:', data.estado);
             // Si el API responde con un error de negocio
             if (data?.estado?.codigo === 'ERROR') {
                 return {
@@ -699,7 +735,7 @@ export class AuthService {
                     existingRecord.descripcion = ti?.descripcion ?? '';
                     existingRecord.plazoSocial = pp?.plazoSocial ?? new Date();
                     existingRecord.expediente = pp?.expediente ?? 0;
-                    existingRecord.fechaConstitucion = pp?.fechaConstitucion ?? new Date();
+                    existingRecord.fechaConstitucion = pp?.fechaConstitucion ? new Date(pp.fechaConstitucion) : null;
                     existingRecord.nombreComercial = pp?.nombreComercial ?? '';
                     existingRecord.idTipoCompania = tc?.idTipoCompania ?? 0;
                     existingRecord.nombretipoCompania = tc?.nombre ?? '';
@@ -758,7 +794,7 @@ export class AuthService {
                         descripcion: ti?.descripcion ?? '',
                         plazoSocial: pp?.plazoSocial ?? new Date(),
                         expediente: pp?.expediente ?? 0,
-                        fechaConstitucion: pp?.fechaConstitucion ?? new Date(),
+                        fechaConstitucion: pp?.fechaConstitucion ? new Date(pp.fechaConstitucion) : null,
                         nombreComercial: pp?.nombreComercial ?? '',
                         idTipoCompania: tc?.idTipoCompania ?? 0,
                         nombretipoCompania: tc?.nombre ?? '',
@@ -809,6 +845,97 @@ export class AuthService {
             this.handleDBException(error);
         }
     }
+
+    async createTrabajoLite(apiData: any[], idCognoSolicitudCredito: number): Promise<void> {
+        console.log('createTrabajoLite', apiData, idCognoSolicitudCredito);
+
+        if (!apiData || !Array.isArray(apiData) || apiData.length === 0) {
+            console.warn("No hay trabajos válidos para registrar.");
+            return;
+        }
+
+        try {
+            for (const trabajo of apiData) {
+                const patrono = trabajo.personaPatrono || {};
+                const identificacionPatrono = patrono.identificacion ?? '';
+                const ti = patrono.tipoIdentificacion || {};
+                const tc = patrono.tipoCompania || {};
+                const oc = patrono.oficinaControl || {};
+                const pr = oc.provincia || {};
+                const pa = pr.pais || {};
+                const sl = patrono.situacionLegal || {};
+
+                const fechaConstitucion = patrono.fechaConstitucion && !isNaN(patrono.fechaConstitucion)
+                    ? new Date(patrono.fechaConstitucion)
+                    : null;
+
+                const createDto: CreateCognoTrabajoDto = {
+                    idCognoSolicitudCredito,
+
+                    fechaActualizacion: trabajo.fechaActualizacion ?? 0,
+                    fechaIngreso: trabajo.fechaIngreso ?? 0,
+                    fechaAfiliacionHasta: trabajo.fechaAfiliacionHasta ?? 0,
+
+                    identificacionPersonaPatrono: identificacionPatrono,
+                    nombrePatrono: patrono.nombre ?? '',
+                    nombreUno: patrono.nombreUno ?? '',
+                    nombreDos: patrono.nombreDos ?? '',
+                    idTipoIdentificacion: ti.idTipoIdentificacion ?? 0,
+                    descripcion: ti.descripcion ?? '',
+                    plazoSocial: patrono.plazoSocial ?? new Date(),
+                    expediente: patrono.expediente ?? 0,
+                    fechaConstitucion: fechaConstitucion,
+                    nombreComercial: patrono.nombreComercial ?? '',
+                    idTipoCompania: tc.idTipoCompania ?? 0,
+                    nombretipoCompania: tc.nombre ?? '',
+                    idCanton: oc.idCanton ?? 0,
+                    nombreCanton: oc.nombre ?? '',
+                    idProvincia: pr.idProvincia ?? 0,
+                    nombreProvincia: pr.nombre ?? '',
+                    codigoArea: pr.codigoArea ?? '',
+                    idPais: pa.idPais ?? 0,
+                    nombrePais: pa.nombre ?? '',
+                    codigoAreaPais: pa.codigoArea ?? '',
+                    codigoIso2: pa.codigoIso2 ?? '',
+                    codigoIso3: pa.codigoIso3 ?? '',
+                    codigoIso: pa.codigoIso ?? 0,
+                    nombreSituacionLegal: sl.nombre ?? '',
+                    proveedoraEstado: patrono.proveedoraEstado ?? '',
+                    pagoRemesas: patrono.pagoRemesas ?? '',
+                    vendeCredito: patrono.vendeCredito ?? '',
+                    capitalSuscrito: patrono.capitalSuscrito ?? 0,
+                    capitalAutorizado: patrono.capitalAutorizado ?? 0,
+                    valorNominal: patrono.valorNominal ?? 0,
+                    perteneceMv: patrono.perteneceMv ?? '',
+                    apellidoUno: patrono.apellidoUno ?? '',
+                    apellidoDos: patrono.apellidoDos ?? '',
+
+                    valor: trabajo.personaIngreso?.valor ?? 0,
+                    tipoIngreso: trabajo.personaIngreso?.tipoIngreso?.nombre ?? '',
+                    frecuenciaIngreso: trabajo.personaIngreso?.frecuenciaIngreso?.descripcion ?? '',
+                    valorRango: trabajo.personaIngreso?.valorRango ?? '',
+
+                    idCargo: trabajo.cargo?.idCargo ?? 0,
+                    nombreCargo: trabajo.cargo?.nombre ?? '',
+
+                    tipoAfiliado: trabajo.tipoAfiliado?.nombre ?? '',
+                    telefonoOfi: trabajo.telefonoOfi ?? '',
+                    telefonoAfi: trabajo.telefonoAfi ?? '',
+                    direccionOfi: trabajo.direccionOfi ?? '',
+                    direccionAfi: trabajo.direccionAfi ?? '',
+                    celular: trabajo.celular ?? '',
+                    baseDate: trabajo.baseDate ?? new Date().toISOString(),
+                };
+
+                const newRecord = this.cognoTrabajoRepository.create(createDto);
+                await this.cognoTrabajoRepository.save(newRecord);
+            }
+        } catch (error) {
+            console.error("Error en createTrabajoLite:", error);
+            this.handleDBException?.(error);
+        }
+    }
+
 
     async saveCognoAfiliacionIess(afiliacion: AfiliacionIessDto, idCognoSolicitudCredito: number): Promise<void> {
         try {

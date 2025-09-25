@@ -29,4 +29,5 @@ export const JoinValidationSchema = Joi.object({
   API_COGNOPN_DEUDAS_EMOV: Joi.string().required(),
   API_COGNOEMP_PN_AFILILIACION_ISSFAC_CERT_MEDICO: Joi.string().required(),
   API_COGNOEMP_PN_AFILILIACION_IESS: Joi.string().required(),
+  API_COGNOPN_JUBILADO: Joi.string().required(),
 });

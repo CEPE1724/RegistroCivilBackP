@@ -98,6 +98,7 @@ export class CreSolicitudWebService {
 
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     try {
+
       /* consultar cedula en cre_solicitud_web  con estado in (1,2)*/
       const existingSolicitud = await this.creSolicitudWebRepository.findOne({
         where: {
@@ -180,14 +181,16 @@ export class CreSolicitudWebService {
       const apiData = apiResult.data;
       // 3.  Consultar API externa Datos laborales
       const idSituacionLaboral = createCreSolicitudWebDto.idSituacionLaboral;
+      const idActEconomina = createCreSolicitudWebDto.idActEconomina;
       let trabajos = [];
       const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
       const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
       const deudaData: DeudaEmovDto = deudaEmovResult.data?.deudaEmov?.[0];
+      const JubiladoResult = await this.authService.getApiDataJubilado(token, cedula);
 
- 
+      const trabajoJubilado = JubiladoResult.success && Array.isArray(JubiladoResult.data?.trabajos) && JubiladoResult.data.trabajos.length > 0 ? true : false;
 
-      if (idSituacionLaboral === 1) {
+      if (idSituacionLaboral === 1 && idActEconomina !== 301) {
         // Obligatorio: debe tener datos y éxito
         if (!trabajoResult.success || !trabajoResult.data?.trabajos?.length) {
           return {
@@ -212,6 +215,15 @@ export class CreSolicitudWebService {
         bApiDataTrabajo = true;
       }
 
+      if (trabajoJubilado && idActEconomina === 301) {
+        bApiDataTrabajo = true;
+      }
+      console.log('trabajoJubilado', trabajoJubilado);
+      console.log('bApiDataTrabajo', bApiDataTrabajo);
+      console.log('idSituacionLaboral', idSituacionLaboral);
+      console.log('idActEconomina', idActEconomina);
+      console.log('Datos recibidos para crear solicitud web:', createCreSolicitudWebDto);
+      
       const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
       await this.creSolicitudWebRepository.save(creSolicitudWeb);
       const idSolicitud = creSolicitudWeb.idCre_SolicitudWeb;
@@ -240,16 +252,21 @@ export class CreSolicitudWebService {
       // Crear nacionalidades, profesiones y trabajos
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
-        
-       // Deuda EMOV
+
+      // Deuda EMOV
       if (deudaData) {
         await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);
       }
 
-      if (bApiDataTrabajo && trabajos && trabajos.length > 0 && trabajos[0].fechaActualizacion) {
+      if (!trabajoJubilado && bApiDataTrabajo && trabajos && trabajos.length > 0 && trabajos[0].fechaActualizacion) {
         // Si tiene datos, se guarda la información
         console.log('Trabajos a guardar:', trabajos);
         await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
+      }
+
+      if (trabajoJubilado) {
+        console.log('Trabajos de jubilado a guardar:', JubiladoResult);
+        await this.authService.createTrabajoLite(JubiladoResult.data.trabajos, saveData.idCognoSolicitudCredito);
       }
       // 3. Si Equifax fue exitoso, crear y guardar la solicitud
 
@@ -473,7 +490,8 @@ export class CreSolicitudWebService {
       const token = await this.authService.getToken(cedula); // Llamada a AuthService para obtener el token
 
       const apiData = await this.authService.getApiDataFind(token, cedula);
-
+      const apiJubilado = await this.authService.getApiDataJubilado(token, cedula);
+     
       if (apiData.estado.codigo === "OK") {
         const apiLaboral = await this.authService.getApiDataTrabajo(token, cedula);
         let afiliado = false;
@@ -502,7 +520,8 @@ export class CreSolicitudWebService {
           afiliado = false;
         }
 
-
+        const trabajoJubilado = apiJubilado.success && Array.isArray(apiJubilado.data?.trabajos) && apiJubilado.data.trabajos.length > 0 ? true : false;
+       
         const { identificacion, nombre, fechaNacimiento } = apiData.personaNatural;
         const partesNombre = this.splitNombreCompleto(nombre);
 
@@ -514,9 +533,11 @@ export class CreSolicitudWebService {
         if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
           age--;
         }
+        afiliado = trabajoJubilado ? true : afiliado;
 
         return {
           identificacion, nombre, fechaNacimiento, edad: age, codigo: apiData.estado.codigo, afiliado: afiliado, afiliadoVoluntario: afiliadoVoluntario,
+          trabajoJubilado: trabajoJubilado, jubilado: trabajoJubilado,
           ...partesNombre
         };
       }

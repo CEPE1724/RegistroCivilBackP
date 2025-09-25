@@ -236,6 +236,9 @@ export class CognoTrabajo {
     })
     baseDate: string;
 
+    @Column('int')
+    Jubilado: number;
+
     
 
 }
