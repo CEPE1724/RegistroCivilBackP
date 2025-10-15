@@ -138,7 +138,7 @@ export class CiudadanoService {
       const httpsAgent = new https.Agent({
         pfx: fs.readFileSync('C:\\Deployment\\SSL\\app.services.pfx'),
         passphrase: 'P01nT$2025_APP_sevices', // ⚠️ pon la contraseña que usaste al exportar el certificado
-        rejectUnauthorized: true,           // Desactivar validación solo si es entorno de pruebas
+        rejectUnauthorized: false,           // Desactivar validación solo si es entorno de pruebas
         secureProtocol: 'TLSv1_2_method',    // Fuerza uso de TLS 1.2
       });
 
