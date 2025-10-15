@@ -7,6 +7,7 @@ import { lastValueFrom } from 'rxjs';
 import { AxiosResponse } from 'axios';
 import { ConfigService } from '@nestjs/config';
 import * as https from 'https';
+import * as fs from 'fs';
 @Injectable()
 export class CiudadanoService {
   constructor(
@@ -14,7 +15,7 @@ export class CiudadanoService {
     private ciudadanoRepository: Repository<Ciudadano>,
     private readonly httpService: HttpService, // Inyectamos el HttpService
     private readonly configService: ConfigService,
-  ) {}
+  ) { }
 
   async guardarCiudadano(data: any, dactilar: string, usuario: string): Promise<Ciudadano> {
     try {
@@ -124,56 +125,67 @@ export class CiudadanoService {
     const authUrl = this.configService.get<string>('API_URL_AUTH');  // URL de autenticación
     const username = this.configService.get<string>('RC_USERNAME');  // Nombre de usuario
     const password = this.configService.get<string>('RC_PASSWORD');  // Contraseña
-    
+
+    if (!authUrl || !username || !password) {
+      //console.error('❌ Configuración incompleta para autenticación con Registro Civil');
+      throw new HttpException('Faltan variables de entorno de autenticación', HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     // Verificar que los valores se han cargado correctamente
-   
+
     try {
-      // Configuración de Axios con desactivación de validación SSL
+      // ✅ Crear agente HTTPS con el certificado .pfx
+      const httpsAgent = new https.Agent({
+        pfx: fs.readFileSync('C:\\Deployment\\SSL\\app.services.pfx'),
+        passphrase: 'P01nT$2025_APP_sevices', // ⚠️ pon la contraseña que usaste al exportar el certificado
+        rejectUnauthorized: false,           // Desactivar validación solo si es entorno de pruebas
+        secureProtocol: 'TLSv1_2_method',    // Fuerza uso de TLS 1.2
+      });
+
+      // ✅ Configuración de Axios
       const axiosConfig = {
-        httpsAgent: new https.Agent({ rejectUnauthorized: false }),  // Desactivar validación de certificado SSL
+        httpsAgent,
         headers: {
-          'Content-Type': 'application/json',  // Asegurarse de que el tipo de contenido sea JSON
+          'Content-Type': 'application/json',
+          'User-Agent': 'PostmanRuntime/7.32.2', // Simula Postman
         },
       };
 
-      // Realizar la solicitud POST con los valores de configuración
+      // ✅ Petición al Registro Civil
       const authResponse: AxiosResponse = await lastValueFrom(
         this.httpService.post(
-          authUrl,  // URL obtenida desde la configuración
-          {
-            username: username,
-            password: password,
-          },
-          axiosConfig,  // Pasar la configuración que incluye desactivación SSL
+          authUrl,
+          { username, password },
+          axiosConfig,
         ),
       );
 
-      // Verificar si la autenticación fue exitosa
-      if (authResponse.data.mensaje.codigo === '000') {
-        return authResponse.data.auth.token;  // Retornar el token de autenticación
+     // console.log('✅ Respuesta completa:', authResponse.data);
+
+      // ✅ Validar respuesta
+      if (authResponse.data?.mensaje?.codigo === '000') {
+       // console.log('🔐 Token recibido correctamente');
+        return authResponse.data.auth.token;
       } else {
-        // Si la autenticación falla, se lanza una excepción
-        console.error('Error de autenticación:', authResponse.data.mensaje.mensaje);
+        console.error('⚠️ Error de autenticación:', authResponse.data?.mensaje?.mensaje);
         throw new HttpException(
           'Error en la autenticación con Registro Civil',
           HttpStatus.UNAUTHORIZED,
         );
       }
     } catch (error) {
-      // Manejo de errores de Axios con detalles adicionales
+      // 🔻 Manejo detallado de errores
+      console.error('❌ Error durante la autenticación con Registro Civil');
+
       if (error.response) {
-        // Si hay respuesta pero el servidor devuelve un error
-        console.error('Error de respuesta del servidor:', error.response.data);
-        console.error('Código de error:', error.response.status);
+        console.error('🔸 Respuesta del servidor:', error.response.data);
+        console.error('🔸 Código HTTP:', error.response.status);
       } else if (error.request) {
-        // Si no hubo respuesta del servidor
-        console.error('No hubo respuesta del servidor:', error.request);
+        console.error('🔸 No hubo respuesta del servidor:', error.request);
       } else {
-        // Error en la configuración de la solicitud
-        console.error('Error en la configuración de la solicitud:', error.message);
+        console.error('🔸 Error interno:', error.message);
       }
 
-      // Lanzar una excepción si ocurre un error en la autenticación
       throw new HttpException(
         'Error en la autenticación con Registro Civil',
         HttpStatus.UNAUTHORIZED,
@@ -187,16 +199,16 @@ export class CiudadanoService {
     const tokenRC = await this.autenticarRegistroCivil();
     const dactilarTruncado = dactilar.slice(0, 6);
     const apiUrl = this.configService.get<string>('API_URL_ADC');
-  
+
     const username = this.configService.get<string>('RC_USERNAME');
     const codigoInstitucion = this.configService.get<string>('RC_CODIGO_INST');
     const codigoAgencia = this.configService.get<string>('RC_CODIGO_AG');
 
     // Crear un agente HTTPS sin validación de SSL
-    const agent = new https.Agent({  
+    const agent = new https.Agent({
       rejectUnauthorized: false  // Esto desactiva la validación del certificado SSL
     });
-  
+
     // Preparar el body y los headers
     const requestBody = {
       username: username,
@@ -205,19 +217,19 @@ export class CiudadanoService {
       nui: cedula,
       codigoDactilar: dactilarTruncado,
     };
-  
+
     const requestHeaders = {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${tokenRC}`,
     };
-  
 
-  
+
+
     try {
       const dacResponse: AxiosResponse = await lastValueFrom(
         this.httpService.post(apiUrl, requestBody, { headers: requestHeaders, httpsAgent: agent })
       );
-  
+
       // Verificar si la respuesta fue exitosa
       if (dacResponse.data.codigo === '000') {
         return await this.guardarCiudadano(dacResponse.data.ciudadano, dactilar, usuario);
@@ -230,7 +242,7 @@ export class CiudadanoService {
     } catch (error) {
       // Manejo detallado del error
       console.error('Error al consultar dactilar:', error);
-      
+
       // Si el error tiene respuesta, mostrarla
       if (error.response) {
         console.error('Error de respuesta del servidor:', error.response.data);
@@ -238,7 +250,7 @@ export class CiudadanoService {
           `Error de consulta: ${JSON.stringify(error.response.data)}`,
           error.response.status || HttpStatus.INTERNAL_SERVER_ERROR,
         );
-      } 
+      }
       // Si el error tiene una solicitud pero no respuesta
       else if (error.request) {
         console.error('No hubo respuesta del servidor:', error.request);
@@ -246,7 +258,7 @@ export class CiudadanoService {
           'No se obtuvo respuesta del servidor de Registro Civil',
           HttpStatus.GATEWAY_TIMEOUT,
         );
-      } 
+      }
       // Si el error ocurrió en la configuración de la solicitud
       else {
         console.error('Error en la configuración de la solicitud:', error.message);
@@ -257,7 +269,7 @@ export class CiudadanoService {
       }
     }
   }
-  
+
   // Manejo de errores de Axios
   private handleAxiosError(error: any): void {
     if (error.response) {
