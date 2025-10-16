@@ -1,6 +1,6 @@
 import { Controller, Post, Body, Logger, BadRequestException } from '@nestjs/common';
 import { CorporacionDflService } from './corporacion-dfl.service';
-
+import {DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
 @Controller('corporacion-dfl')
 export class CorporacionDflController {
   private readonly logger = new Logger(CorporacionDflController.name);
@@ -36,5 +36,10 @@ export class CorporacionDflController {
       ...formData,
       cre_solicitud: solicitudNumber,
     });
+  }
+
+  @Post('serviciosia365pro/biometrico/callback')
+  async callback(@Body() callbackData: DFLAnalisisBiometrico) {
+    return this.corporacionDflService.handleCallback(callbackData);
   }
 }

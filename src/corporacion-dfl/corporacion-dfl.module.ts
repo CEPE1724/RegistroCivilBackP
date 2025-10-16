@@ -5,12 +5,27 @@ import { Tokensia365 } from '../tokensia365/entities/tokensia365.entity';
 import { Tokensia365Service } from '../tokensia365/tokensia365.service';
 import { Analisisdeidentidad } from '../analisisdeidentidad/entities/analisisdeidentidad.entity';
 import { AnalisisdeidentidadService } from '../analisisdeidentidad/analisisdeidentidad.service';
+
+import { DflAnalisisBiometrico } from '../dfl_analisis-biometrico/entities/dfl_analisis-biometrico.entity';
+import { DflIndicadoresAnverso } from 'src/dfl_indicadores-anverso/entities/dfl_indicadores-anverso.entity';
+import { DflIndicadoresReverso } from 'src/dfl_indicadores-reverso/entities/dfl_indicadores-reverso.entity';
+import { DflMetadataProcesada } from 'src/dfl_metadata-procesada/entities/dfl_metadata-procesada.entity';
+import { DflReferencia } from 'src/dfl_referencia/entities/dfl_referencia.entity';
+import { DflResultado } from 'src/dfl_resultado/entities/dfl_resultado.entity';
+
+import { DflAnalisisBiometricoService } from 'src/dfl_analisis-biometrico/dfl_analisis-biometrico.service';
+import { DflIndicadoresAnversoService } from 'src/dfl_indicadores-anverso/dfl_indicadores-anverso.service';
+import { DflIndicadoresReversoService } from 'src/dfl_indicadores-reverso/dfl_indicadores-reverso.service';
+import { DflMetadataProcesadaService } from 'src/dfl_metadata-procesada/dfl_metadata-procesada.service';
+import { DflReferenciaService } from 'src/dfl_referencia/dfl_referencia.service';
+import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
+
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Tokensia365, Analisisdeidentidad])],
+  imports: [TypeOrmModule.forFeature([Tokensia365, Analisisdeidentidad, DflAnalisisBiometrico, DflIndicadoresAnverso, DflIndicadoresReverso, DflMetadataProcesada, DflReferencia, DflResultado])],
   controllers: [CorporacionDflController],
-  providers: [CorporacionDflService, Tokensia365Service, AnalisisdeidentidadService],
+  providers: [CorporacionDflService, Tokensia365Service, AnalisisdeidentidadService, DflAnalisisBiometricoService, DflIndicadoresAnversoService, DflIndicadoresReversoService, DflMetadataProcesadaService, DflReferenciaService, DflResultadoService],
   exports: [Tokensia365Service, AnalisisdeidentidadService],
 })
 export class CorporacionDflModule {}

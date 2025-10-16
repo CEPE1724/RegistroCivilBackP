@@ -3,7 +3,10 @@ import axios from 'axios';
 import FormData from 'form-data';
 import { Tokensia365Service } from '../tokensia365/tokensia365.service';
 import { AnalisisdeidentidadService } from 'src/analisisdeidentidad/analisisdeidentidad.service';
-
+import { DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
+import { DflAnalisisBiometricoService } from 'src/dfl_analisis-biometrico/dfl_analisis-biometrico.service';
+import { join } from 'path';
+import { existsSync, mkdirSync, writeFileSync } from 'fs';
 @Injectable()
 export class CorporacionDflService {
     private readonly logger = new Logger(CorporacionDflService.name);
@@ -12,10 +15,12 @@ export class CorporacionDflService {
     private readonly URL_BIOMETRICO = process.env.URL_BIOMETRICO;
     private readonly PIN_BIOMETRICO = process.env.PIN_BIOMETRICO;
     private readonly AUTH_BIOMETRICO = process.env.AUTH_BIOMETRICO;
+    
 
     constructor(
         private readonly tokensia365Service: Tokensia365Service,
         private readonly analisisdeidentidadService: AnalisisdeidentidadService,
+        private readonly dflAnalisisBiometricoService: DflAnalisisBiometricoService,
     ) { }
 
     /**
@@ -174,5 +179,56 @@ export class CorporacionDflService {
         this.logger.log('✅ Ya existe un análisis de identidad válido para esta identificación. No se crea uno nuevo.');
         return allAnalisisdeidentidad;
 
+    }
+
+    private async createDFLAnalisisBiometrico (data: DFLAnalisisBiometrico): Promise<any> {
+        try {
+            const nuevoAnalisisBiometrico = await this.dflAnalisisBiometricoService.create({
+                status: data.status,
+                tipo: data.tipo,
+                codigo: data.codigo,
+                rostroSimilitud: data.data.rostroSimilitud,
+                rostroSimilitudFrontal: data.data.rostroSimilitudFrontal,
+                rostroSimilitudSelfie: data.data.rostroSimilitudSelfie,
+                img_frontal: data.data.img_frontal,
+                img_reverso: data.data.img_reverso,
+                img_selfie: data.data.img_selfie,
+                bio_intento_frontal: data.data.bio_intento_frontal,
+                bio_intento_reverso: data.data.bio_intento_reverso,
+                bio_intento_selfie: data.data.bio_intento_selfie,
+                bio_intento_dactilar: data.data.bio_intento_dactilar
+            });
+            return nuevoAnalisisBiometrico;
+        } catch (error) {
+            this.logger.error('❌ Error al crear análisis biométrico en la base de datos', error);
+            throw new InternalServerErrorException('Error al crear análisis biométrico en la base de datos.');
+        }
+    }
+
+    async handleCallback(callbackData: DFLAnalisisBiometrico) {
+
+         // ✅ Generar nombre del archivo con timestamp
+      const now = new Date();
+      const timestamp = now
+        .toISOString()
+        .replace(/[:.]/g, '-')
+        .replace('T', '_')
+        .replace('Z', '');
+      const folderPath = join(__dirname, '../logs/biometrico');
+      const filePath = join(folderPath, `callback_${timestamp}.json`);
+
+      // ✅ Crear carpeta si no existe
+      if (!existsSync(folderPath)) {
+        mkdirSync(folderPath, { recursive: true });
+      }
+
+      // ✅ Guardar contenido del callback en un archivo JSON
+      writeFileSync(filePath, JSON.stringify(callbackData, null, 2), 'utf8');
+      this.logger.log(`📁 Callback guardado en archivo: ${filePath}`);
+        const nuevoAnalisisBiometrico = await this.createDFLAnalisisBiometrico(callbackData);
+         
+        // Aquí puedes implementar la lógica para manejar el callback, como actualizar el estado en la base de datos
+        // Por ejemplo, podrías buscar el análisis por su código y actualizar su estado según los datos recibidos
+        return { message: 'Callback procesado correctamente' };
     }
 }

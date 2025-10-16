@@ -143,6 +143,12 @@ import { UatEqfxOperacionesCanceladasModule } from './uat_eqfx_operaciones_cance
 import { Tokensia365Module } from './tokensia365/tokensia365.module';
 import { CorporacionDflModule } from './corporacion-dfl/corporacion-dfl.module';
 import { AnalisisdeidentidadModule } from './analisisdeidentidad/analisisdeidentidad.module';
+import { DflAnalisisBiometricoModule } from './dfl_analisis-biometrico/dfl_analisis-biometrico.module';
+import { DflIndicadoresAnversoModule } from './dfl_indicadores-anverso/dfl_indicadores-anverso.module';
+import { DflIndicadoresReversoModule } from './dfl_indicadores-reverso/dfl_indicadores-reverso.module';
+import { DflMetadataProcesadaModule } from './dfl_metadata-procesada/dfl_metadata-procesada.module';
+import { DflReferenciaModule } from './dfl_referencia/dfl_referencia.module';
+import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
 
 
 
@@ -380,6 +386,18 @@ import { AnalisisdeidentidadModule } from './analisisdeidentidad/analisisdeident
     CorporacionDflModule,
 
     AnalisisdeidentidadModule,
+
+    DflAnalisisBiometricoModule,
+
+    DflIndicadoresAnversoModule,
+
+    DflIndicadoresReversoModule,
+
+    DflMetadataProcesadaModule,
+
+    DflReferenciaModule,
+
+    DflResultadoModule,
 
 
 
