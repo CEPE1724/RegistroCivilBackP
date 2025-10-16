@@ -16,6 +16,7 @@ export class DflMetadataProcesadaService {
 
   create(createDflMetadataProcesadaDto: CreateDflMetadataProcesadaDto) {
    try {
+      this.logger.log('🔍 Creando nueva metadata procesada con datos: ' + JSON.stringify(createDflMetadataProcesadaDto));
       const nuevaMetadata = this.dflMetadataProcesadaRepository.create(createDflMetadataProcesadaDto);
       return this.dflMetadataProcesadaRepository.save(nuevaMetadata);
     }

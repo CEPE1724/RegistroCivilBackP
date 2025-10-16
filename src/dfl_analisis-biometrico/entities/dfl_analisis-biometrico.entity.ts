@@ -13,7 +13,12 @@
     bio_intento_reverso INT,
     bio_intento_selfie INT,
     bio_intento_dactilar INT,
-    FechaSistema DATETIME DEFAULT GETDATE()
+    img_rostro_uno NVARCHAR(MAX),
+	img_rostro_dos NVARCHAR(MAX),
+    bio_fuente VARCHAR(500),
+	ip_registrada VARCHAR(500),
+    FechaSistema DATETIME DEFAULT GETDATE(),
+    
 );*/
 
 import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
@@ -48,6 +53,14 @@ export class DflAnalisisBiometrico {
     bio_intento_selfie: number;
     @Column({ type: 'int', name: 'bio_intento_dactilar', nullable: true })
     bio_intento_dactilar: number;
+    @Column({ type: 'nvarchar', length: 'MAX', name: 'img_rostro_uno', nullable: true })
+    img_rostro_uno: string
+    @Column({ type: 'nvarchar', length: 'MAX', name: 'img_rostro_dos', nullable: true })
+    img_rostro_dos: string
+    @Column({ length: 500, name: 'bio_fuente', nullable: true })
+    bio_fuente: string
+    @Column({ length: 500, name: 'ip_registrada', nullable: true })
+    ip_registrada: string
     @Column({ name: 'FechaSistema', default: () => 'CURRENT_TIMESTAMP' })
     FechaSistema: Date
 

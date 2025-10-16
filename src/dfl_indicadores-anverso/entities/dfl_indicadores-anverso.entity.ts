@@ -10,7 +10,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { DflAnalisisBiometrico } from 'src/dfl_analisis-biometrico/entities/dfl_analisis-biometrico.entity';
 
-@Entity('DflIndicadoresAnverso')
+@Entity('DFL_IndicadoresAnverso')
 
 export class DflIndicadoresAnverso {
     @PrimaryGeneratedColumn('uuid', { name: 'idDFL_IndicadoresAnverso' })

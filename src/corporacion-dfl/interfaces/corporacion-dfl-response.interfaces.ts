@@ -17,6 +17,10 @@ export interface Data {
     bio_intento_reverso:    number;
     bio_intento_selfie:     number;
     bio_intento_dactilar:   number;
+    img_rostro_uno:         string;
+    img_rostro_dos:         string;
+    bio_fuente:             string;
+    ip_registrada:          string;
 }
 
 export interface Indicadores {
@@ -39,11 +43,13 @@ export interface Metadata {
 
 export interface Procesada {
     identificacion:   string;
+    nombre_completo:  string;
     codigo_dactilar:  string;
     nacionalidad:     string;
     estado_civil:     string;
     sexo:             string;
     fecha_nacimiento: Date;
+    lugar_nacimiento: string;
     fecha_emision:    Date;
     fecha_caducidad:  Date;
 }

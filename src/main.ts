@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
-
+import * as bodyParser from 'body-parser';
 async function bootstrap() {
 
   // Sirve archivos estáticos desde la carpeta uploads
@@ -10,6 +10,11 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
   const IP_SERVER = configService.get<string>('IP_SERVER');
+
+   // ✅ Aumenta el límite de tamaño del cuerpo del request (para imágenes base64)
+  app.use(bodyParser.json({ limit: '100mb' })); // Puedes subir a 200mb si lo necesitas
+  app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
+
 
   app.enableCors({
     origin: '*',

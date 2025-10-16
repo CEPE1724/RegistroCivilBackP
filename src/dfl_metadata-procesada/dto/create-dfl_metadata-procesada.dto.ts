@@ -1,12 +1,14 @@
-/*CREATE TABLE DFL_MetadataProcesada (
+/*CREATE   TABLE DFL_MetadataProcesada (
     idDFL_MetadataProcesada UNIQUEIDENTIFIER DEFAULT NEWID() PRIMARY KEY,
     idDFL_AnalisisBiometrico UNIQUEIDENTIFIER NOT NULL,
     identificacion VARCHAR(15),
+	nombre_completo VARCHAR(200),
     codigo_dactilar VARCHAR(10),
-    nacionalidad VARCHAR(10),
+    nacionalidad VARCHAR(20),
     estado_civil VARCHAR(20),
     sexo VARCHAR(10),
     fecha_nacimiento DATE,
+	lugar_nacimiento NVARCHAR(MAX),
     fecha_emision DATE,
     fecha_caducidad DATE,
     FOREIGN KEY (idDFL_AnalisisBiometrico) REFERENCES DFL_AnalisisBiometrico(idDFL_AnalisisBiometrico)
@@ -21,6 +23,11 @@ export class CreateDflMetadataProcesadaDto {
     @IsString()
     @IsOptional()
     identificacion: string;
+
+    @IsString()
+    @IsOptional()
+    nombre_completo: string;
+    
 
     @IsString()
     @IsOptional()
@@ -41,6 +48,10 @@ export class CreateDflMetadataProcesadaDto {
     @IsDate()
     @IsOptional()
     fecha_nacimiento: Date;
+
+    @IsString()
+    @IsOptional()
+    lugar_nacimiento: string;
 
     @IsDate()
     @IsOptional()

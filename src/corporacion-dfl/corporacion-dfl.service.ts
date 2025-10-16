@@ -4,7 +4,15 @@ import FormData from 'form-data';
 import { Tokensia365Service } from '../tokensia365/tokensia365.service';
 import { AnalisisdeidentidadService } from 'src/analisisdeidentidad/analisisdeidentidad.service';
 import { DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
+
+
 import { DflAnalisisBiometricoService } from 'src/dfl_analisis-biometrico/dfl_analisis-biometrico.service';
+import { DflIndicadoresAnversoService } from 'src/dfl_indicadores-anverso/dfl_indicadores-anverso.service';
+import { DflIndicadoresReversoService } from 'src/dfl_indicadores-reverso/dfl_indicadores-reverso.service';
+import { DflMetadataProcesadaService } from 'src/dfl_metadata-procesada/dfl_metadata-procesada.service';
+import { DflReferenciaService } from 'src/dfl_referencia/dfl_referencia.service';
+import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
+
 import { join } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 @Injectable()
@@ -15,12 +23,17 @@ export class CorporacionDflService {
     private readonly URL_BIOMETRICO = process.env.URL_BIOMETRICO;
     private readonly PIN_BIOMETRICO = process.env.PIN_BIOMETRICO;
     private readonly AUTH_BIOMETRICO = process.env.AUTH_BIOMETRICO;
-    
+
 
     constructor(
         private readonly tokensia365Service: Tokensia365Service,
         private readonly analisisdeidentidadService: AnalisisdeidentidadService,
         private readonly dflAnalisisBiometricoService: DflAnalisisBiometricoService,
+        private readonly dflIndicadoresAnversoService: DflIndicadoresAnversoService,
+        private readonly dflIndicadoresReversoService: DflIndicadoresReversoService,
+        private readonly dflMetadataProcesadaService: DflMetadataProcesadaService,
+        private readonly dflReferenciaService: DflReferenciaService,
+        private readonly dflResultadoService: DflResultadoService,
     ) { }
 
     /**
@@ -83,7 +96,7 @@ export class CorporacionDflService {
 
     private async allAnalisisdeidentidad(identificacion: string, cre_solicitud: number): Promise<any> {
         try {
-           
+
             const analisis = await this.analisisdeidentidadService.findAll(identificacion, cre_solicitud);
             return analisis;
         }
@@ -93,7 +106,7 @@ export class CorporacionDflService {
         }
     }
 
-   private async crearAnalisisdeidentidad(form: { identificacion: string; callback: string; codigo_interno: string; motivo: string, cre_solicitud: number, usuario: string }, url: string, short_url: string, valido_hasta: Date): Promise<any> {
+    private async crearAnalisisdeidentidad(form: { identificacion: string; callback: string; codigo_interno: string; motivo: string, cre_solicitud: number, usuario: string }, url: string, short_url: string, valido_hasta: Date): Promise<any> {
         try {
             const nuevoAnalisis = await this.analisisdeidentidadService.create({
                 identificacion: form.identificacion,
@@ -181,7 +194,7 @@ export class CorporacionDflService {
 
     }
 
-    private async createDFLAnalisisBiometrico (data: DFLAnalisisBiometrico): Promise<any> {
+    private async createDFLAnalisisBiometrico(data: DFLAnalisisBiometrico): Promise<any> {
         try {
             const nuevoAnalisisBiometrico = await this.dflAnalisisBiometricoService.create({
                 status: data.status,
@@ -196,7 +209,11 @@ export class CorporacionDflService {
                 bio_intento_frontal: data.data.bio_intento_frontal,
                 bio_intento_reverso: data.data.bio_intento_reverso,
                 bio_intento_selfie: data.data.bio_intento_selfie,
-                bio_intento_dactilar: data.data.bio_intento_dactilar
+                bio_intento_dactilar: data.data.bio_intento_dactilar,
+                img_rostro_uno: data.data.img_rostro_uno,
+                img_rostro_dos: data.data.img_rostro_dos,
+                bio_fuente: data.data.bio_fuente,
+                ip_registrada: data.data.ip_registrada,
             });
             return nuevoAnalisisBiometrico;
         } catch (error) {
@@ -205,28 +222,93 @@ export class CorporacionDflService {
         }
     }
 
-    async handleCallback(callbackData: any) {
+    async handleCallback(callbackData: DFLAnalisisBiometrico) {
 
-         // ✅ Generar nombre del archivo con timestamp
-      const now = new Date();
-      const timestamp = now
-        .toISOString()
-        .replace(/[:.]/g, '-')
-        .replace('T', '_')
-        .replace('Z', '');
-      const folderPath = join(__dirname, '../logs/biometrico');
-      const filePath = join(folderPath, `callback_${timestamp}.json`);
+        // ✅ Generar nombre del archivo con timestamp
+        const now = new Date();
+        const timestamp = now
+            .toISOString()
+            .replace(/[:.]/g, '-')
+            .replace('T', '_')
+            .replace('Z', '');
+        const folderPath = join(__dirname, '../logs/biometrico');
+        const filePath = join(folderPath, `callback_${timestamp}.json`);
 
-      // ✅ Crear carpeta si no existe
-      if (!existsSync(folderPath)) {
-        mkdirSync(folderPath, { recursive: true });
-      }
+        // ✅ Crear carpeta si no existe
+        if (!existsSync(folderPath)) {
+            mkdirSync(folderPath, { recursive: true });
+        }
 
-      // ✅ Guardar contenido del callback en un archivo JSON
-      writeFileSync(filePath, JSON.stringify(callbackData, null, 2), 'utf8');
-      this.logger.log(`📁 Callback guardado en archivo: ${filePath}`);
-        //const nuevoAnalisisBiometrico = await this.createDFLAnalisisBiometrico(callbackData);
-         
+        // ✅ Guardar contenido del callback en un archivo JSON
+        writeFileSync(filePath, JSON.stringify(callbackData, null, 2), 'utf8');
+        this.logger.log(`📁 Callback guardado en archivo: ${filePath}`);
+        const nuevoAnalisisBiometrico = await this.createDFLAnalisisBiometrico(callbackData);
+        const idDFL_AnalisisBiometrico = nuevoAnalisisBiometrico.idDFL_AnalisisBiometrico;
+
+        const nuevoIndicadorAnverso = await this.dflIndicadoresAnversoService.create({
+            identificacion: callbackData.indicadores.anverso.identificacion,
+            metadata: callbackData.indicadores.anverso.metadata,
+            esFotoEspejo: callbackData.indicadores.anverso.esFotoEspejo,
+            idDFL_AnalisisBiometrico: idDFL_AnalisisBiometrico,
+        });
+
+        await this.dflIndicadoresReversoService.create({
+            confianza: callbackData.indicadores.reverso.confianza,
+            metadata: callbackData.indicadores.reverso.metadata,
+            codigoDactilar: callbackData.indicadores.reverso.codigoDactilar,
+            confianza_indicadores: callbackData.indicadores.reverso.confianza_indicadores,
+            codigoDactilarEncontrado: callbackData.indicadores.reverso.codigoDactilarEncontrado,
+            idDFL_AnalisisBiometrico: idDFL_AnalisisBiometrico,
+        });
+
+
+   
+        await this.dflMetadataProcesadaService.create({
+            identificacion: callbackData.indicadores.metadata.procesada.identificacion,
+            codigo_dactilar: callbackData.indicadores.metadata.procesada.codigo_dactilar,
+            nacionalidad: callbackData.indicadores.metadata.procesada.nacionalidad,
+            estado_civil: callbackData.indicadores.metadata.procesada.estado_civil,
+            sexo: callbackData.indicadores.metadata.procesada.sexo,
+            fecha_nacimiento: callbackData.indicadores.metadata.procesada.fecha_nacimiento,
+            fecha_emision: callbackData.indicadores.metadata.procesada.fecha_emision,
+            fecha_caducidad: callbackData.indicadores.metadata.procesada.fecha_caducidad,
+            idDFL_AnalisisBiometrico: idDFL_AnalisisBiometrico,
+            nombre_completo: callbackData.indicadores.metadata.procesada.nombre_completo,
+            lugar_nacimiento: callbackData.indicadores.metadata.procesada.lugar_nacimiento,
+        });
+
+        await this.dflReferenciaService.create({
+            identificacion: callbackData.indicadores.metadata.referencia.identificacion,
+            codigo_dactilar: callbackData.indicadores.metadata.referencia.codigo_dactilar,
+            fecha_nacimiento: callbackData.indicadores.metadata.referencia.fecha_nacimiento,
+            fecha_mayor_edad: callbackData.indicadores.metadata.referencia.fecha_mayor_edad,
+            edad_actual: callbackData.indicadores.metadata.referencia.edad_actual,
+            fecha_actual: callbackData.indicadores.metadata.referencia.fecha_actual,
+            idDFL_AnalisisBiometrico: idDFL_AnalisisBiometrico,
+        });
+
+        await this.dflResultadoService.create({
+            ok_selfie_fuente: callbackData.indicadores.metadata.resultado.ok_selfie_fuente,
+            es_selfie_valida: callbackData.indicadores.metadata.resultado.es_selfie_valida,
+            ok_frontal_fuente: callbackData.indicadores.metadata.resultado.ok_frontal_fuente,
+            existe_fuente: callbackData.indicadores.metadata.resultado.existe_fuente,
+            cliente_en_lista_blanca: callbackData.indicadores.metadata.resultado.cliente_en_lista_blanca,
+            codigo_dactilar_detectado: callbackData.indicadores.metadata.resultado.codigo_dactilar_detectado,
+            es_cedula_mayor_edad: callbackData.indicadores.metadata.resultado.es_cedula_mayor_edad,
+            es_cedula_vigente: callbackData.indicadores.metadata.resultado.es_cedula_vigente,
+            es_horario_valido: callbackData.indicadores.metadata.resultado.es_horario_valido,
+            fecha_nacimiento_detectada: callbackData.indicadores.metadata.resultado.fecha_nacimiento_detectada,
+            identificacion_detectada: callbackData.indicadores.metadata.resultado.identificacion_detectada,
+            selfie_intentos_moderado: callbackData.indicadores.metadata.resultado.selfie_intentos_moderado,
+            texto_resumen: callbackData.indicadores.metadata.resultado.texto_resumen,
+            idDFL_AnalisisBiometrico: idDFL_AnalisisBiometrico,
+        });
+
+
+        this.logger.log(`✅ Nuevo indicador anverso guardado con ID: ${nuevoIndicadorAnverso.idDFL_IndicadoresAnverso}`);
+
+        this.logger.log(`✅ Nuevo análisis biométrico guardado con ID: ${idDFL_AnalisisBiometrico}`);
+
         // Aquí puedes implementar la lógica para manejar el callback, como actualizar el estado en la base de datos
         // Por ejemplo, podrías buscar el análisis por su código y actualizar su estado según los datos recibidos
         return { message: 'Callback procesado correctamente' };

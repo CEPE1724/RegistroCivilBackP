@@ -13,6 +13,10 @@
     bio_intento_reverso INT,
     bio_intento_selfie INT,
     bio_intento_dactilar INT,
+    img_rostro_uno NVARCHAR(MAX),
+	img_rostro_dos NVARCHAR(MAX),
+    bio_fuente VARCHAR(500),
+	ip_registrada VARCHAR(500),
     FechaSistema DATETIME DEFAULT GETDATE()
 );
 */
@@ -71,6 +75,22 @@ export class CreateDflAnalisisBiometricoDto {
     @IsNumber()
     @IsOptional()
     bio_intento_dactilar?: number;
+
+    @IsString()
+    @IsOptional()
+    img_rostro_uno?: string;
+
+    @IsString()
+    @IsOptional()
+    img_rostro_dos?: string;
+
+    @IsString()
+    @IsOptional()
+    bio_fuente?: string;
+
+    @IsString()
+    @IsOptional()
+    ip_registrada?: string;
 
     @IsDate()
     @IsOptional()
