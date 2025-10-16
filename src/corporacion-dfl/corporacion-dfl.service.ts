@@ -205,7 +205,7 @@ export class CorporacionDflService {
         }
     }
 
-    async handleCallback(callbackData: DFLAnalisisBiometrico) {
+    async handleCallback(callbackData: any) {
 
          // ✅ Generar nombre del archivo con timestamp
       const now = new Date();
@@ -225,7 +225,7 @@ export class CorporacionDflService {
       // ✅ Guardar contenido del callback en un archivo JSON
       writeFileSync(filePath, JSON.stringify(callbackData, null, 2), 'utf8');
       this.logger.log(`📁 Callback guardado en archivo: ${filePath}`);
-        const nuevoAnalisisBiometrico = await this.createDFLAnalisisBiometrico(callbackData);
+        //const nuevoAnalisisBiometrico = await this.createDFLAnalisisBiometrico(callbackData);
          
         // Aquí puedes implementar la lógica para manejar el callback, como actualizar el estado en la base de datos
         // Por ejemplo, podrías buscar el análisis por su código y actualizar su estado según los datos recibidos

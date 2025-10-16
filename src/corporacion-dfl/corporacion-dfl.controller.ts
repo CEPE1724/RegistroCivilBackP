@@ -39,7 +39,7 @@ export class CorporacionDflController {
   }
 
   @Post('serviciosia365pro/biometrico/callback')
-  async callback(@Body() callbackData: DFLAnalisisBiometrico) {
+  async callback(@Body() callbackData: any) {
     return this.corporacionDflService.handleCallback(callbackData);
   }
 }
