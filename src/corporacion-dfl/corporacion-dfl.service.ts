@@ -1,0 +1,178 @@
+import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import axios from 'axios';
+import FormData from 'form-data';
+import { Tokensia365Service } from '../tokensia365/tokensia365.service';
+import { AnalisisdeidentidadService } from 'src/analisisdeidentidad/analisisdeidentidad.service';
+
+@Injectable()
+export class CorporacionDflService {
+    private readonly logger = new Logger(CorporacionDflService.name);
+
+    // Variables de entorno (configura en .env)
+    private readonly URL_BIOMETRICO = process.env.URL_BIOMETRICO;
+    private readonly PIN_BIOMETRICO = process.env.PIN_BIOMETRICO;
+    private readonly AUTH_BIOMETRICO = process.env.AUTH_BIOMETRICO;
+
+    constructor(
+        private readonly tokensia365Service: Tokensia365Service,
+        private readonly analisisdeidentidadService: AnalisisdeidentidadService,
+    ) { }
+
+    /**
+     * Obtiene un token desde la API IA365 y lo guarda en la base de datos
+     */
+    private async obtenerYGuardarToken(): Promise<any> {
+        try {
+            // 1️⃣ Preparar los datos del formulario
+            const formData = new FormData();
+            formData.append('pin', this.PIN_BIOMETRICO);
+
+            // 2️⃣ Configurar la solicitud
+            const config = {
+                method: 'post' as const,
+                maxBodyLength: Infinity,
+                url: `${this.URL_BIOMETRICO}api/v1/token`,
+                headers: {
+                    Authorization: this.AUTH_BIOMETRICO,
+                    ...formData.getHeaders(),
+                },
+                data: formData,
+            };
+
+            // 3️⃣ Enviar la solicitud a IA365
+            const response = await axios.request(config);
+            // 4️⃣ Validar respuesta
+            const { data } = response;
+            if (!data?.data?.tkn_token) {
+                this.logger.error('❌ No se recibió un token válido de IA365');
+                throw new InternalServerErrorException('Respuesta inválida desde IA365');
+            }
+            const { status, data: tokenInfo } = response.data;
+
+            const tokenData = {
+                status: status,
+                tkn_token: tokenInfo.tkn_token,
+                tkn_fecha_vencimiento: new Date(tokenInfo.tkn_fecha_vencimiento),
+                usr_id: parseInt(tokenInfo.usr_id, 10)
+            };
+            // 5️⃣ Guardar token en la BD usando Tokensia365Service
+            const tokenGuardado = await this.tokensia365Service.create(tokenData);
+
+            return tokenGuardado;
+        } catch (error) {
+            this.logger.error('❌ Error al obtener o guardar el token', error);
+            throw new InternalServerErrorException('Error al consumir el servicio IA365 o guardar el token.');
+        }
+    }
+
+    private async allTokens(): Promise<any> {
+        try {
+            const tokens = await this.tokensia365Service.findAll();
+            return tokens;
+        }
+        catch (error) {
+            this.logger.error('❌ Error al obtener los tokens', error);
+            throw new InternalServerErrorException('Error al obtener los tokens desde la base de datos.');
+        }
+    }
+
+    private async allAnalisisdeidentidad(identificacion: string, cre_solicitud: number): Promise<any> {
+        try {
+           
+            const analisis = await this.analisisdeidentidadService.findAll(identificacion, cre_solicitud);
+            return analisis;
+        }
+        catch (error) {
+            this.logger.error('❌ Error al obtener los análisis de identidad', error);
+            throw new InternalServerErrorException('Error al obtener los análisis de identidad desde la base de datos.');
+        }
+    }
+
+   private async crearAnalisisdeidentidad(form: { identificacion: string; callback: string; codigo_interno: string; motivo: string, cre_solicitud: number, usuario: string }, url: string, short_url: string, valido_hasta: Date): Promise<any> {
+        try {
+            const nuevoAnalisis = await this.analisisdeidentidadService.create({
+                identificacion: form.identificacion,
+                codigo: form.codigo_interno,
+                url: url,
+                short_url: short_url,
+                valido_hasta: valido_hasta,
+                Usuario: form.usuario,
+                idCre_SolicitudWeb: form.cre_solicitud,
+                idEstadoAnalisisDeIdentidad: 1,
+            });
+            return nuevoAnalisis;
+        } catch (error) {
+            this.logger.error('❌ Error al crear análisis de identidad en la base de datos', error);
+            throw new InternalServerErrorException('Error al crear análisis de identidad en la base de datos.');
+        }
+    }
+
+    private async solicitarBiometrico(
+        form: { identificacion: string; callback: string; codigo_interno: string; motivo: string, cre_solicitud: number },
+        token: string,
+    ): Promise<any> {
+        try {
+            const formData = new FormData();
+            formData.append('identificacion', form.identificacion);
+            formData.append('callback', form.callback);
+            formData.append('codigo_interno', form.codigo_interno);
+            formData.append('motivo', form.motivo);
+            formData.append('cre_solicitud', form.cre_solicitud.toString());
+
+            const config = {
+                method: 'post' as const,
+                maxBodyLength: Infinity,
+                url: `${this.URL_BIOMETRICO}api/v3/solicitud/biometrico`,
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    ...formData.getHeaders(),
+                },
+                data: formData,
+            };
+            this.logger.log(`🚀 Enviando solicitud biométrica a IA365 con datos: ${JSON.stringify(form)}`);
+            const response = await axios.request(config);
+            this.logger.log(`✅ Respuesta de IA365: ${JSON.stringify(response.data)}`);
+
+            return response.data;
+        } catch (error) {
+            this.logger.error('❌ Error al enviar solicitud biométrica', error);
+            throw new InternalServerErrorException('Error al comunicarse con IA365 biométrico.');
+        }
+    }
+
+    /**
+     * Método auxiliar opcional para probar la creación manual (si lo necesitas)
+     */
+    async create(form: {
+        identificacion: string;
+        callback: string;
+        codigo_interno: string;
+        motivo: string;
+        cre_solicitud: number;
+        usuario: string;
+    }) {
+        this.logger.log('🔄 Creando análisis de identidad...', form);
+        const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, form.cre_solicitud);
+
+        let tokenValido = '';
+        const tokenGuardado = await this.allTokens();
+        if (!tokenGuardado.TokenValido) {
+            this.logger.log('🔄 Token inválido o inexistente. Obteniendo uno nuevo...');
+            const nuevoToken = await this.obtenerYGuardarToken();
+            tokenValido = nuevoToken.tkn_token;
+        } else {
+            tokenValido = tokenGuardado.Token;
+        }
+        this.logger.log('🔄 Verificando validez del token existente...', tokenValido);
+        if (allAnalisisdeidentidad.count === 0) {
+
+            const nuevoAnalisis = await this.solicitarBiometrico(form, tokenValido);
+            await this.crearAnalisisdeidentidad(form, nuevoAnalisis.data.url, nuevoAnalisis.data.short_url, new Date(nuevoAnalisis.data.valido_hasta));
+            const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, form.cre_solicitud);
+            return allAnalisisdeidentidad;
+        }
+        this.logger.log('✅ Ya existe un análisis de identidad válido para esta identificación. No se crea uno nuevo.');
+        return allAnalisisdeidentidad;
+
+    }
+}

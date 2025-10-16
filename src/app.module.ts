@@ -140,6 +140,12 @@ import { UatEqfxSaldosPorVencerModule } from './uat_eqfx_saldos_por_vencer/uat_e
 import { UatEqfxEstructuraVencimientoModule } from './uat_eqfx_estructura_vencimiento/uat_eqfx_estructura_vencimiento.module';
 import { UatEqfxCreditosOtorgadosModule } from './uat_eqfx_creditos_otorgados/uat_eqfx_creditos_otorgados.module';
 import { UatEqfxOperacionesCanceladasModule } from './uat_eqfx_operaciones_canceladas/uat_eqfx_operaciones_canceladas.module';
+import { Tokensia365Module } from './tokensia365/tokensia365.module';
+import { CorporacionDflModule } from './corporacion-dfl/corporacion-dfl.module';
+import { AnalisisdeidentidadModule } from './analisisdeidentidad/analisisdeidentidad.module';
+
+
+
 
 
 
@@ -368,6 +374,16 @@ import { UatEqfxOperacionesCanceladasModule } from './uat_eqfx_operaciones_cance
     UatEqfxCreditosOtorgadosModule,
 
     UatEqfxOperacionesCanceladasModule,
+
+    Tokensia365Module,
+
+    CorporacionDflModule,
+
+    AnalisisdeidentidadModule,
+
+
+
+  
 
 
 

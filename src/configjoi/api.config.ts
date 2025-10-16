@@ -49,6 +49,11 @@ export const ApiConfig = () => ({
       API_COGNOEMP_PN_AFILILIACION_IESS: process.env.API_COGNOEMP_PN_AFILILIACION_IESS,
       API_COGNOPN_JUBILADO: process.env.API_COGNOPN_JUBILADO,
       
+    },
+    biometrico: {
+      URL_BIOMETRICO: process.env.URL_BIOMETRICO,
+      PIN_BIOMETRICO: process.env.PIN_BIOMETRICO,
+      AUTH_BIOMETRICO: process.env.AUTH_BIOMETRICO,
     }
     
   });

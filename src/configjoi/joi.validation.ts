@@ -30,4 +30,7 @@ export const JoinValidationSchema = Joi.object({
   API_COGNOEMP_PN_AFILILIACION_ISSFAC_CERT_MEDICO: Joi.string().required(),
   API_COGNOEMP_PN_AFILILIACION_IESS: Joi.string().required(),
   API_COGNOPN_JUBILADO: Joi.string().required(),
+  URL_BIOMETRICO: Joi.string().required(),
+  PIN_BIOMETRICO: Joi.string().required(),
+  AUTH_BIOMETRICO: Joi.string().required(),
 });
