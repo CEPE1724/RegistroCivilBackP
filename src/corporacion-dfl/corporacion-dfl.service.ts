@@ -12,7 +12,7 @@ import { DflIndicadoresReversoService } from 'src/dfl_indicadores-reverso/dfl_in
 import { DflMetadataProcesadaService } from 'src/dfl_metadata-procesada/dfl_metadata-procesada.service';
 import { DflReferenciaService } from 'src/dfl_referencia/dfl_referencia.service';
 import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
-
+import { DflStoregoogleService } from '../dfl_storegoogle/dfl_storegoogle.service';
 import { join } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 @Injectable()
@@ -34,6 +34,7 @@ export class CorporacionDflService {
         private readonly dflMetadataProcesadaService: DflMetadataProcesadaService,
         private readonly dflReferenciaService: DflReferenciaService,
         private readonly dflResultadoService: DflResultadoService,
+        private readonly dflStoregoogleService: DflStoregoogleService,
     ) { }
 
     /**
@@ -242,6 +243,51 @@ export class CorporacionDflService {
         // ✅ Guardar contenido del callback en un archivo JSON
         writeFileSync(filePath, JSON.stringify(callbackData, null, 2), 'utf8');
         this.logger.log(`📁 Callback guardado en archivo: ${filePath}`);
+
+        const cedula = callbackData.indicadores.anverso.identificacion;
+        const solicitud = callbackData.codigo || 'SIN_CODIGO';
+
+        const frontalUrl = await this.dflStoregoogleService.uploadBase64Image(
+            callbackData.data.img_frontal,
+            cedula,
+            solicitud,
+            'frontal',
+        );
+
+        const selfieUrl = await this.dflStoregoogleService.uploadBase64Image(
+            callbackData.data.img_selfie,
+            cedula,
+            solicitud,
+            'selfie',
+        );
+
+        const reversoUrl = await this.dflStoregoogleService.uploadBase64Image(
+            callbackData.data.img_reverso,
+            cedula,
+            solicitud,
+            'reverso',
+        );
+
+        const img_rostro_unoUrl = await this.dflStoregoogleService.uploadBase64Image(
+            callbackData.data.img_rostro_uno,
+            cedula,
+            solicitud,
+            'img_rostro_uno',
+        );
+
+        const img_rostro_dosUrl = await this.dflStoregoogleService.uploadBase64Image(
+            callbackData.data.img_rostro_dos,
+            cedula,
+            solicitud,
+            'img_rostro_dos',
+        );
+
+        callbackData.data.img_frontal = frontalUrl;
+        callbackData.data.img_selfie = selfieUrl;
+        callbackData.data.img_reverso = reversoUrl;
+        callbackData.data.img_rostro_uno = img_rostro_unoUrl;
+        callbackData.data.img_rostro_dos = img_rostro_dosUrl;
+
         const nuevoAnalisisBiometrico = await this.createDFLAnalisisBiometrico(callbackData);
         const idDFL_AnalisisBiometrico = nuevoAnalisisBiometrico.idDFL_AnalisisBiometrico;
 
@@ -262,7 +308,7 @@ export class CorporacionDflService {
         });
 
 
-   
+
         await this.dflMetadataProcesadaService.create({
             identificacion: callbackData.indicadores.metadata.procesada.identificacion,
             codigo_dactilar: callbackData.indicadores.metadata.procesada.codigo_dactilar,

@@ -19,13 +19,13 @@ import { DflIndicadoresReversoService } from 'src/dfl_indicadores-reverso/dfl_in
 import { DflMetadataProcesadaService } from 'src/dfl_metadata-procesada/dfl_metadata-procesada.service';
 import { DflReferenciaService } from 'src/dfl_referencia/dfl_referencia.service';
 import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
-
+import { DflStoregoogleService } from 'src/dfl_storegoogle/dfl_storegoogle.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
 
 @Module({
   imports: [TypeOrmModule.forFeature([Tokensia365, Analisisdeidentidad, DflAnalisisBiometrico, DflIndicadoresAnverso, DflIndicadoresReverso, DflMetadataProcesada, DflReferencia, DflResultado])],
   controllers: [CorporacionDflController],
-  providers: [CorporacionDflService, Tokensia365Service, AnalisisdeidentidadService, DflAnalisisBiometricoService, DflIndicadoresAnversoService, DflIndicadoresReversoService, DflMetadataProcesadaService, DflReferenciaService, DflResultadoService],
+  providers: [CorporacionDflService, Tokensia365Service, AnalisisdeidentidadService, DflAnalisisBiometricoService, DflIndicadoresAnversoService, DflIndicadoresReversoService, DflMetadataProcesadaService, DflReferenciaService, DflResultadoService, DflStoregoogleService],
   exports: [Tokensia365Service, AnalisisdeidentidadService],
 })
 export class CorporacionDflModule {}

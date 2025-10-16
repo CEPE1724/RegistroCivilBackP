@@ -149,6 +149,7 @@ import { DflIndicadoresReversoModule } from './dfl_indicadores-reverso/dfl_indic
 import { DflMetadataProcesadaModule } from './dfl_metadata-procesada/dfl_metadata-procesada.module';
 import { DflReferenciaModule } from './dfl_referencia/dfl_referencia.module';
 import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
+import { DflStoregoogleService } from './dfl_storegoogle/dfl_storegoogle.service';
 
 
 
@@ -408,6 +409,6 @@ import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
 
 
   ],
-  providers: [EmailService],
+  providers: [EmailService, DflStoregoogleService],
 })
 export class AppModule {}
