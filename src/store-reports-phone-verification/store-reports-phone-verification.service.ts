@@ -7,6 +7,7 @@ import { PrinterService } from 'src/printer/printer.service';
 import { Cognotrabajocargo } from 'src/cognotrabajocargo/entities/cognotrabajocargo.entity';
 import { CreSolicitudverificaciontelefonica } from 'src/cre-solicitudverificaciontelefonica/entities/cre-solicitudverificaciontelefonica.entity';
 import { phoneVerificationReport } from 'src/reports';
+import { autorizacionDatosReport } from 'src/reports/dflFirmaDigital/autorizaciondatos.report';
 import { CreVerificacionTelefonicaMaestro } from 'src/cre_verificacion-telefonica-maestro/entities/cre_verificacion-telefonica-maestro.entity';
 import { TiempoSolicitudesWeb } from 'src/tiemposolicitudesweb/entities/tiemposolicitudesweb.entity';
 
@@ -28,7 +29,7 @@ export class StoreReportsPhoneVerificationService {
     @InjectRepository(TiempoSolicitudesWeb)
     private readonly tiempoSolicitudesWebRepository: Repository<TiempoSolicitudesWeb>,
     private readonly printerService: PrinterService,
-  ) {}
+  ) { }
 
   async getCreSolicitudReport(orderId: number) {
     try {
@@ -90,6 +91,28 @@ export class StoreReportsPhoneVerificationService {
     } catch (error) {
       this.logger.error('Error generating report', error.stack);
       throw new InternalServerErrorException(error.message || 'Unexpected error generating report');
+    }
+  }
+
+  async getDflFirmaDigitalReport(orderId: number) {
+    try {
+      const creSolicitud = await this.findCreSolicitud(orderId);
+      const webSolicitudGrande = await this.findWebSolicitudGrande(orderId);
+      const docDefinition = autorizacionDatosReport({
+        ciudad:  'CIUDAD',
+        dia: new Date().getDate().toString(),
+        mes: (new Date().getMonth() + 1).toString(),
+        anio: new Date().getFullYear().toString(),
+        ApellidoPaterno: creSolicitud.ApellidoPaterno,
+        ApellidoMaterno: creSolicitud.ApellidoMaterno,
+        PrimerNombre: creSolicitud.PrimerNombre,
+        SegundoNombre: creSolicitud.SegundoNombre,
+        Cedula: creSolicitud.Cedula,
+      });
+      return this.printerService.createPdf(docDefinition);
+    } catch (error) {
+      this.logger.error('Error generating DFL Firma Digital report', error.stack);
+      throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
     }
   }
 

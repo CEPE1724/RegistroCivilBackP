@@ -116,6 +116,7 @@ import { DispositivosAppModule } from './dispositivos-app/dispositivos-app.modul
 import { ListaNegraCedulaModule } from './lista-negra-cedula/lista-negra-cedula.module';
 import { ComAsignacionDeVendedoresModule } from './com_asignacion-de-vendedores/com_asignacion-de-vendedores.module';
 import { EmailService } from './email/email.service';
+import { DflStoregoogleService } from './dfl_storegoogle/dfl_storegoogle.service';
 import { EmailModule } from './email/email.module';
 import { InfoSistemaModule } from './info-sistema/info-sistema.module';
 import { BasicReportsModule } from './basic-reports/basic-reports.module';
@@ -144,7 +145,15 @@ import { UatEqfxReporteBuroCreditoModule } from './uat_eqfx_reporte-buro-credito
 import { UatEqfxCuotaEstMensModule } from './uat_eqfx_cuota_est_mens/uat_eqfx_cuota_est_mens.module';
 import { UatEqfxResultSegmentacionModule } from './uat_eqfx_result_segmentacion/uat_eqfx_result_segmentacion.module';
 import { UatEqfxScoreSobreendeudamientoModule } from './uat_eqfx_score_sobreendeudamiento/uat_eqfx_score_sobreendeudamiento.module';
-
+import { Tokensia365Module } from './tokensia365/tokensia365.module';
+import { CorporacionDflModule } from './corporacion-dfl/corporacion-dfl.module';
+import { AnalisisdeidentidadModule } from './analisisdeidentidad/analisisdeidentidad.module';
+import { DflAnalisisBiometricoModule } from './dfl_analisis-biometrico/dfl_analisis-biometrico.module';
+import { DflIndicadoresAnversoModule } from './dfl_indicadores-anverso/dfl_indicadores-anverso.module';
+import { DflIndicadoresReversoModule } from './dfl_indicadores-reverso/dfl_indicadores-reverso.module';
+import { DflMetadataProcesadaModule } from './dfl_metadata-procesada/dfl_metadata-procesada.module';
+import { DflReferenciaModule } from './dfl_referencia/dfl_referencia.module';
+import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
 
 
 
@@ -379,8 +388,26 @@ import { UatEqfxScoreSobreendeudamientoModule } from './uat_eqfx_score_sobreende
 
     UatEqfxScoreSobreendeudamientoModule,
 
-	UatEqfxReporteBuroCreditoModule
+    UatEqfxReporteBuroCreditoModule,
+
+     Tokensia365Module,
+
+    CorporacionDflModule,
+
+    AnalisisdeidentidadModule,
+
+    DflAnalisisBiometricoModule,
+
+    DflIndicadoresAnversoModule,
+
+    DflIndicadoresReversoModule,
+
+    DflMetadataProcesadaModule,
+
+    DflReferenciaModule,
+
+    DflResultadoModule
   ],
   providers: [EmailService, DflStoregoogleService],
 })
-export class AppModule {}
+export class AppModule { }

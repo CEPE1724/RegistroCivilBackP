@@ -35,4 +35,31 @@ export class StoreReportsPhoneVerificationController {
       }
     }
   }
+
+  @Get('dflfirma-digital/:orderId')
+  //@Auth()
+  async getDflFirmaDigitalReport(
+    @Res() res: Response,
+    @Param('orderId') orderId: string,
+  ) {
+    try {
+      const pdfDoc = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(+orderId);
+      res.setHeader('Content-Type', 'application/pdf');
+      res.setHeader('Content-Disposition', `inline; filename=dfl-firma-digital-${orderId}.pdf`);
+
+      pdfDoc.info.Title = `Dfl Firma Digital Report`;
+      pdfDoc.pipe(res);
+      pdfDoc.end();
+    } catch (error) {
+      console.error('[PDF Error]', error);
+
+      // Enviar error como JSON, si aún no se envió contenido
+      if (!res.headersSent) {
+        res
+          .status(HttpStatus.INTERNAL_SERVER_ERROR)
+          .json({ message: 'No se pudo generar el PDF', details: error.message });
+      }
+    }
+  }
+
 }
