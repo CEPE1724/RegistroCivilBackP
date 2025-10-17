@@ -24,4 +24,18 @@ export class UatEqfxScoreInclusionService {
 			data: result,
 		};
 	}
+
+	async findOne(idEQFX_IdentificacionConsultada: number) {
+		const result = await this.UatEqfxScoreInclusionRepository.findOne({ where: { idEQFX_IdentificacionConsultada } });
+		if (!result) {
+			return {
+				success: false,
+				message: `No se encontró ningún documento con el id: ${idEQFX_IdentificacionConsultada}`,
+			};
+		}
+		return {
+			success: true,
+			data: result,
+		};
+	}
 }

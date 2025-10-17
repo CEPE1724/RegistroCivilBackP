@@ -11,4 +11,10 @@ export class UatEqfxScoreInclusionController {
 	findAll(@Param('idEqfx') idEqfx: string) {
 		return this.uatEqfxScoreInclusionService.findAll(+idEqfx);
 	}
+
+	@Get(':idEqfx')
+	@Auth()
+	findOne(@Param('idEqfx') idEqfx: string) {
+		return this.uatEqfxScoreInclusionService.findOne(+idEqfx);
+	}
 }

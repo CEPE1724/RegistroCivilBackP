@@ -140,6 +140,10 @@ import { UatEqfxSaldosPorVencerModule } from './uat_eqfx_saldos_por_vencer/uat_e
 import { UatEqfxEstructuraVencimientoModule } from './uat_eqfx_estructura_vencimiento/uat_eqfx_estructura_vencimiento.module';
 import { UatEqfxCreditosOtorgadosModule } from './uat_eqfx_creditos_otorgados/uat_eqfx_creditos_otorgados.module';
 import { UatEqfxOperacionesCanceladasModule } from './uat_eqfx_operaciones_canceladas/uat_eqfx_operaciones_canceladas.module';
+import { UatEqfxReporteBuroCreditoModule } from './uat_eqfx_reporte-buro-credito/uat_eqfx_reporte_buro_credito.module'
+import { UatEqfxCuotaEstMensModule } from './uat_eqfx_cuota_est_mens/uat_eqfx_cuota_est_mens.module';
+import { UatEqfxResultSegmentacionModule } from './uat_eqfx_result_segmentacion/uat_eqfx_result_segmentacion.module';
+import { UatEqfxScoreSobreendeudamientoModule } from './uat_eqfx_score_sobreendeudamiento/uat_eqfx_score_sobreendeudamiento.module';
 
 
 
@@ -369,10 +373,13 @@ import { UatEqfxOperacionesCanceladasModule } from './uat_eqfx_operaciones_cance
 
     UatEqfxOperacionesCanceladasModule,
 
+    UatEqfxCuotaEstMensModule,
 
+    UatEqfxResultSegmentacionModule,
 
+    UatEqfxScoreSobreendeudamientoModule,
 
-
+	UatEqfxReporteBuroCreditoModule
   ],
   providers: [EmailService],
 })
