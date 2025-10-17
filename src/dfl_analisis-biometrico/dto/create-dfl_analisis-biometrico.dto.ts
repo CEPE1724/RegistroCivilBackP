@@ -17,6 +17,7 @@
 	img_rostro_dos NVARCHAR(MAX),
     bio_fuente VARCHAR(500),
 	ip_registrada VARCHAR(500),
+    error varchar (500) default '',
     FechaSistema DATETIME DEFAULT GETDATE()
 );
 */
@@ -91,6 +92,10 @@ export class CreateDflAnalisisBiometricoDto {
     @IsString()
     @IsOptional()
     ip_registrada?: string;
+
+    @IsString()
+    @IsOptional()
+    error?: string;
 
     @IsDate()
     @IsOptional()

@@ -17,6 +17,7 @@
 	img_rostro_dos NVARCHAR(MAX),
     bio_fuente VARCHAR(500),
 	ip_registrada VARCHAR(500),
+    error varchar (500) default '',
     FechaSistema DATETIME DEFAULT GETDATE(),
     
 );*/
@@ -61,6 +62,8 @@ export class DflAnalisisBiometrico {
     bio_fuente: string
     @Column({ length: 500, name: 'ip_registrada', nullable: true })
     ip_registrada: string
+    @Column({ length: 500, name: 'error', nullable: true, default: '' })
+    error: string
     @Column({ name: 'FechaSistema', default: () => 'CURRENT_TIMESTAMP' })
     FechaSistema: Date
 

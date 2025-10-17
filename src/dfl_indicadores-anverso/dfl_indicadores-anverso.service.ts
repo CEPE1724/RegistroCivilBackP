@@ -15,7 +15,6 @@ export class DflIndicadoresAnversoService {
 
   create(createDflIndicadoresAnversoDto: CreateDflIndicadoresAnversoDto) {
     try {
-      this.logger.log('🔄 Creando indicador anverso...', createDflIndicadoresAnversoDto);
       const nuevoIndicador = this.dflIndicadoresAnversoRepository.create(createDflIndicadoresAnversoDto);
       return this.dflIndicadoresAnversoRepository.save(nuevoIndicador);
     } catch (error) {

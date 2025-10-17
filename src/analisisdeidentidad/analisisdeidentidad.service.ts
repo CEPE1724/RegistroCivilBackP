@@ -56,4 +56,33 @@ export class AnalisisdeidentidadService {
       throw new InternalServerErrorException('Error al obtener análisis de identidad');
     }
   }
+
+  async updateEstadoPorCodigo(codigo: string, idEstadoAnalisisDeIdentidad: number, mensajeError?: string) {
+    try {
+      this.logger.log(`🔄 Actualizando estado por código: ${codigo} -> Estado ${idEstadoAnalisisDeIdentidad}`);
+      // fecha actual
+      const fechaActual = new Date();
+
+      const analisis = await this.analisisDeIdentidadRepository.findOne({ where: { codigo } });
+
+      if (!analisis) {
+        this.logger.error(`❌ No se encontró un análisis de identidad con código ${codigo}`);
+        throw new InternalServerErrorException('Análisis de identidad no encontrado');
+      }
+
+      analisis.idEstadoAnalisisDeIdentidad = idEstadoAnalisisDeIdentidad;
+      analisis.FechaRespuesta = fechaActual;
+      if (mensajeError) {
+        analisis.Mensaje = mensajeError;
+      }
+
+      const actualizado = await this.analisisDeIdentidadRepository.save(analisis);
+
+      this.logger.log(`✅ Estado actualizado correctamente para código ${codigo}`);
+      return actualizado;
+    } catch (error) {
+      this.logger.error('❌ Error al actualizar estado de análisis de identidad', error.stack);
+      throw new InternalServerErrorException('Error al actualizar estado de análisis de identidad');
+    }
+  }
 }

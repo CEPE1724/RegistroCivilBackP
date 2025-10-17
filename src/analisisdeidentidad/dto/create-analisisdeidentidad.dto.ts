@@ -9,7 +9,9 @@
     idCre_SolicitudWeb int default 0 ,
 	codigo_interno VARCHAR(500) DEFAULT '',
     idEstadoAnalisisDeIdentidad INT DEFAULT 0,
-    FechaSistema DATETIME DEFAULT GETDATE()
+    FechaSistema DATETIME DEFAULT GETDATE(),
+    Mensaje varchar(500) default '', 
+    FechaRespuesta DATETIME 
 );
 */
 
@@ -56,4 +58,12 @@ export class CreateAnalisisdeidentidadDto {
     @IsDate()
     @IsOptional()
     FechaSistema?: Date;
+
+    @IsString()
+    @IsOptional()
+    Mensaje?: string;
+
+    @IsDate()
+    @IsOptional()
+    FechaRespuesta?: Date;
 }

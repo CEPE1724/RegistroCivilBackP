@@ -3,6 +3,7 @@ export interface DFLAnalisisBiometrico {
     data:        Data;
     tipo:        string;
     codigo:      string;
+    error:      string;
     indicadores: Indicadores;
 }
 

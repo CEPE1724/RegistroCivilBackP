@@ -12,16 +12,15 @@ export class CorporacionDflController {
     @Body() formData: {
       identificacion: string;
       callback: string;
-      codigo_interno: string;
       motivo: string;
       cre_solicitud: number | string;
       usuario: string;
     },
   ) {
 
-    const { identificacion, callback, codigo_interno, motivo, cre_solicitud, usuario } = formData;
+    const { identificacion, callback, motivo, cre_solicitud, usuario } = formData;
 
-    if (!identificacion || !callback || !codigo_interno || !motivo || cre_solicitud === undefined || !usuario) {
+    if (!identificacion || !callback || !motivo || cre_solicitud === undefined || !usuario) {
       this.logger.error('❌ Faltan campos obligatorios en el formulario');
       throw new BadRequestException('Faltan campos obligatorios en el formulario');
     }
