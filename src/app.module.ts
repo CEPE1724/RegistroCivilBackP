@@ -140,19 +140,10 @@ import { UatEqfxSaldosPorVencerModule } from './uat_eqfx_saldos_por_vencer/uat_e
 import { UatEqfxEstructuraVencimientoModule } from './uat_eqfx_estructura_vencimiento/uat_eqfx_estructura_vencimiento.module';
 import { UatEqfxCreditosOtorgadosModule } from './uat_eqfx_creditos_otorgados/uat_eqfx_creditos_otorgados.module';
 import { UatEqfxOperacionesCanceladasModule } from './uat_eqfx_operaciones_canceladas/uat_eqfx_operaciones_canceladas.module';
-import { Tokensia365Module } from './tokensia365/tokensia365.module';
-import { CorporacionDflModule } from './corporacion-dfl/corporacion-dfl.module';
-import { AnalisisdeidentidadModule } from './analisisdeidentidad/analisisdeidentidad.module';
-import { DflAnalisisBiometricoModule } from './dfl_analisis-biometrico/dfl_analisis-biometrico.module';
-import { DflIndicadoresAnversoModule } from './dfl_indicadores-anverso/dfl_indicadores-anverso.module';
-import { DflIndicadoresReversoModule } from './dfl_indicadores-reverso/dfl_indicadores-reverso.module';
-import { DflMetadataProcesadaModule } from './dfl_metadata-procesada/dfl_metadata-procesada.module';
-import { DflReferenciaModule } from './dfl_referencia/dfl_referencia.module';
-import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
-import { DflStoregoogleService } from './dfl_storegoogle/dfl_storegoogle.service';
-
-
-
+import { UatEqfxReporteBuroCreditoModule } from './uat_eqfx_reporte-buro-credito/uat_eqfx_reporte_buro_credito.module'
+import { UatEqfxCuotaEstMensModule } from './uat_eqfx_cuota_est_mens/uat_eqfx_cuota_est_mens.module';
+import { UatEqfxResultSegmentacionModule } from './uat_eqfx_result_segmentacion/uat_eqfx_result_segmentacion.module';
+import { UatEqfxScoreSobreendeudamientoModule } from './uat_eqfx_score_sobreendeudamiento/uat_eqfx_score_sobreendeudamiento.module';
 
 
 
@@ -382,32 +373,13 @@ import { DflStoregoogleService } from './dfl_storegoogle/dfl_storegoogle.service
 
     UatEqfxOperacionesCanceladasModule,
 
-    Tokensia365Module,
+    UatEqfxCuotaEstMensModule,
 
-    CorporacionDflModule,
+    UatEqfxResultSegmentacionModule,
 
-    AnalisisdeidentidadModule,
+    UatEqfxScoreSobreendeudamientoModule,
 
-    DflAnalisisBiometricoModule,
-
-    DflIndicadoresAnversoModule,
-
-    DflIndicadoresReversoModule,
-
-    DflMetadataProcesadaModule,
-
-    DflReferenciaModule,
-
-    DflResultadoModule,
-
-
-
-  
-
-
-
-
-
+	UatEqfxReporteBuroCreditoModule
   ],
   providers: [EmailService, DflStoregoogleService],
 })

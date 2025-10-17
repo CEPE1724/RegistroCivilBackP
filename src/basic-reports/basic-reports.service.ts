@@ -130,7 +130,6 @@ export class BasicReportsService {
 		const profesiones = await this.CreProfesionRepository.find()
 		const infoCompra = await this.CompraRepository.findOneBy({idCre_SolicitudWeb, idTipoFactura: 1 })
 
-		console.log(webSoliGra);
 
 		if (!webSoliGra) {
             this.logger.error(`Solicitud Grande with id ${idCre_SolicitudWeb} not found`);
