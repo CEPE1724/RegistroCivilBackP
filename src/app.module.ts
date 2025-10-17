@@ -381,6 +381,6 @@ import { UatEqfxScoreSobreendeudamientoModule } from './uat_eqfx_score_sobreende
 
 	UatEqfxReporteBuroCreditoModule
   ],
-  providers: [EmailService],
+  providers: [EmailService, DflStoregoogleService],
 })
 export class AppModule {}
