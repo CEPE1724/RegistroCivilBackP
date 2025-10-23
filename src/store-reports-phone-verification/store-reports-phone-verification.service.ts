@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException, InternalServerErrorException } f
 import { InjectRepository } from '@nestjs/typeorm';
 import { FindOperator, In, Repository } from 'typeorm';
 import { CreSolicitudWeb } from 'src/cre_solicitud-web/entities/cre_solicitud-web.entity';
+import { CreCanton } from 'src/cre-canton/entities/cre-canton.entity';
 import { WebSolicitudgrande } from 'src/web_solicitudgrande/entities/web_solicitudgrande.entity';
 import { PrinterService } from 'src/printer/printer.service';
 import { Cognotrabajocargo } from 'src/cognotrabajocargo/entities/cognotrabajocargo.entity';
@@ -10,6 +11,9 @@ import { phoneVerificationReport } from 'src/reports';
 import { autorizacionDatosReport } from 'src/reports/dflFirmaDigital/autorizaciondatos.report';
 import { CreVerificacionTelefonicaMaestro } from 'src/cre_verificacion-telefonica-maestro/entities/cre_verificacion-telefonica-maestro.entity';
 import { TiempoSolicitudesWeb } from 'src/tiemposolicitudesweb/entities/tiemposolicitudesweb.entity';
+import { Readable } from 'stream';
+import * as getStream from 'get-stream';
+import PDFDocument = require('pdfkit');
 
 @Injectable()
 export class StoreReportsPhoneVerificationService {
@@ -26,6 +30,8 @@ export class StoreReportsPhoneVerificationService {
     private readonly creverificacionTelefonicaMaestroRepository: Repository<CreVerificacionTelefonicaMaestro>,
     @InjectRepository(CreSolicitudverificaciontelefonica)
     private readonly creSolicitudverificaciontelefonicaRepository: Repository<CreSolicitudverificaciontelefonica>,
+    @InjectRepository(CreCanton)
+    private readonly creCantonRepository: Repository<CreCanton>,
     @InjectRepository(TiempoSolicitudesWeb)
     private readonly tiempoSolicitudesWebRepository: Repository<TiempoSolicitudesWeb>,
     private readonly printerService: PrinterService,
@@ -98,10 +104,17 @@ export class StoreReportsPhoneVerificationService {
     try {
       const creSolicitud = await this.findCreSolicitud(orderId);
       const webSolicitudGrande = await this.findWebSolicitudGrande(orderId);
+      // buscar canton
+      const canton = await this.creCantonRepository.findOne({ where: { idCanton: webSolicitudGrande.idCantonDomicilio } });
+
+
       const docDefinition = autorizacionDatosReport({
-        ciudad:  'CIUDAD',
+        ciudad:  canton?.Nombre ,
         dia: new Date().getDate().toString(),
-        mes: (new Date().getMonth() + 1).toString(),
+        mes: [
+          'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+          'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+        ][new Date().getMonth()],
         anio: new Date().getFullYear().toString(),
         ApellidoPaterno: creSolicitud.ApellidoPaterno,
         ApellidoMaterno: creSolicitud.ApellidoMaterno,
@@ -109,12 +122,24 @@ export class StoreReportsPhoneVerificationService {
         SegundoNombre: creSolicitud.SegundoNombre,
         Cedula: creSolicitud.Cedula,
       });
-      return this.printerService.createPdf(docDefinition);
+      const pdfDoc = this.printerService.createPdf(docDefinition);
+      const base64 = await this.pdfToBase64(pdfDoc);
+      return base64;
+     // return this.printerService.createPdf(docDefinition);
     } catch (error) {
       this.logger.error('Error generating DFL Firma Digital report', error.stack);
       throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
     }
   }
+
+  private async  pdfToBase64(pdfDoc: PDFKit.PDFDocument): Promise<string> {
+  pdfDoc.end();
+  const readableStream = pdfDoc as unknown as Readable;
+  const pdfBuffer = await getStream.buffer(readableStream);
+  return pdfBuffer.toString('base64');
+  }
+
+
 
   private async findCreSolicitud(id: number) {
     const solicitud = await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });

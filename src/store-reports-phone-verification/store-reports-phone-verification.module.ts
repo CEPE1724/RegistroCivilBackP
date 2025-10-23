@@ -5,7 +5,8 @@ import { PrinterModule } from 'src/printer/printer.module';
 import { CreSolicitudWeb } from 'src/cre_solicitud-web/entities/cre_solicitud-web.entity';
 import { WebSolicitudgrande } from 'src/web_solicitudgrande/entities/web_solicitudgrande.entity';
 import { Cognotrabajocargo } from 'src/cognotrabajocargo/entities/cognotrabajocargo.entity';
-import { CreVerificacionTelefonicaMaestro} from 'src/cre_verificacion-telefonica-maestro/entities/cre_verificacion-telefonica-maestro.entity';
+import { CreCanton } from 'src/cre-canton/entities/cre-canton.entity';
+import { CreVerificacionTelefonicaMaestro } from 'src/cre_verificacion-telefonica-maestro/entities/cre_verificacion-telefonica-maestro.entity';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { Cre_VerificacionTelefonica } from 'src/cre_verificacion-telefonica/entities/cre_verificacion-telefonica.entity';
 import { CreSolicitudverificaciontelefonica } from 'src/cre-solicitudverificaciontelefonica/entities/cre-solicitudverificaciontelefonica.entity';
@@ -15,12 +16,15 @@ import { AuthModule } from 'src/auth/auth.module';
   controllers: [StoreReportsPhoneVerificationController],
   providers: [StoreReportsPhoneVerificationService],
   imports: [
-        TypeOrmModule.forFeature([CreSolicitudWeb, WebSolicitudgrande, Cognotrabajocargo, CreVerificacionTelefonicaMaestro,
+    TypeOrmModule.forFeature([CreSolicitudWeb, 
+      WebSolicitudgrande, Cognotrabajocargo,
+       CreVerificacionTelefonicaMaestro,
 
-          CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb
-        ]),
-        PrinterModule,
-        AuthModule,
-      ],
+      CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb, Cre_VerificacionTelefonica, CreCanton
+    ]),
+    PrinterModule,
+    AuthModule,
+  ],
+  exports: [StoreReportsPhoneVerificationService, TypeOrmModule],
 })
-export class StoreReportsPhoneVerificationModule {}
+export class StoreReportsPhoneVerificationModule { }

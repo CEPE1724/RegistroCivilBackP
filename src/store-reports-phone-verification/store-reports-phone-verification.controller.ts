@@ -44,12 +44,12 @@ export class StoreReportsPhoneVerificationController {
   ) {
     try {
       const pdfDoc = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(+orderId);
-      res.setHeader('Content-Type', 'application/pdf');
+      /*res.setHeader('Content-Type', 'application/pdf');
       res.setHeader('Content-Disposition', `inline; filename=dfl-firma-digital-${orderId}.pdf`);
 
       pdfDoc.info.Title = `Dfl Firma Digital Report`;
       pdfDoc.pipe(res);
-      pdfDoc.end();
+      pdfDoc.end();*/
     } catch (error) {
       console.error('[PDF Error]', error);
 

@@ -4,8 +4,8 @@ import FormData from 'form-data';
 import { Tokensia365Service } from '../tokensia365/tokensia365.service';
 import { AnalisisdeidentidadService } from 'src/analisisdeidentidad/analisisdeidentidad.service';
 import { DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
-
-
+import { StoreReportsPhoneVerificationService } from '../store-reports-phone-verification/store-reports-phone-verification.service';
+import { FiduciaPayload } from './interfaces/fiduciapayload-interfaces';
 import { DflAnalisisBiometricoService } from 'src/dfl_analisis-biometrico/dfl_analisis-biometrico.service';
 import { DflIndicadoresAnversoService } from 'src/dfl_indicadores-anverso/dfl_indicadores-anverso.service';
 import { DflIndicadoresReversoService } from 'src/dfl_indicadores-reverso/dfl_indicadores-reverso.service';
@@ -13,6 +13,7 @@ import { DflMetadataProcesadaService } from 'src/dfl_metadata-procesada/dfl_meta
 import { DflReferenciaService } from 'src/dfl_referencia/dfl_referencia.service';
 import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
 import { DflStoregoogleService } from '../dfl_storegoogle/dfl_storegoogle.service';
+import { WebSolicitudgrandeService } from 'src/web_solicitudgrande/web_solicitudgrande.service';
 import { join } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 @Injectable()
@@ -35,6 +36,8 @@ export class CorporacionDflService {
         private readonly dflReferenciaService: DflReferenciaService,
         private readonly dflResultadoService: DflResultadoService,
         private readonly dflStoregoogleService: DflStoregoogleService,
+        private readonly storeReportsPhoneVerificationService: StoreReportsPhoneVerificationService,
+        private readonly webSolicitudgrandeService: WebSolicitudgrandeService,
     ) { }
 
     /**
@@ -87,7 +90,15 @@ export class CorporacionDflService {
     private async allTokens(): Promise<any> {
         try {
             const tokens = await this.tokensia365Service.findAll();
-            return tokens;
+            let tokenValido = '';
+            if (!tokens.TokenValido) {
+                this.logger.log('🔄 Token inválido o inexistente. Obteniendo uno nuevo...');
+                const nuevoToken = await this.obtenerYGuardarToken();
+                tokenValido = nuevoToken.tkn_token;
+            } else {
+                tokenValido = tokens.Token;
+            }
+            return tokenValido;
         }
         catch (error) {
             this.logger.error('❌ Error al obtener los tokens', error);
@@ -107,7 +118,7 @@ export class CorporacionDflService {
         }
     }
 
-    private async crearAnalisisdeidentidad(form: { identificacion: string; callback: string;  motivo: string, cre_solicitud: number, usuario: string }, codigo_interno: string, codigo: string, url: string, short_url: string, valido_hasta: Date): Promise<any> {
+    private async crearAnalisisdeidentidad(form: { identificacion: string; callback: string; motivo: string, cre_solicitud: number, usuario: string }, codigo_interno: string, codigo: string, url: string, short_url: string, valido_hasta: Date): Promise<any> {
         try {
             const nuevoAnalisis = await this.analisisdeidentidadService.create({
                 identificacion: form.identificacion,
@@ -128,7 +139,7 @@ export class CorporacionDflService {
     }
 
     private async solicitarBiometrico(
-        form: { identificacion: string; callback: string;  motivo: string, cre_solicitud: number },
+        form: { identificacion: string; callback: string; motivo: string, cre_solicitud: number },
         token: string,
         codigo_interno?: string,
     ): Promise<any> {
@@ -184,19 +195,11 @@ export class CorporacionDflService {
         usuario: string;
     }) {
         this.logger.log('🔄 Creando análisis de identidad...', form);
-        const codigo_interno =  await this.generateUniqueCode(form.identificacion);
+        const codigo_interno = await this.generateUniqueCode(form.identificacion);
 
         const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, form.cre_solicitud);
+        const tokenValido = await this.allTokens();
 
-        let tokenValido = '';
-        const tokenGuardado = await this.allTokens();
-        if (!tokenGuardado.TokenValido) {
-            this.logger.log('🔄 Token inválido o inexistente. Obteniendo uno nuevo...');
-            const nuevoToken = await this.obtenerYGuardarToken();
-            tokenValido = nuevoToken.tkn_token;
-        } else {
-            tokenValido = tokenGuardado.Token;
-        }
         this.logger.log('🔄 Verificando validez del token existente...', tokenValido);
         if (allAnalisisdeidentidad.count === 0) {
 
@@ -293,7 +296,7 @@ export class CorporacionDflService {
 
             const cedula = callbackData.indicadores.anverso.identificacion || 'DESCONOCIDA';
             const solicitud = callbackData.codigo || 'SIN_CODIGO';
-            this.logger.log(`🔄 data callback: ${JSON.stringify(callbackData, null, 2)}`)  ;
+            this.logger.log(`🔄 data callback: ${JSON.stringify(callbackData, null, 2)}`);
             // 📤 Subida de imágenes usando el método reutilizable
             callbackData.data.img_frontal = await this.uploadSafe(callbackData.data.img_frontal, cedula, solicitud, 'frontal', callbackData);
             callbackData.data.img_selfie = await this.uploadSafe(callbackData.data.img_selfie, cedula, solicitud, 'selfie', callbackData);
@@ -376,6 +379,152 @@ export class CorporacionDflService {
             await this.saveErrorLog('callback_general', callbackData, error);
             this.logger.error(`❌ Error procesando callback: ${error.message}`);
             return { message: 'Callback recibido, pero ocurrió un error interno (registrado en logs)' };
+        }
+    }
+
+    async crearFirmaDigital(idSolicitud: number, identidad: string): Promise<any> {
+        try {
+            // Lógica para crear la firma digital
+            const tokenGuardado = await this.allTokens();
+            const codigo_interno = await this.allAnalisisdeidentidad(identidad, 38952);
+            const base64_pdf1 = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(35757);
+            const webSolicitud = await this.webSolicitudgrandeService.findOneId(38952);
+            this.logger.log(`✅ PDF generado en base64 para la solicitud ID: ${idSolicitud}`);
+            this.logger.log(`Base64 PDF 1: ${codigo_interno}`);
+            this.logger.log(`Código interno obtenido: ${JSON.stringify(codigo_interno)}`);
+            const insertarOperacionFiduciaPayload = {
+                code_client: '123ABC',
+                code_bio: codigo_interno.codigo,
+                type_process: 'VARIOS',
+                data_fiducia: {
+                    CodigoNegocio: '3',
+                    TipoOperacion: 'E',
+                    NumeroOperacion: codigo_interno.codigo_interno,
+                    FechaEmision: '2025-10-02 15:51:38.987000',
+                    FechaVencimiento: '2026-10-02 00:00:00',
+                    FechaFirma: '2025-10-02 15:51:38.987000',
+                    Plazo: '12',
+                    Tasa: '15.60',
+                    Monto: '589.88',
+                    Cuota: '53.41',
+                    DistribucionGeografica: 'GUAYAS',
+                    Acreedor: {
+                        CodigoTipoIdentificacion: '2',
+                        NumeroIdentificacion: '09999999999999',
+                        RazonSocial: 'POINT.',
+                    },
+                    Deudor: {
+                        CodigoTipoPersona: '1',
+                        CodigoTipoIdentificacion: '1',
+                        NumeroIdentificacion: identidad,
+                        CodigoNacionalidad: '593',
+                        Nacionalidad: 'ECUATORIANA',
+                        RazonSocial: 'XXXXXX',
+                        PrimerNombre: webSolicitud.PrimerNombre,
+                        SegundoNombre: webSolicitud.SegundoNombre || '',
+                        PrimerApellido: webSolicitud.ApellidoPaterno,
+                        SegundoApellido: webSolicitud.ApellidoMaterno || '',
+                        Correo: 'ecepeda@credisolucion.com.ec',
+                        Celular: `+593${webSolicitud.Celular.slice(1)}`,
+                        Telefono: '04/2111111',
+                        Direccion: webSolicitud.ReferenciaUbicacion || 'N/A',
+                        CallePrincipal: webSolicitud.CallePrincipal || 'SANTA LUCIA',
+                        Numeracion: webSolicitud.NumeroCasa || 'SN',
+                        CalleSecundaria: webSolicitud.CalleSecundaria || 'BARRANQUILLA',
+                        ReferenciaDireccion: webSolicitud.ReferenciaUbicacion || 'None',
+                        CodigoPaisDireccion:  '593',
+                        CodigoProvinciaDireccion:  '217',
+                        CodigoCiudadDireccion: '21701',
+                        CodigoParroquiaDireccion: '2170103',
+                    },
+                },
+
+                signatories: [
+                    {
+                        dni: identidad,
+                        name: webSolicitud.PrimerNombre,
+                        first_last_name: webSolicitud.ApellidoPaterno,
+                        second_last_name: webSolicitud.ApellidoMaterno,
+                        email: 'ecepeda@credisolucion.com.ec',
+                        phone: `+593${webSolicitud.Celular.slice(1)}`,
+                        address: webSolicitud.CallePrincipal,
+                        city: webSolicitud.CalleSecundaria,
+                    },
+                ],
+                documents: [
+                    {
+                        code: "SEGUNDO_PAGARE",
+                        name: "Segundo P",
+                        base64: base64_pdf1
+                    },
+                    {
+                        code: "CONVENIO_ADHESION",
+                        name: "Convenio",
+                        base64: base64_pdf1
+                    },
+                    {
+                        code: "LIQUIDACION",
+                        name: "Liquidacion",
+                        base64: base64_pdf1
+                    },
+                    {
+                        code: "ANALISIS_DOMICILIARIO",
+                        name: "Analisis Dom",
+                        base64: base64_pdf1
+                    },
+                    {
+                        code: "ANEXO4",
+                        name: "Anexo",
+                        base64: base64_pdf1
+                    }
+                ]
+            };
+
+            /* creacion de archivo log con la respuesta enviada*/
+            const now = new Date();
+            const timestamp = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').replace('Z', '');
+            const numerorandom = Math.floor(Math.random() * 10000);
+            const folderPath = join(__dirname, '../../logs/biometrico');
+            const filePath = join(folderPath, `insertarOperacionFiducia_Payload_${timestamp}_${numerorandom}.json`);
+            if (!existsSync(folderPath)) mkdirSync(folderPath, { recursive: true });
+            writeFileSync(filePath, JSON.stringify(insertarOperacionFiduciaPayload, null, 2), 'utf8');
+            this.logger.log(`📁 Payload de insertarOperacionFiducia guardado en archivo: ${filePath}`);
+            this.logger.log(`🚀 Payload para insertarOperacionFiducia: ${JSON.stringify(insertarOperacionFiduciaPayload.code_bio)}`);
+
+            const url_signed = 'https://apipoint.corporaciondfl.com/api/operation/insert'; // Reemplaza con la URL correcta
+
+            const respuesta = await this.insertarOperacionFiducia(insertarOperacionFiduciaPayload, tokenGuardado, url_signed);
+            this.logger.log(`✅ Firma digital creada: ${JSON.stringify(respuesta)}`);
+            return respuesta;
+        } catch (error) {
+            this.logger.error(`❌ Error creando firma digital para la solicitud ID: ${idSolicitud}`, error);
+            throw new InternalServerErrorException('Error al crear la firma digital.');
+        }
+    }
+
+    private async insertarOperacionFiducia(
+        payload: FiduciaPayload,
+        token: string,
+        url_signed: string,
+    ): Promise<any> {
+        try {
+            const config = {
+                method: 'post' as const,
+                maxBodyLength: Infinity,
+                url: `${url_signed}`,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                data: JSON.stringify(payload),
+            };
+            this.logger.log(`🚀 Enviando solicitud insertarOperacionFiducia a DFL con payload: ${JSON.stringify(url_signed)}`);
+            const response = await axios.request(config);
+            this.logger.log(`✅ Respuesta de insertarOperacionFiducia: ${JSON.stringify(response.data)}`);
+            return response.data;
+        } catch (error) {
+            this.logger.error('❌ Error en insertarOperacionFiducia', error);
+            throw new InternalServerErrorException('Error al insertar operación de fiducia.');
         }
     }
 }

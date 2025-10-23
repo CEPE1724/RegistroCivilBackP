@@ -154,6 +154,8 @@ import { DflIndicadoresReversoModule } from './dfl_indicadores-reverso/dfl_indic
 import { DflMetadataProcesadaModule } from './dfl_metadata-procesada/dfl_metadata-procesada.module';
 import { DflReferenciaModule } from './dfl_referencia/dfl_referencia.module';
 import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
+import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-domicilio/georeferencia-entrega-domicilio.module';
+import { ClienteModule } from './cliente/cliente.module';
 
 
 
@@ -406,7 +408,11 @@ import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
 
     DflReferenciaModule,
 
-    DflResultadoModule
+    DflResultadoModule,
+
+    GeoreferenciaEntregaDomicilioModule,
+
+    ClienteModule
   ],
   providers: [EmailService, DflStoregoogleService],
 })

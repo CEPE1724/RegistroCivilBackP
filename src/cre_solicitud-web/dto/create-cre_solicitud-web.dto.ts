@@ -208,6 +208,16 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     idMotivoContinuidad: number;
 
+    @IsNumber()
+    @IsOptional()
+    bFirmaElectronica: number;
+
+    @IsNumber()
+    @IsOptional()
+    idEstadoAnalisisDeIdentidad: number;
+
+
+
   
 
     

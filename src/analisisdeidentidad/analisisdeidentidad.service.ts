@@ -50,6 +50,7 @@ export class AnalisisdeidentidadService {
         identificacion: analisis ? analisis.identificacion : null,
         short_url: analisis ? analisis.short_url : null,
         valido_hasta: analisis ? analisis.valido_hasta : null,
+        codigo: analisis ? analisis.codigo : null,
       };
     } catch (error) {
       this.logger.error('❌ Error al obtener análisis de identidad', error.stack);

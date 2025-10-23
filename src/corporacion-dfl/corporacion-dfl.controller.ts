@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Logger, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Logger, BadRequestException, Param } from '@nestjs/common';
 import { CorporacionDflService } from './corporacion-dfl.service';
 import { DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
 @Controller('corporacion-dfl')
@@ -40,6 +40,11 @@ export class CorporacionDflController {
   @Post('serviciosia365pro/biometrico/callback')
   async callback(@Body() callbackData: DFLAnalisisBiometrico) {
     return this.corporacionDflService.handleCallback(callbackData);
+  }
+
+  @Post('serviciosia365pro/biometrico/crear-firma-digital/:idSolicitud/:Identidad')
+  async crearFirmaDigital(@Param('idSolicitud') idSolicitud: string, @Param('Identidad') identidad: string) {
+    return this.corporacionDflService.crearFirmaDigital(Number(idSolicitud), identidad);
   }
 
 }
