@@ -18,16 +18,12 @@ import { Nomina } from 'src/nomina/entities/nomina.entity';
   controllers: [StoreReportsPhoneVerificationController],
   providers: [StoreReportsPhoneVerificationService],
   imports: [
-        TypeOrmModule.forFeature([CreSolicitudWeb, WebSolicitudgrande, Cognotrabajocargo, CreVerificacionTelefonicaMaestro, CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb, Compra, Nomina
-        ]),
-        PrinterModule,
-        AuthModule,
-      ],
-    TypeOrmModule.forFeature([CreSolicitudWeb, 
-      WebSolicitudgrande, Cognotrabajocargo,
-       CreVerificacionTelefonicaMaestro,
 
-      CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb, Cre_VerificacionTelefonica, CreCanton
+    TypeOrmModule.forFeature([CreSolicitudWeb,
+      WebSolicitudgrande, Cognotrabajocargo,
+      CreVerificacionTelefonicaMaestro,
+
+      CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb, Cre_VerificacionTelefonica, CreCanton, Compra, Nomina
     ]),
     PrinterModule,
     AuthModule,

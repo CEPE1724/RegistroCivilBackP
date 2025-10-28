@@ -426,7 +426,7 @@ import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-dom
 
     UatEqfxDetalleDeudaHistoricaSepsModule,
 
-    UatEqfxDetalleDeudaHistoricaSicomModule
+    UatEqfxDetalleDeudaHistoricaSicomModule,
     GeoreferenciaEntregaDomicilioModule,
 
   ],
