@@ -143,6 +143,9 @@ export class CreSolicitudWeb {
 	@Column('date')
 	FechaAfiliacionHasta: Date;
 
+	@Column('int')
+	idCompra: number;
+
     @BeforeInsert()
     upperApellidos() {
         if (this.ApellidoMaterno) {

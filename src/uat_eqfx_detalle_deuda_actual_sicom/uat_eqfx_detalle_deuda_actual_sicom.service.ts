@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { UatEqfxDetalleDeudaActualSb } from './entities/uat_eqfx_detalle_deuda_actual_sb.entity';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { UatEqfxDetalleDeudaActualSicom } from './entities/uat_eqfx_detalle_deuda_actual_sicom.entity';
 
 @Injectable()
-export class UatEqfxDetalleDeudaActualSbService {
+export class UatEqfxDetalleDeudaActualSicomService {
 
 	constructor(
-		@InjectRepository(UatEqfxDetalleDeudaActualSb)
-		private readonly UatEqfxDetalleDeudaActualSbRepository:
-			Repository<UatEqfxDetalleDeudaActualSb>
+		@InjectRepository(UatEqfxDetalleDeudaActualSicom)
+		private readonly UatEqfxDetalleDeudaActualSicomRepository: Repository<UatEqfxDetalleDeudaActualSicom>
 	) { }
 
+
 	async findAll(idEQFX_IdentificacionConsultada: number) {
-		const result = await this.UatEqfxDetalleDeudaActualSbRepository.find({ where: { idEQFX_IdentificacionConsultada } });
+		const result = await this.UatEqfxDetalleDeudaActualSicomRepository.find({ where: { idEQFX_IdentificacionConsultada } });
 		if (!result) {
 			return {
 				success: false,
@@ -23,13 +23,12 @@ export class UatEqfxDetalleDeudaActualSbService {
 
 		const dataWithSegmento = result.map((item) => ({
 			...item,
-			segmento: 'SB',
+			segmento: 'SICOM',
 		}));
 
 		return {
 			success: true,
 			data: dataWithSegmento,
 		};
-
 	}
 }

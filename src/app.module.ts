@@ -154,6 +154,12 @@ import { DflIndicadoresReversoModule } from './dfl_indicadores-reverso/dfl_indic
 import { DflMetadataProcesadaModule } from './dfl_metadata-procesada/dfl_metadata-procesada.module';
 import { DflReferenciaModule } from './dfl_referencia/dfl_referencia.module';
 import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
+import { ClienteModule } from './cliente/cliente.module';
+import { UatEqfxDetalleDeudaActualSepsModule } from './uat_eqfx_detalle_deuda_actual_seps/uat_eqfx_detalle_deuda_actual_seps.module';
+import { UatEqfxDetalleDeudaActualSicomModule } from './uat_eqfx_detalle_deuda_actual_sicom/uat_eqfx_detalle_deuda_actual_sicom.module';
+import { UatEqfxDetalleDeudaHistoricaSbModule } from './uat_eqfx_detalle_deuda_historica_sb/uat_eqfx_detalle_deuda_historica_sb.module';
+import { UatEqfxDetalleDeudaHistoricaSepsModule } from './uat_eqfx_detalle_deuda_historica_seps/uat_eqfx_detalle_deuda_historica_seps.module';
+import { UatEqfxDetalleDeudaHistoricaSicomModule } from './uat_eqfx_detalle_deuda_historica_sicom/uat_eqfx_detalle_deuda_historica_sicom.module';
 
 
 
@@ -406,7 +412,19 @@ import { DflResultadoModule } from './dfl_resultado/dfl_resultado.module';
 
     DflReferenciaModule,
 
-    DflResultadoModule
+    DflResultadoModule,
+
+    ClienteModule,
+
+    UatEqfxDetalleDeudaActualSepsModule,
+
+    UatEqfxDetalleDeudaActualSicomModule,
+
+    UatEqfxDetalleDeudaHistoricaSbModule,
+
+    UatEqfxDetalleDeudaHistoricaSepsModule,
+
+    UatEqfxDetalleDeudaHistoricaSicomModule
   ],
   providers: [EmailService, DflStoregoogleService],
 })

@@ -11,13 +11,13 @@ import { Cre_VerificacionTelefonica } from 'src/cre_verificacion-telefonica/enti
 import { CreSolicitudverificaciontelefonica } from 'src/cre-solicitudverificaciontelefonica/entities/cre-solicitudverificaciontelefonica.entity';
 import { TiempoSolicitudesWeb } from 'src/tiemposolicitudesweb/entities/tiemposolicitudesweb.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { Compra } from 'src/compra/entities/compra.entity';
+import { Nomina } from 'src/nomina/entities/nomina.entity';
 @Module({
   controllers: [StoreReportsPhoneVerificationController],
   providers: [StoreReportsPhoneVerificationService],
   imports: [
-        TypeOrmModule.forFeature([CreSolicitudWeb, WebSolicitudgrande, Cognotrabajocargo, CreVerificacionTelefonicaMaestro,
-
-          CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb
+        TypeOrmModule.forFeature([CreSolicitudWeb, WebSolicitudgrande, Cognotrabajocargo, CreVerificacionTelefonicaMaestro, CreSolicitudverificaciontelefonica, TiempoSolicitudesWeb, Compra, Nomina
         ]),
         PrinterModule,
         AuthModule,

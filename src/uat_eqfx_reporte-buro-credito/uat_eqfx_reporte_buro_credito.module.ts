@@ -18,6 +18,11 @@ import { UatEqfxEstructuraVencimientoModule } from 'src/uat_eqfx_estructura_venc
 import { UatEqfxCreditosOtorgadosModule } from 'src/uat_eqfx_creditos_otorgados/uat_eqfx_creditos_otorgados.module';
 import { UatEqfxOperacionesCanceladasModule } from 'src/uat_eqfx_operaciones_canceladas/uat_eqfx_operaciones_canceladas.module';
 import { UatEqfxDetalleTarjetasModule } from 'src/uat_eqfx_detalle_tarjetas/uat_eqfx_detalle_tarjetas.module';
+import { UatEqfxDetalleDeudaActualSepsModule } from 'src/uat_eqfx_detalle_deuda_actual_seps/uat_eqfx_detalle_deuda_actual_seps.module';
+import { UatEqfxDetalleDeudaActualSicomModule } from 'src/uat_eqfx_detalle_deuda_actual_sicom/uat_eqfx_detalle_deuda_actual_sicom.module';
+import { UatEqfxDetalleDeudaHistoricaSbModule } from 'src/uat_eqfx_detalle_deuda_historica_sb/uat_eqfx_detalle_deuda_historica_sb.module';
+import { UatEqfxDetalleDeudaHistoricaSepsModule } from 'src/uat_eqfx_detalle_deuda_historica_seps/uat_eqfx_detalle_deuda_historica_seps.module';
+import { UatEqfxDetalleDeudaHistoricaSicomModule } from 'src/uat_eqfx_detalle_deuda_historica_sicom/uat_eqfx_detalle_deuda_historica_sicom.module';
 
 
 @Module({
@@ -28,6 +33,11 @@ import { UatEqfxDetalleTarjetasModule } from 'src/uat_eqfx_detalle_tarjetas/uat_
 		UatEqfxScoreInclusionModule,
 		UatEqfxEntidadesConsultadosModule,
 		UatEqfxResultadoPoliticasModule,
+		UatEqfxDetalleDeudaActualSepsModule,
+		UatEqfxDetalleDeudaActualSicomModule,
+		UatEqfxDetalleDeudaHistoricaSbModule,
+		UatEqfxDetalleDeudaHistoricaSepsModule,
+		UatEqfxDetalleDeudaHistoricaSicomModule,
 		UatEqfxDetalleDeudaActualSbModule,
 		UatEqfxDetalleTarjetasModule,
 		UatEqfxDetalleEstructuraVencimientoModule,
@@ -39,8 +49,6 @@ import { UatEqfxDetalleTarjetasModule } from 'src/uat_eqfx_detalle_tarjetas/uat_
 		UatEqfxCreditosOtorgadosModule,
 		UatEqfxOperacionesCanceladasModule,
 		AuthModule
-
-		
 	],
 	controllers: [UatEqfxReporteBuroCreditoController],
 	providers: [UatEqfxReporteBuroCreditoService]

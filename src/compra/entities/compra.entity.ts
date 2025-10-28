@@ -426,5 +426,7 @@ export class Compra {
 	@Column({ type: 'int', nullable: true })
 	Bodega: number;
 
+	@Column({ type: 'datetime', nullable: true })
+    FechaIngreso: Date;
 
 }
