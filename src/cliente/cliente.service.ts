@@ -12,7 +12,7 @@ export class ClienteService {
 	) { }
 
 	async findOne(id: string) {
-		const result = await this.clienteRepository.findOne({ where: { Ruc: id } })
+		const result = await this.clienteRepository.findOne({ where: { Ruc: id, Proveedor: false } })
 		if (!result) {
 			return {
 				success: false,

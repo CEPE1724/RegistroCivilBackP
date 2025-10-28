@@ -160,6 +160,8 @@ import { UatEqfxDetalleDeudaActualSicomModule } from './uat_eqfx_detalle_deuda_a
 import { UatEqfxDetalleDeudaHistoricaSbModule } from './uat_eqfx_detalle_deuda_historica_sb/uat_eqfx_detalle_deuda_historica_sb.module';
 import { UatEqfxDetalleDeudaHistoricaSepsModule } from './uat_eqfx_detalle_deuda_historica_seps/uat_eqfx_detalle_deuda_historica_seps.module';
 import { UatEqfxDetalleDeudaHistoricaSicomModule } from './uat_eqfx_detalle_deuda_historica_sicom/uat_eqfx_detalle_deuda_historica_sicom.module';
+import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-domicilio/georeferencia-entrega-domicilio.module';
+
 
 
 
@@ -425,6 +427,8 @@ import { UatEqfxDetalleDeudaHistoricaSicomModule } from './uat_eqfx_detalle_deud
     UatEqfxDetalleDeudaHistoricaSepsModule,
 
     UatEqfxDetalleDeudaHistoricaSicomModule
+    GeoreferenciaEntregaDomicilioModule,
+
   ],
   providers: [EmailService, DflStoregoogleService],
 })

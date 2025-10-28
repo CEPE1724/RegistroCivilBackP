@@ -145,6 +145,11 @@ export class CreSolicitudWeb {
 
 	@Column('int')
 	idCompra: number;
+    @Column('int')
+    bFirmaElectronica: number;
+
+    @Column('int')
+    idEstadoAnalisisDeIdentidad: number;
 
     @BeforeInsert()
     upperApellidos() {
