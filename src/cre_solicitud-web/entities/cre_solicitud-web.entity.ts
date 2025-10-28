@@ -143,6 +143,8 @@ export class CreSolicitudWeb {
 	@Column('date')
 	FechaAfiliacionHasta: Date;
 
+	@Column('int')
+	idCompra: number;
     @Column('int')
     bFirmaElectronica: number;
 
