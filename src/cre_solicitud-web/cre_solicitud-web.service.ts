@@ -122,7 +122,7 @@ export class CreSolicitudWebService {
       /* let eqfxData = this.EQFX_UAT
          ? await this.eqfxidentificacionconsultadaService.findOneUAT(cedula)
          : await this.eqfxidentificacionconsultadaService.findOne(cedula);*/
-      let eqfxData = await this.eqfxidentificacionconsultadaService.findOne(cedula);
+      let eqfxData = await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
 
       if (eqfxData.success) {
         const FechaConsulta = eqfxData.data.FechaSistema;
@@ -140,9 +140,10 @@ export class CreSolicitudWebService {
       }
 
       // 2. Si es necesario, consultar Equifax externo
-      // let equifaxResult =  await this.EquifaxDataUAT('C', cedula);
+      //  let equifaxResult = await this.EquifaxData('C', cedula);
       if (debeConsultarEquifax) {
-        let equifaxResult = await this.EquifaxData('C', cedula);
+       console.log('Consultando Equifax externo para cédula:', cedula);
+        let equifaxResult =  await this.EquifaxDataUAT('C', cedula);
 
 
         if (!equifaxResult.success) {
