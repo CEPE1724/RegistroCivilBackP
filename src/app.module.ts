@@ -161,6 +161,8 @@ import { UatEqfxDetalleDeudaHistoricaSbModule } from './uat_eqfx_detalle_deuda_h
 import { UatEqfxDetalleDeudaHistoricaSepsModule } from './uat_eqfx_detalle_deuda_historica_seps/uat_eqfx_detalle_deuda_historica_seps.module';
 import { UatEqfxDetalleDeudaHistoricaSicomModule } from './uat_eqfx_detalle_deuda_historica_sicom/uat_eqfx_detalle_deuda_historica_sicom.module';
 import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-domicilio/georeferencia-entrega-domicilio.module';
+import { UatEqfxIndicadorImpactoEconomicoModule } from './uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.module';
+import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.module';
 
 
 
@@ -428,6 +430,8 @@ import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-dom
 
     UatEqfxDetalleDeudaHistoricaSicomModule,
     GeoreferenciaEntregaDomicilioModule,
+    UatEqfxIndicadorImpactoEconomicoModule,
+    UatEqfxResultadoModule,
 
   ],
   providers: [EmailService, DflStoregoogleService],

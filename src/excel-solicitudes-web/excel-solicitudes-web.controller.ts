@@ -10,10 +10,11 @@ export class ExcelSolicitudesWebController {
   @Get('export-excel')
   @Auth() 
   async exportExcel(@Res() res: Response, @Query('BodegaId') BodegaId?: number,
-    @Query('Fecha') Fecha?: string,) {
+    @Query('FechaDesde') FechaDesde?: string, @Query('FechaHasta') FechaHasta?:string) {
     await this.excelSolicitudesWebService.generateExcel(res, {
       BodegaId,
-      Fecha,
+      FechaDesde,
+	  FechaHasta
     });
   }
 }

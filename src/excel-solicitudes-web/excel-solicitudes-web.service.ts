@@ -9,7 +9,7 @@ export class ExcelSolicitudesWebService {
     @InjectDataSource() private dataSource: DataSource,
   ) {}
 
-  async generateExcel(res: any, filtros: { BodegaId?: number; Fecha?: string }) {
+  async generateExcel(res: any, filtros: { BodegaId?: number; FechaDesde?: string, FechaHasta?: string }) {
     // 1. Ejecutar el procedimiento almacenado "CrearReporteSolicitudesWeb"
     let query = 'EXEC CrearReporteSolicitudesWeb';
 
@@ -18,9 +18,12 @@ export class ExcelSolicitudesWebService {
 	if (filtros.BodegaId) {
       params.push(`@BodegaId = ${filtros.BodegaId}`);
     }
-    if (filtros.Fecha) {
-      params.push(`@Fecha = '${filtros.Fecha}'`);
+    if (filtros.FechaDesde) {
+      params.push(`@FechaDesde = '${filtros.FechaDesde}'`);
     }
+	if (filtros.FechaHasta) {
+		params.push(`@FechaHasta = '${filtros.FechaHasta}'`);
+	}
 
 	if (params.length > 0) {
       query += ' ' + params.join(', ');
@@ -98,19 +101,30 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('BC3').value = 'Hora revisión telefonica 5';
 	worksheet.getCell('BD3').value = 'Hora corrección telefonica 5';
 	worksheet.getCell('BE3').value = 'Nombre verificación domicilio';
-	worksheet.getCell('BF3').value = 'Nombre verificación laboral';
-	worksheet.getCell('BG3').value = 'Duración solicitud';
-	worksheet.getCell('BH3').value = 'Duración documental';
-	worksheet.getCell('BI3').value = 'Duración telefónica';
-	worksheet.getCell('BJ3').value = 'Nombre analista';
-	worksheet.getCell('BK3').value = 'Nombre operador';
-	worksheet.getCell('BL3').value = 'Persona que aprobó';
-	worksheet.getCell('BM3').value = 'Tiempo que aprobó';
-	worksheet.getCell('BN3').value = 'Verificación Domicilio';
-	worksheet.getCell('BO3').value = 'Verificación Laboral';
-	worksheet.getCell('BP3').value = 'Cuota Asignada';
-	worksheet.getCell('BQ3').value = 'Motivo Continuidad';
-
+	worksheet.getCell('BF3').value = 'Hora asignacion domicilio';
+	worksheet.getCell('BG3').value = 'Hora aprovacion domicilio';
+	worksheet.getCell('BH3').value = 'Hora reasignacion supervisor dom';
+	worksheet.getCell('BI3').value = 'Hora reasignacion App dom';
+	worksheet.getCell('BJ3').value = 'Hora rechazo domicilio';
+	worksheet.getCell('BK3').value = 'Nombre verificación laboral';
+	worksheet.getCell('BL3').value = 'Hora asignacion laboral';
+	worksheet.getCell('BM3').value = 'Hora aprovacion laboral';
+	worksheet.getCell('BN3').value = 'Hora reasignacion supervisor lab';
+	worksheet.getCell('BO3').value = 'Hora reasignacion App lab';
+	worksheet.getCell('BP3').value = 'Hora rechazo laboral';
+	worksheet.getCell('BQ3').value = 'Duración solicitud'; 
+	worksheet.getCell('BR3').value = 'Duración documental'; 
+	worksheet.getCell('BS3').value = 'Duración telefónica'; 
+	worksheet.getCell('BT3').value = 'Nombre analista'; 
+	worksheet.getCell('BU3').value = 'Nombre operador'; 
+	worksheet.getCell('BV3').value = 'Persona que aprobó'; 
+	worksheet.getCell('BW3').value = 'Tiempo que aprobó'; 
+	worksheet.getCell('BX3').value = 'Aprobó documental' 
+	worksheet.getCell('BY3').value = 'Tiempo aprobó documental'
+	worksheet.getCell('BZ3').value = 'Verificación Domicilio';
+	worksheet.getCell('CA3').value = 'Verificación Laboral';
+	worksheet.getCell('CB3').value = 'Cuota Asignada';
+	worksheet.getCell('CC3').value = 'Motivo Continuidad';
 
     // formato encabezado
     const headerRow = worksheet.getRow(3);
@@ -185,7 +199,17 @@ export class ExcelSolicitudesWebService {
 	toFechaHoraTexto(item.HoraRevisionTelefonica_5),
 	toFechaHoraTexto(item.HoraCorreccionTelefonica_5),
     item.NombreVerificacionDomicilio,
+    toFechaHoraTexto(item.horaAsigDom),
+    toFechaHoraTexto(item.horaAprovDom),
+    toFechaHoraTexto(item.hReasigSupDom),
+    toFechaHoraTexto(item.hReasigAppDom),
+    toFechaHoraTexto(item.horaRechDom),
     item.NombreVerificacionLaboral,
+	toFechaHoraTexto(item.horaAsigLab),
+	toFechaHoraTexto(item.horaAprobLab),
+	toFechaHoraTexto(item.horaReasigSupLab),
+	toFechaHoraTexto(item.horaReasigAppLab),
+	toFechaHoraTexto(item.horaRechLab),
     item.DuracionSolicitud,
     item.Duraciondocumental,
     item.DuracionTelefonica,
@@ -193,6 +217,8 @@ export class ExcelSolicitudesWebService {
     item.NombreOperador,
 	item.NombreAprobo,
 	toFechaHoraTexto(item.TiempoAprobo),
+	item.NombreAproboDocumental,
+	toFechaHoraTexto(item.TiempoAproboDocumental),
 	item.VerificacionDomicilio,
 	item.VerificacionLaboral,
 	item.CuotaAsignada,

@@ -13,8 +13,10 @@ import { UatEqfxDeudaHistoricaService } from 'src/uat_eqfx_deuda_historica/uat_e
 import { UatEqfxEntidadesConsultadosService } from 'src/uat_eqfx_entidades_consultados/uat_eqfx_entidades_consultados.service';
 import { UatEqfxEstructuraVencimientoService } from 'src/uat_eqfx_estructura_vencimiento/uat_eqfx_estructura_vencimiento.service';
 import { UatEqfxIdentificadorPerfilRiesgoDirectoService } from 'src/uat_eqfx_identificador_perfil_riesgo_directo/uat_eqfx_identificador_perfil_riesgo_directo.service';
+import { UatEqfxIndicadorImpactoEconomicoService } from 'src/uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.service';
 import { UatEqfxOperacionesCanceladasService } from 'src/uat_eqfx_operaciones_canceladas/uat_eqfx_operaciones_canceladas.service';
 import { UatEqfxResultSegmentacionService } from 'src/uat_eqfx_result_segmentacion/uat_eqfx_result_segmentacion.service';
+import { UatEqfxResultadoService } from 'src/uat_eqfx_resultado/uat_eqfx_resultado.service';
 import { UatEqfxResultadoPoliticasService } from 'src/uat_eqfx_resultado_politicas/uat_eqfx_resultado_politicas.service';
 import { UatEqfxSaldosPorVencerService } from 'src/uat_eqfx_saldos_por_vencer/uat_eqfx_saldos_por_vencer.service';
 import { UatEqfxScoreInclusionService } from 'src/uat_eqfx_score_inclusion/uat_eqfx_score_inclusion.service';
@@ -28,6 +30,8 @@ export class UatEqfxReporteBuroCreditoService {
 
 		// RESULTADO DE EVALUACION
 		private readonly segmentacion: UatEqfxResultSegmentacionService,
+		private readonly ingresos: UatEqfxIndicadorImpactoEconomicoService,
+		private readonly capacidadPago: UatEqfxResultadoService,
 
 		//SCORE SOBREENDEUDAMIENTO
 		private readonly scoreSobreendeudamiento: UatEqfxScoreSobreendeudamientoService,
@@ -86,10 +90,12 @@ export class UatEqfxReporteBuroCreditoService {
 
 	async findAll(idEqfx: number) {
 		const [
-			cuotaEstMens, segmentacion, scoreSobreendeudamiento, score, politicas, infoActualSb, infoActualSeps, infoActualSicom, infoHistoricaSb, infoHistoricaSeps, infoHistoricaSicom, deudaReportada, detalleTarj, detalleOperaciones, indicadoresPerfilRiesgo, centralInfocom, deudaHistorica, deudaTotalRfr, analisisSaldoVencer, compoEstructuraVenc, creditosOtorgados12m, ultimas10Operaciones, entidadesConsultadas
+			cuotaEstMens, segmentacion, ingresos, capacidadPago, scoreSobreendeudamiento, score, politicas, infoActualSb, infoActualSeps, infoActualSicom, infoHistoricaSb, infoHistoricaSeps, infoHistoricaSicom, deudaReportada, detalleTarj, detalleOperaciones, indicadoresPerfilRiesgo, centralInfocom, deudaHistorica, deudaTotalRfr, analisisSaldoVencer, compoEstructuraVenc, creditosOtorgados12m, ultimas10Operaciones, entidadesConsultadas
 		] = await Promise.all([
 			this.cuotaEstMens.findOne(idEqfx),
 			this.segmentacion.findOne(idEqfx),
+			this.ingresos.findOne(idEqfx),
+			this.capacidadPago.findOne(idEqfx),
 			this.scoreSobreendeudamiento.findOne(idEqfx),
 			this.score.findOne(idEqfx),
 			this.politicas.findAll(idEqfx),
@@ -116,6 +122,8 @@ export class UatEqfxReporteBuroCreditoService {
 		return {
 			cuotaEstMens,
 			segmentacion,
+			ingresos,
+			capacidadPago,
 			scoreSobreendeudamiento,
 			score,
 			politicas,

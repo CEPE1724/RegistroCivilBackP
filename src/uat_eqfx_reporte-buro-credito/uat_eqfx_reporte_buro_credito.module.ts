@@ -23,12 +23,16 @@ import { UatEqfxDetalleDeudaActualSicomModule } from 'src/uat_eqfx_detalle_deuda
 import { UatEqfxDetalleDeudaHistoricaSbModule } from 'src/uat_eqfx_detalle_deuda_historica_sb/uat_eqfx_detalle_deuda_historica_sb.module';
 import { UatEqfxDetalleDeudaHistoricaSepsModule } from 'src/uat_eqfx_detalle_deuda_historica_seps/uat_eqfx_detalle_deuda_historica_seps.module';
 import { UatEqfxDetalleDeudaHistoricaSicomModule } from 'src/uat_eqfx_detalle_deuda_historica_sicom/uat_eqfx_detalle_deuda_historica_sicom.module';
+import { UatEqfxIndicadorImpactoEconomicoModule } from 'src/uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.module';
+import { UatEqfxResultadoModule } from 'src/uat_eqfx_resultado/uat_eqfx_resultado.module';
 
 
 @Module({
 	imports: [
 		UatEqfxCuotaEstMensModule,
 		UatEqfxResultSegmentacionModule,
+		UatEqfxIndicadorImpactoEconomicoModule,
+		UatEqfxResultadoModule,
 		UatEqfxScoreSobreendeudamientoModule,
 		UatEqfxScoreInclusionModule,
 		UatEqfxEntidadesConsultadosModule,
