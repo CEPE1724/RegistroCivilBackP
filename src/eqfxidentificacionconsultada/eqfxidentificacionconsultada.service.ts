@@ -16,7 +16,10 @@ export class EqfxidentificacionconsultadaService {
 
   // Método modificado para devolver un mensaje cuando no existe el valor
   async findOne(NumeroDocumento: string) {
-    const result = await this.eqfxidentificacionconsultadaRepository.findOne({ where: { NumeroDocumento }, order: { idEQFX_IdentificacionConsultada: 'DESC' } });
+	const result = await this.eqfxidentificacionconsultadaRepository.findOne({
+	  where: { NumeroDocumento, UAT: 1 },
+	  order: { idEQFX_IdentificacionConsultada: 'DESC' },
+	});
     if (!result) {
       // Lanzamos una excepción si no se encuentra el documento
       return {
