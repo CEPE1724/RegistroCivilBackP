@@ -241,4 +241,25 @@ export class StoreReportsPhoneVerificationController {
 		}
 	}
 
+	@Get('tabla-amortizacion/:id')
+	//@Auth()
+	async getTablaAmortizacion(@Res() res: Response, @Param('id') id: string) {
+		try {
+			const pdfDoc = await this.storeReportsPhoneVerificationService.getTablaAmortizacion(+id);
+			res.setHeader('Content-Type', 'application/pdf');
+			res.setHeader('Content-Disposition', `inline; filename=dfl-tabla-amortizacion-${id}.pdf`);
+
+			pdfDoc.info.Title = `Tabla Amortizacion Report`;
+			pdfDoc.pipe(res);
+			pdfDoc.end();
+		} catch (error) {
+			console.error('[PDF Error]', error);
+
+			if (!res.headersSent) {
+				res
+					.status(HttpStatus.INTERNAL_SERVER_ERROR)
+					.json({ message: 'No se pudo generar el PDF', details: error.message });
+			}
+		}
+	}
 }

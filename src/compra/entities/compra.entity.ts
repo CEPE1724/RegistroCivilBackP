@@ -429,4 +429,9 @@ export class Compra {
 	@Column({ type: 'datetime', nullable: true })
     FechaIngreso: Date;
 
+	@Column({ type: 'int', nullable: true})
+	idCliente: number;
+
+	@Column({ type: 'datetime', nullable: true })
+    FechaPrimerPago: Date;
 }

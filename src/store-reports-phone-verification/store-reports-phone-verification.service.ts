@@ -23,6 +23,7 @@ import { compraVentaResDominioReport } from 'src/reports/dflFirmaDigital/compraV
 import { Readable } from 'stream';
 import * as getStream from 'get-stream';
 import PDFDocument = require('pdfkit');
+import { tablaAmortizacionReport } from 'src/reports/dflFirmaDigital/tablaAmortizacion.reports';
 
 @Injectable()
 export class StoreReportsPhoneVerificationService {
@@ -390,4 +391,61 @@ export class StoreReportsPhoneVerificationService {
 		}
 	}
 
+	async getTablaAmortizacion(id: number) {
+
+		function formatoFechaParaProcedimiento(fechaStr: Date): string {
+			const date = new Date(fechaStr);
+			const pad = (n: number) => n.toString().padStart(2, '0');
+
+			const year = date.getFullYear();
+			const month = pad(date.getMonth() + 1);
+			const day = pad(date.getDate());
+
+			return `${year}${month}${day}`;
+		}
+
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+			const compra = await this.findCompra(creSolicitud.idCompra)
+			const fecha = formatoFechaParaProcedimiento(compra.Fecha)
+			const fechaPrimPago = formatoFechaParaProcedimiento(compra.FechaPrimerPago)
+
+			const query = `EXEC CalculaCuotaInicial 
+			@Capital = ${compra.Total - compra.CuotaEntrada},
+			@Cuotas = ${compra.NumCuotas},
+			@IdCliente = ${compra.idCliente},
+			@FechaGenera = '${fecha}',
+			@IdEntidadFinanciera = 1
+			`;
+			const result = await this.creSolicitudWebRepository.query(query);
+
+			const query2 = `EXEC GeneraTablaDeAmortizacion 
+			@Capital = ${compra.Total - compra.CuotaEntrada},
+			@Cuotas = ${compra.NumCuotas},
+			@Fecha = '${fechaPrimPago}',
+			@FechaGenera = '${fecha}',
+			@idEntidadFinanciera = 1,
+			@AbonaCuota = 0
+			`;
+			const result2 = await this.creSolicitudWebRepository.query(query2);
+
+			console.log("result2", result2)
+
+			const docDefinition = tablaAmortizacionReport({
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+				Monto: compra.Total,
+				Plazo: compra.NumCuotas,
+				Tasa: result[0].TasaAnual,
+				Cuota: result[0].Cuota,
+				datosTabla: result2
+			});
+
+			return this.printerService.createPdf(docDefinition);
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
 }
