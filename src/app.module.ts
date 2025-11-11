@@ -163,6 +163,7 @@ import { UatEqfxDetalleDeudaHistoricaSicomModule } from './uat_eqfx_detalle_deud
 import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-domicilio/georeferencia-entrega-domicilio.module';
 import { UatEqfxIndicadorImpactoEconomicoModule } from './uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.module';
 import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.module';
+import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
 
 
 
@@ -432,6 +433,7 @@ import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.
     GeoreferenciaEntregaDomicilioModule,
     UatEqfxIndicadorImpactoEconomicoModule,
     UatEqfxResultadoModule,
+    UatEqfxScoreModule,
 
   ],
   providers: [EmailService, DflStoregoogleService],

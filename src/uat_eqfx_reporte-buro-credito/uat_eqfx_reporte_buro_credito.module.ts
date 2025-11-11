@@ -25,6 +25,7 @@ import { UatEqfxDetalleDeudaHistoricaSepsModule } from 'src/uat_eqfx_detalle_deu
 import { UatEqfxDetalleDeudaHistoricaSicomModule } from 'src/uat_eqfx_detalle_deuda_historica_sicom/uat_eqfx_detalle_deuda_historica_sicom.module';
 import { UatEqfxIndicadorImpactoEconomicoModule } from 'src/uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.module';
 import { UatEqfxResultadoModule } from 'src/uat_eqfx_resultado/uat_eqfx_resultado.module';
+import { UatEqfxScoreModule } from 'src/uat_eqfx_score/uat_eqfx_score.module';
 
 
 @Module({
@@ -34,6 +35,7 @@ import { UatEqfxResultadoModule } from 'src/uat_eqfx_resultado/uat_eqfx_resultad
 		UatEqfxIndicadorImpactoEconomicoModule,
 		UatEqfxResultadoModule,
 		UatEqfxScoreSobreendeudamientoModule,
+		UatEqfxScoreModule,
 		UatEqfxScoreInclusionModule,
 		UatEqfxEntidadesConsultadosModule,
 		UatEqfxResultadoPoliticasModule,

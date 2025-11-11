@@ -19,6 +19,7 @@ import { UatEqfxResultSegmentacionService } from 'src/uat_eqfx_result_segmentaci
 import { UatEqfxResultadoService } from 'src/uat_eqfx_resultado/uat_eqfx_resultado.service';
 import { UatEqfxResultadoPoliticasService } from 'src/uat_eqfx_resultado_politicas/uat_eqfx_resultado_politicas.service';
 import { UatEqfxSaldosPorVencerService } from 'src/uat_eqfx_saldos_por_vencer/uat_eqfx_saldos_por_vencer.service';
+import { UatEqfxScoreService } from 'src/uat_eqfx_score/uat_eqfx_score.service';
 import { UatEqfxScoreInclusionService } from 'src/uat_eqfx_score_inclusion/uat_eqfx_score_inclusion.service';
 import { UatEqfxScoreSobreendeudamientoService } from 'src/uat_eqfx_score_sobreendeudamiento/uat_eqfx_score_sobreendeudamiento.service';
 import { UatEqfxValorDeuda3SistemasService } from 'src/uat_eqfx_valor_deuda_3_sistemas/uat_eqfx_valor_deuda_3_sistemas.service';
@@ -36,7 +37,9 @@ export class UatEqfxReporteBuroCreditoService {
 		//SCORE SOBREENDEUDAMIENTO
 		private readonly scoreSobreendeudamiento: UatEqfxScoreSobreendeudamientoService,
 
-		private readonly score: UatEqfxScoreInclusionService,
+		//SCORE
+		//private readonly score: UatEqfxScoreInclusionService,
+		private readonly score: UatEqfxScoreService,
 
 		//RESULTADO POLÍTICAS
 		private readonly politicas: UatEqfxResultadoPoliticasService,
