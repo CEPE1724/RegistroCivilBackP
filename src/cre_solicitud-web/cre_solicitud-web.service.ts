@@ -758,13 +758,14 @@ export class CreSolicitudWebService {
 
     // Filtro por nombres y apellidos (búsqueda parcial)
     if (nombres) {
-      const nombreBusqueda = `%${nombres}%`;
+      const nombreBusqueda = `${nombres}%`; // Buscar por inicio es más rápido
       queryBuilder.andWhere(
-        `(cre_solicitud_web.PrimerNombre LIKE :nombreBusqueda OR 
-          cre_solicitud_web.SegundoNombre LIKE :nombreBusqueda OR 
-          cre_solicitud_web.ApellidoPaterno LIKE :nombreBusqueda OR 
-          cre_solicitud_web.ApellidoMaterno LIKE :nombreBusqueda)`,
-        { nombreBusqueda }
+        new Brackets(qb => {
+          qb.where('cre_solicitud_web.PrimerNombre LIKE :nombreBusqueda', { nombreBusqueda })
+            .orWhere('cre_solicitud_web.SegundoNombre LIKE :nombreBusqueda', { nombreBusqueda })
+            .orWhere('cre_solicitud_web.ApellidoPaterno LIKE :nombreBusqueda', { nombreBusqueda })
+            .orWhere('cre_solicitud_web.ApellidoMaterno LIKE :nombreBusqueda', { nombreBusqueda });
+        })
       );
     }
     // Filtro por idTipoCliente
@@ -776,21 +777,23 @@ export class CreSolicitudWebService {
       queryBuilder.andWhere('(cre_solicitud_web.idCompraEncuesta = :idCompraEncuesta OR :idCompraEncuesta = 0)', { idCompraEncuesta });
     }
     // Obtener el conteo total de registros
-    const totalCount = await queryBuilder.getCount();
+    const totalCount = await queryBuilder
+      .clone()
+      .select('COUNT(1)', 'cnt')
+      .getRawOne()
+      .then(r => parseInt(r.cnt, 10));
 
-    // Ordenar por fecha de forma descendente (más recientes primero)
-    queryBuilder.orderBy('cre_solicitud_web.Fecha', 'DESC');
-
-    // Aplicar la paginación
-    queryBuilder.skip(offset).take(limit);
-
-    // Obtener los registros filtrados
-    const creSolicitudWeb = await queryBuilder.getMany();
+    const data = await queryBuilder
+      .orderBy('cre_solicitud_web.Fecha', 'DESC')
+      .skip(offset)
+      .take(limit)
+      .getMany();
 
     return {
-      data: creSolicitudWeb,
-      total: totalCount,
+      data,          // ya contiene los registros paginados
+      total: totalCount, // total sin paginación
     };
+
   }
 
 
