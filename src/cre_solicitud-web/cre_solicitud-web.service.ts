@@ -303,6 +303,8 @@ export class CreSolicitudWebService {
           data: null,
         };
       }
+
+      console.log('Resultado del procedimiento almacenado:', storedProcedureResult);
       const tipoCliente = storedProcedureResult[0].TipoCliente;
       const Resultado = storedProcedureResult[0].Resultado;
 
@@ -317,6 +319,8 @@ export class CreSolicitudWebService {
       const updatedSolicitud = await queryRunner.manager.findOne(CreSolicitudWeb, {
         where: { idCre_SolicitudWeb: idSolicitud },
       });
+
+      console.log('Solicitud web creada y actualizada con éxito:', updatedSolicitud);
 
       // ✅ 5. Confirmar transacción
       await queryRunner.commitTransaction();
