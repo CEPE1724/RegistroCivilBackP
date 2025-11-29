@@ -596,36 +596,47 @@ export class CreSolicitudWebService {
   }
 
   async getMotivoContinuidad(Vendedor: number) {
-    // consultar solicitud web con idMotivoContinuidad = 0 i estado in [1,2] y devolver solo NumeroSolicitud-Cedula-Fecha and la fecha sea mayor a 13/08/2025 y menor al dia actual
-    //console .log('Vendedor:', Vendedor);
-    const fechaInicio = new Date('2025-08-17');
-    // Obtener la fecha actual en la zona horaria de Ecuador (UTC-5)
-    const fechaFin = new Date(
-      new Date(new Date().toLocaleString("en-US", { timeZone: "America/Guayaquil" }))
-        .setDate(new Date().getDate() - 1)
-    );
+    // ✅ Obtener fechas en formato correcto
+    const fechaInicio = new Date('2025-08-17T00:00:00');
+    
+    // Fecha actual en Ecuador (UTC-5) menos 1 día
+    const now = new Date(new Date().toLocaleString("en-US", { timeZone: "America/Guayaquil" }));
+    const fechaFin = new Date(now.getFullYear(), now.getMonth(), now.getDate()); // Inicio del día actual
+    fechaFin.setDate(fechaFin.getDate()); // Día actual a las 00:00:00
+
     const queryBuilder = this.creSolicitudWebRepository
       .createQueryBuilder('cre')
-      .select(['cre.NumeroSolicitud', 'cre.Cedula', 'cre.Fecha', 'cre.ApellidoMaterno',
-        'cre.ApellidoPaterno', 'cre.PrimerNombre', 'cre.SegundoNombre', 'cre.idCre_SolicitudWeb'
-
-
+      .select([
+        'cre.NumeroSolicitud', 
+        'cre.Cedula', 
+        'cre.Fecha', 
+        'cre.ApellidoMaterno',
+        'cre.ApellidoPaterno', 
+        'cre.PrimerNombre', 
+        'cre.SegundoNombre', 
+        'cre.idCre_SolicitudWeb'
       ])
       .where('cre.idMotivoContinuidad = :idMotivoContinuidad', { idMotivoContinuidad: 0 })
       .andWhere('cre.Estado IN (:...estados)', { estados: [1, 2] })
-      .andWhere('CONVERT(date, cre.Fecha) BETWEEN :fechaInicio AND :fechaFin', { fechaInicio, fechaFin });
+      // ✅ SIN CONVERT - Mucho más rápido
+      .andWhere('cre.Fecha >= :fechaInicio AND cre.Fecha < :fechaFin', { 
+        fechaInicio: fechaInicio.toISOString(),
+        fechaFin: fechaFin.toISOString()
+      });
 
+    // ✅ Solo filtrar por vendedor si es mayor a 0
     if (Vendedor > 0) {
       queryBuilder.andWhere('cre.idVendedor = :Vendedor', { Vendedor });
     }
 
     queryBuilder.orderBy('cre.Fecha', 'DESC');
 
-    // count de registros
-    const totalCount = await queryBuilder.getCount();
-    // Ejecutar la consulta para obtener los resultados
-    const creSolicitudWeb = await queryBuilder.getMany();
-    // Retornar los resultados con el total count
+    // ✅ Ejecutar COUNT y SELECT en paralelo para mejor rendimiento
+    const [totalCount, creSolicitudWeb] = await Promise.all([
+      queryBuilder.getCount(),
+      queryBuilder.getMany()
+    ]);
+
     return {
       totalCount,
       data: creSolicitudWeb,
