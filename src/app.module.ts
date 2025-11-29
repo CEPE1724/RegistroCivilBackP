@@ -168,6 +168,7 @@ import { CacheModule } from '@nestjs/cache-manager';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { APP_INTERCEPTOR } from '@nestjs/core';
 import { HttpCacheInterceptor } from './common/interceptors/http-cache.interceptor';
+import { AlmacenesModule } from './almacenes/almacenes.module';
 
 @Module({
   imports: [
@@ -440,6 +441,7 @@ import { HttpCacheInterceptor } from './common/interceptors/http-cache.intercept
     UatEqfxIndicadorImpactoEconomicoModule,
     UatEqfxResultadoModule,
     UatEqfxScoreModule,
+    AlmacenesModule,
 
   ],
   providers: [

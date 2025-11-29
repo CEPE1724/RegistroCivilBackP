@@ -4,11 +4,11 @@ import { UsuarioBodegaService } from './usuario-bodega.service';
 import { UsuarioBodegaController } from './usuario-bodega.controller';
 import { UsuarioBodega } from './entities/usuario-bodega.entity';
 import { Usuario } from './entities/usuario.entity';
-import { Bodega } from './entities/bodega.entity';
 import { AuthModule } from 'src/auth/auth.module';
+import { Almacen } from 'src/almacenes/entities/almacene.entity';
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UsuarioBodega, Usuario, Bodega]), // Asegúrate de registrar las 3 entidades
+    TypeOrmModule.forFeature([UsuarioBodega, Usuario, Almacen]), // Asegúrate de registrar las 4 entidades
     AuthModule, // Importa el módulo de autenticación si es necesario
   ],
   controllers: [UsuarioBodegaController],
