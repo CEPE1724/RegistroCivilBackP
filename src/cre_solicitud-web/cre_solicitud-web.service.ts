@@ -693,72 +693,95 @@ export class CreSolicitudWebService {
 
 
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
-    const { limit, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud, idTipoCliente = 0, idCompraEncuesta = 0, operador = 0 } = paginationDto;
-
+    const { 
+      limit, 
+      offset = 0, 
+      fechaInicio, 
+      fechaFin, 
+      estado, 
+      vendedor = 0, 
+      analista = 0, 
+      EstadoSolicitud = 0, 
+      EstadoDocumental = 0, 
+      EstadoTelefonica = 0, 
+      cedula, 
+      nombres, 
+      numeroSolicitud, 
+      idTipoCliente = 0, 
+      idCompraEncuesta = 0, 
+      operador = 0 
+    } = paginationDto;
 
     const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
 
-    // Aplicar los filtros de fechas con las horas ajustadas
+    // ✅ 1. Filtro de fechas SIN CONVERT (mucho más rápido)
     if (fechaInicio && fechaFin) {
       const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
-      const fechaFinStr = fechaFin.toISOString().split('T')[0];
+      const fechaFinDate = new Date(fechaFin);
+      fechaFinDate.setDate(fechaFinDate.getDate() + 1); // +1 día para incluir todo el día
+      const fechaFinStr = fechaFinDate.toISOString().split('T')[0];
 
       queryBuilder.andWhere(
-        'CONVERT(date, cre_solicitud_web.Fecha) BETWEEN CONVERT(date, :fechaInicio) AND CONVERT(date, :fechaFin)',
+        'cre_solicitud_web.Fecha >= :fechaInicio AND cre_solicitud_web.Fecha < :fechaFin',
         { fechaInicio: fechaInicioStr, fechaFin: fechaFinStr }
       );
     }
 
-    if (estado !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.estado = :estado OR :estado = 0)', { estado });
+    // ✅ 2. Filtros sin OR (solo agregar condición si el valor es diferente de 0)
+    if (estado && estado !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.estado = :estado', { estado });
     }
 
-    if (vendedor !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idVendedor = :vendedor OR :vendedor = 0)', { vendedor });
+    if (vendedor && vendedor !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idVendedor = :vendedor', { vendedor });
     }
 
-    if (analista !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idAnalista = :analista OR :analista = 0)', { analista });
+    if (analista && analista !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idAnalista = :analista', { analista });
     }
 
-    if (operador !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idOperador = :operador OR :operador = 0)', { operador });
+    if (operador && operador !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idOperador = :operador', { operador });
     }
 
-
-    if (EstadoSolicitud !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionSolicitud = :EstadoSolicitud OR :EstadoSolicitud = 0)', { EstadoSolicitud });
+    if (EstadoSolicitud && EstadoSolicitud !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idEstadoVerificacionSolicitud = :EstadoSolicitud', { EstadoSolicitud });
     }
 
-    if (EstadoDocumental !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionDocumental = :EstadoDocumental OR :EstadoDocumental = 0)', { EstadoDocumental });
+    if (EstadoDocumental && EstadoDocumental !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idEstadoVerificacionDocumental = :EstadoDocumental', { EstadoDocumental });
     }
 
-    if (EstadoTelefonica !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionTelefonica = :EstadoTelefonica OR :EstadoTelefonica = 0)', { EstadoTelefonica });
+    if (EstadoTelefonica && EstadoTelefonica !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idEstadoVerificacionTelefonica = :EstadoTelefonica', { EstadoTelefonica });
     }
-    // Agregar el filtro para bodegas usando IN si el array de bodegasIds no está vacío
+
+    // ✅ 3. Filtro de bodegas (está bien)
     if (bodega && bodega.length > 0) {
       queryBuilder.andWhere('cre_solicitud_web.bodega IN (:...bodega)', { bodega });
     }
 
-
+    // ✅ 4. Filtro de cédula optimizado
     if (cedula) {
-      queryBuilder.andWhere('cre_solicitud_web.Cedula LIKE :cedula', {
-        cedula: `%${cedula}%`,
-      });
+      if (cedula.length >= 10) {
+        // Búsqueda exacta (usa índice)
+        queryBuilder.andWhere('cre_solicitud_web.Cedula = :cedula', { cedula });
+      } else {
+        // Búsqueda por inicio (usa índice)
+        queryBuilder.andWhere('cre_solicitud_web.Cedula LIKE :cedula', { cedula: `${cedula}%` });
+      }
     }
 
-    // Filtro por número de solicitud
+    // ✅ 5. Filtro de número de solicitud optimizado
     if (numeroSolicitud) {
-      queryBuilder.andWhere('cre_solicitud_web.NumeroSolicitud LIKE :numeroSolicitud', {
-        numeroSolicitud: `%${numeroSolicitud}%`,
+      queryBuilder.andWhere('cre_solicitud_web.NumeroSolicitud LIKE :numeroSolicitud', { 
+        numeroSolicitud: `${numeroSolicitud}%` 
       });
     }
 
-    // Filtro por nombres y apellidos (búsqueda parcial)
+    // ✅ 6. Filtro de nombres optimizado (solo por inicio)
     if (nombres) {
-      const nombreBusqueda = `${nombres}%`; // Buscar por inicio es más rápido
+      const nombreBusqueda = `${nombres}%`;
       queryBuilder.andWhere(
         new Brackets(qb => {
           qb.where('cre_solicitud_web.PrimerNombre LIKE :nombreBusqueda', { nombreBusqueda })
@@ -768,32 +791,31 @@ export class CreSolicitudWebService {
         })
       );
     }
-    // Filtro por idTipoCliente
-    if (idTipoCliente !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idTipoCliente = :idTipoCliente OR :idTipoCliente = 0)', { idTipoCliente });
-    }
-    // Filtro por idCompraEncuesta
-    if (idCompraEncuesta !== undefined) {
-      queryBuilder.andWhere('(cre_solicitud_web.idCompraEncuesta = :idCompraEncuesta OR :idCompraEncuesta = 0)', { idCompraEncuesta });
-    }
-    // Obtener el conteo total de registros
-    const totalCount = await queryBuilder
-      .clone()
-      .select('COUNT(1)', 'cnt')
-      .getRawOne()
-      .then(r => parseInt(r.cnt, 10));
 
-    const data = await queryBuilder
+    if (idTipoCliente && idTipoCliente !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idTipoCliente = :idTipoCliente', { idTipoCliente });
+    }
+
+    if (idCompraEncuesta && idCompraEncuesta !== 0) {
+      queryBuilder.andWhere('cre_solicitud_web.idCompraEncuesta = :idCompraEncuesta', { idCompraEncuesta });
+    }
+
+    // ✅ 7. Obtener conteo sin ordenamiento
+    const totalCount = await queryBuilder.getCount();
+
+    // ✅ 8. Aplicar ordenamiento y paginación
+    queryBuilder
       .orderBy('cre_solicitud_web.Fecha', 'DESC')
       .skip(offset)
-      .take(limit)
-      .getMany();
+      .take(limit);
+
+    // ✅ 9. Ejecutar consulta
+    const creSolicitudWeb = await queryBuilder.getMany();
 
     return {
-      data,          // ya contiene los registros paginados
-      total: totalCount, // total sin paginación
+      data: creSolicitudWeb,
+      total: totalCount,
     };
-
   }
 
 
