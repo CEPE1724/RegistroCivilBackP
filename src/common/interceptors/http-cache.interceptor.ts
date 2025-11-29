@@ -1,5 +1,8 @@
-import { Injectable, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Injectable, ExecutionContext, CallHandler, Inject } from '@nestjs/common';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { Reflector } from '@nestjs/core';
 
 /**
  * Interceptor personalizado para cachear respuestas HTTP
@@ -7,6 +10,13 @@ import { CacheInterceptor } from '@nestjs/cache-manager';
  */
 @Injectable()
 export class HttpCacheInterceptor extends CacheInterceptor {
+  constructor(
+    @Inject(CACHE_MANAGER) cacheManager: Cache,
+    reflector: Reflector,
+  ) {
+    super(cacheManager, reflector);
+  }
+
   /**
    * Genera una clave única para el caché basada en la URL y query params
    */

@@ -4,7 +4,6 @@ import { ApiConfig } from './configjoi/api.config';
 import { JoinValidationSchema } from './configjoi/joi.validation';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { CacheModule } from '@nestjs/cache-manager';
 import { UsuarioModule } from './usuarios/usuario.module';
 import { CiudadanoModule } from './ciudadanos/ciudadano.module';
 import { HistoricoModule } from './historico/historico.module';
@@ -165,8 +164,10 @@ import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-dom
 import { UatEqfxIndicadorImpactoEconomicoModule } from './uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.module';
 import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.module';
 import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { CacheModule } from '@nestjs/cache-manager';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_INTERCEPTOR } from '@nestjs/core';
+import { HttpCacheInterceptor } from './common/interceptors/http-cache.interceptor';
 
 @Module({
   imports: [
@@ -174,11 +175,6 @@ import { APP_GUARD } from '@nestjs/core';
       load: [ApiConfig],
       validationSchema: JoinValidationSchema,
       isGlobal: true,
-    }),
-    CacheModule.register({
-      isGlobal: true,
-      ttl: 300000, // 5 minutos en milisegundos (300,000 ms)
-      max: 100, // Máximo 100 elementos en caché
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
@@ -431,6 +427,12 @@ import { APP_GUARD } from '@nestjs/core';
 
     UatEqfxDetalleDeudaHistoricaSbModule,
 
+    UatEqfxDetalleDeudaActualSepsModule,
+
+    UatEqfxDetalleDeudaActualSicomModule,
+
+    UatEqfxDetalleDeudaHistoricaSbModule,
+
     UatEqfxDetalleDeudaHistoricaSepsModule,
 
     UatEqfxDetalleDeudaHistoricaSicomModule,
@@ -439,22 +441,15 @@ import { APP_GUARD } from '@nestjs/core';
     UatEqfxResultadoModule,
     UatEqfxScoreModule,
 
-    // ✅ Configuración global del throttler
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 60 segundos
-      limit: 10,  // 10 requests por minuto (global)
-    }]),
   ],
   providers: [
-    EmailService,
-    DflStoregoogleService,
-    // ...existing providers...
-    
-    // ✅ Aplicar throttler globalmente (opcional)
+    // ✅ Aplicar interceptor globalmente (opcional)
     // {
-    //   provide: APP_GUARD,
-    //   useClass: ThrottlerGuard,
+    //   provide: APP_INTERCEPTOR,
+    //   useClass: HttpCacheInterceptor,
     // },
+    EmailService,
+    DflStoregoogleService
   ],
 })
 export class AppModule { }
