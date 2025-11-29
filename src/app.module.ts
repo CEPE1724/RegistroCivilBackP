@@ -164,10 +164,8 @@ import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-dom
 import { UatEqfxIndicadorImpactoEconomicoModule } from './uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.module';
 import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.module';
 import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
-
-
-
-
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
@@ -435,7 +433,22 @@ import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
     UatEqfxResultadoModule,
     UatEqfxScoreModule,
 
+    // ✅ Configuración global del throttler
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 60 segundos
+      limit: 10,  // 10 requests por minuto (global)
+    }]),
   ],
-  providers: [EmailService, DflStoregoogleService],
+  providers: [
+    EmailService,
+    DflStoregoogleService,
+    // ...existing providers...
+    
+    // ✅ Aplicar throttler globalmente (opcional)
+    // {
+    //   provide: APP_GUARD,
+    //   useClass: ThrottlerGuard,
+    // },
+  ],
 })
 export class AppModule { }

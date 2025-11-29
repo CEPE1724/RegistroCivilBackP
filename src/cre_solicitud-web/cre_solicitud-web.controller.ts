@@ -7,6 +7,7 @@ import { FilterCreSolicitudWebDto } from './dto/filter-cre-solicitud-web.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { Auth, GetUser } from '../auth/decorators';
 import { ValidRoles } from '../auth/interfaces';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('cre-solicitud-web')
 export class CreSolicitudWebController {
@@ -14,12 +15,14 @@ export class CreSolicitudWebController {
 
   @Post()
   @Auth()
+   @Throttle({ default: { limit: 1, ttl: 5000 } })
   create(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
 /* para el eccommerce*/
   @Post('web')
+   @Throttle({ default: { limit: 1, ttl: 10000 } })
   createweb(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
