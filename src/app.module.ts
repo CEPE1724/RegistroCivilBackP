@@ -4,6 +4,7 @@ import { ApiConfig } from './configjoi/api.config';
 import { JoinValidationSchema } from './configjoi/joi.validation';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CacheModule } from '@nestjs/cache-manager';
 import { UsuarioModule } from './usuarios/usuario.module';
 import { CiudadanoModule } from './ciudadanos/ciudadano.module';
 import { HistoricoModule } from './historico/historico.module';
@@ -173,6 +174,11 @@ import { APP_GUARD } from '@nestjs/core';
       load: [ApiConfig],
       validationSchema: JoinValidationSchema,
       isGlobal: true,
+    }),
+    CacheModule.register({
+      isGlobal: true,
+      ttl: 300000, // 5 minutos en milisegundos (300,000 ms)
+      max: 100, // Máximo 100 elementos en caché
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
