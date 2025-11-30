@@ -17,6 +17,12 @@ async function bootstrap() {
   app.use(bodyParser.json({ limit: '100mb' })); // Puedes subir a 200mb si lo necesitas
   app.use(bodyParser.urlencoded({ limit: '100mb', extended: true }));
 
+  // ✅ Aumentar timeout global
+  app.use((req, res, next) => {
+    req.setTimeout(120000); // 2 minutos
+    res.setTimeout(120000); // 2 minutos
+    next();
+  });
 
   app.enableCors({
     origin: '*',

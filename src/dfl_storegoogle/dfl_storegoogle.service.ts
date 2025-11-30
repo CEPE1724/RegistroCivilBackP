@@ -1,4 +1,3 @@
-
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Storage } from '@google-cloud/storage';
@@ -10,7 +9,7 @@ import { v4 as uuidv4 } from 'uuid';
 export class DflStoregoogleService {
   private readonly logger = new Logger("GoogleStorageService");
   private storage: Storage;
-  private readonly bucketName = 'sparta_bucket'; // ⚙️ Cambia al nombre de tu bucket
+  private readonly bucketName = 'sparta_bucket';
 
   constructor(private readonly configService: ConfigService) {
     const keyFilePath = this.configService.get<string>('GOOGLE_CLOUD_KEYFILE');
@@ -18,7 +17,9 @@ export class DflStoregoogleService {
       throw new Error('❌ GOOGLE_CLOUD_KEYFILE no está configurado en el archivo .env');
     }
 
-    const resolvedPath = path.resolve(__dirname, keyFilePath);
+    // Resolver la ruta desde la raíz del proyecto
+    const resolvedPath = path.resolve(process.cwd(), keyFilePath);
+    
     if (!fs.existsSync(resolvedPath)) {
       throw new Error(`❌ No se encontró el archivo de credenciales: ${resolvedPath}`);
     }
@@ -28,6 +29,7 @@ export class DflStoregoogleService {
     });
 
     this.logger.log(`✅ Google Cloud Storage inicializado correctamente`);
+    this.logger.log(`📁 Credenciales cargadas desde: ${resolvedPath}`);
   }
 
   /**

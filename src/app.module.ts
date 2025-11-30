@@ -165,15 +165,20 @@ import { UatEqfxIndicadorImpactoEconomicoModule } from './uat_eqfx_indicador_imp
 import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.module';
 import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
 import { CacheModule } from '@nestjs/cache-manager';
+import { BullModule } from '@nestjs/bull';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_INTERCEPTOR } from '@nestjs/core';
-import { HttpCacheInterceptor } from './common/interceptors/http-cache.interceptor';
-import { AlmacenesModule } from './almacenes/almacenes.module';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
+
+import * as redisStore from 'cache-manager-redis-store';
+import Redis from 'ioredis';
+import redisConfig from './config/redis.config';
+import { RedisModule } from './redis/redis.module';
 
 @Module({
   imports: [
     ConfigModule.forRoot({
-      load: [ApiConfig],
+      load: [ApiConfig, redisConfig],
       validationSchema: JoinValidationSchema,
       isGlobal: true,
     }),
@@ -441,15 +446,43 @@ import { AlmacenesModule } from './almacenes/almacenes.module';
     UatEqfxIndicadorImpactoEconomicoModule,
     UatEqfxResultadoModule,
     UatEqfxScoreModule,
-    AlmacenesModule,
-
+    CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get('redis.host'),
+        port: configService.get('redis.port'),
+        password: configService.get('redis.password'),
+        ttl: 300,
+      }),
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get('redis.host'),
+          port: configService.get('redis.port'),
+          password: configService.get('redis.password'),
+        },
+      }),
+    }),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 segundos
+        limit: 100, // 100 peticiones por minuto
+      },
+    ]),
+    
+    RedisModule,
   ],
   providers: [
-    // ✅ Aplicar interceptor globalmente (opcional)
-    // {
-    //   provide: APP_INTERCEPTOR,
-    //   useClass: HttpCacheInterceptor,
-    // },
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
     EmailService,
     DflStoregoogleService
   ],
