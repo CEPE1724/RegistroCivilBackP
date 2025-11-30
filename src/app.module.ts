@@ -164,6 +164,7 @@ import { GeoreferenciaEntregaDomicilioModule } from './georeferencia-entrega-dom
 import { UatEqfxIndicadorImpactoEconomicoModule } from './uat_eqfx_indicador_impacto_economico/uat_eqfx_indicador_impacto_economico.module';
 import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.module';
 import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
+import { AlmacenesModule } from './almacenes/almacenes.module';
 
 
 
@@ -434,6 +435,7 @@ import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
     UatEqfxIndicadorImpactoEconomicoModule,
     UatEqfxResultadoModule,
     UatEqfxScoreModule,
+    AlmacenesModule
 
   ],
   providers: [EmailService, DflStoregoogleService],

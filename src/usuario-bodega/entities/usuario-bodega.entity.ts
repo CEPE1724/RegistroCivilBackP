@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne } from 'typeorm';
 import { Usuario } from './usuario.entity';  // Relacionamos con Usuario
 import { Bodega } from './bodega.entity';    // Relacionamos con Bodega
-
+import { Almacen } from 'src/almacenes/entities/almacene.entity';
 @Entity('UsuariosBodegas')
 export class UsuarioBodega {
   @PrimaryGeneratedColumn({ name: 'idUsuarioBodega' })
@@ -15,7 +15,5 @@ export class UsuarioBodega {
 
   @ManyToOne(() => Usuario, usuario => usuario.usuariosBodegas)
   usuario: Usuario;
-
-  @ManyToOne(() => Bodega, bodega => bodega.usuariosBodegas)
-  bodegaEntity: Bodega;
+  
 }
