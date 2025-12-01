@@ -125,6 +125,7 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('CA3').value = 'Verificación Laboral';
 	worksheet.getCell('CB3').value = 'Cuota Asignada';
 	worksheet.getCell('CC3').value = 'Motivo Continuidad';
+	worksheet.getCell('CD3').value = 'Fecha Ingreso Afiliacion'
 
     // formato encabezado
     const headerRow = worksheet.getRow(3);
@@ -222,7 +223,8 @@ export class ExcelSolicitudesWebService {
 	item.VerificacionDomicilio,
 	item.VerificacionLaboral,
 	item.CuotaAsignada,
-	item.MotivoContinuidad
+	item.MotivoContinuidad,
+	item.FechaIngreso,
   ]);
 
   row.alignment = { horizontal: 'center', vertical: 'middle' };
