@@ -1,7 +1,7 @@
 export const CacheTTL = {
   compraEncuesta: 1800000, // 30 minutos
   actividadEconomica: 3600000, // 1 hora
-  bodegasUsuario: 1800000, // 30 minutos
+  bodegasUsuario: 3600000, // 1 hora
   creTiempo: 172800000, // 48 horas
   cre_actividadeconomina: 172800000, // 48 horas
   motivoContinuidad: 172800000, // 48 horas
