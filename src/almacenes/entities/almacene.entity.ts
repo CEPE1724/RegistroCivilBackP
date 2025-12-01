@@ -8,6 +8,9 @@ export class Almacen {
   @Column({ type: 'int', nullable: true })
   Bodega: number;
 
+  @Column({ type: 'int', nullable: true })
+  Credito: number;
+
   @Column({ type: 'varchar', length: 3, nullable: true })
   Codigo: string;
 

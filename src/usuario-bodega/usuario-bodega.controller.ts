@@ -1,4 +1,4 @@
-import { Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { UsuarioBodegaService } from './usuario-bodega.service';
 import { Auth } from 'src/auth/decorators';
 
@@ -9,17 +9,17 @@ export class UsuarioBodegaController {
   ) {}
 
   // Endpoint para obtener bodegas asociadas a un usuario específico
-  @Get('usuario/bodegas')
+  @Post('usuario/bodegas')
   @Auth()
   async findBodegasByUser(
-    @Query('userId') userId: number, // ID del usuario (vía URL)
-    @Query('idTipoFactura') idTipoFactura: number, // idTipoFactura (vía query)
-    @Query('fecha') fecha: string = new Date().toISOString(), // fecha (vía query), valor por defecto es la fecha actual
-    @Query('recibeConsignacion') recibeConsignacion: boolean = false, // recibeConsignacion (vía query), valor por defecto es false
+    @Body('userId') userId: number, // ID del usuario (en el body)
+    @Body('idTipoFactura') idTipoFactura: number, // idTipoFactura (en el body)
+    @Body('fecha') fecha: string = new Date().toISOString(), // fecha (en el body), valor por defecto es la fecha actual
+    @Body('recibeConsignacion') recibeConsignacion: boolean = false, // recibeConsignacion (en el body), valor por defecto es false
   ) {
     // Convertir fecha de string a Date
     const parsedFecha = new Date(fecha);
-
+    console.log('Parsed Fecha:', parsedFecha);
     // Llamamos al servicio pasando los parámetros obtenidos del request
     return this.usuarioBodegaService.getBodegasByUser(
       +userId, // Convertir el userId a número

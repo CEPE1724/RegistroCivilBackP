@@ -166,6 +166,16 @@ import { UatEqfxResultadoModule } from './uat_eqfx_resultado/uat_eqfx_resultado.
 import { UatEqfxScoreModule } from './uat_eqfx_score/uat_eqfx_score.module';
 import { AlmacenesModule } from './almacenes/almacenes.module';
 
+import { CacheModule } from '@nestjs/cache-manager';
+import { BullModule } from '@nestjs/bull';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerGuard } from '@nestjs/throttler';
+
+import * as redisStore from 'cache-manager-redis-store';
+import Redis from 'ioredis';
+import redisConfig from './config/redis.config';
+import { RedisModule } from './redis/redis.module';
 
 
 
@@ -435,6 +445,37 @@ import { AlmacenesModule } from './almacenes/almacenes.module';
     UatEqfxIndicadorImpactoEconomicoModule,
     UatEqfxResultadoModule,
     UatEqfxScoreModule,
+     CacheModule.registerAsync({
+      isGlobal: true,
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        store: redisStore,
+        host: configService.get('redis.host'),
+        port: configService.get('redis.port'),
+        password: configService.get('redis.password'),
+        ttl: 300,
+      }),
+    }),
+    BullModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        redis: {
+          host: configService.get('redis.host'),
+          port: configService.get('redis.port'),
+          password: configService.get('redis.password'),
+        },
+      }),
+    }),
+   /* ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 segundos
+        limit: 100, // 100 peticiones por minuto
+      },
+    ]),*/
+    
+    RedisModule,
     AlmacenesModule
 
   ],

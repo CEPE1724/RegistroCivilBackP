@@ -41,11 +41,17 @@ export class CreSolicitudWebController {
 
     return { message: 'Prueba OK' };
   }
+  /*
   @Get()
   @Auth()
   findAll(@Query() paginationDto: PaginationDto, @Query('bodega') bodega: number[]) {
     return this.creSolicitudWebService.findAll(paginationDto, bodega);
+  }*/
 
+  @Post('all-cresolicitudweb')
+  @Auth()
+  findAllCreSolicitudWeb(@Body() paginationDto: PaginationDto, @Query('bodega') bodega: number[]) {
+    return this.creSolicitudWebService.findAll(paginationDto, bodega);
   }
 
   @Get('documentosanalista')
