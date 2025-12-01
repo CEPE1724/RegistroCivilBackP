@@ -18,7 +18,7 @@ export class CreSolicitudWebController {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
-/* para el eccommerce*/
+  /* para el eccommerce*/
   @Post('web')
   createweb(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
 
@@ -50,9 +50,20 @@ export class CreSolicitudWebController {
 
   @Post('all-cresolicitudweb')
   @Auth()
-  findAllCreSolicitudWeb(@Body() paginationDto: PaginationDto, @Query('bodega') bodega: number[]) {
+  findAllCreSolicitudWeb(
+    @Body() paginationDto: PaginationDto,
+    @Query('bodega') queryBodega: number[]
+  ) {
+    let bodega = queryBodega ?? paginationDto.bodega;
+
+    // 2. Normalizar: si es número -> convertirlo a array
+    if (!Array.isArray(bodega)) {
+      bodega = [bodega];
+    }
+
     return this.creSolicitudWebService.findAll(paginationDto, bodega);
   }
+
 
   @Get('documentosanalista')
   @Auth()
