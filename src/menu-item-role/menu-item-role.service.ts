@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository, Equal } from 'typeorm';
 import { Usuario } from './entities/usuarios.entity';
@@ -6,8 +6,12 @@ import { MenuItemRole } from './entities/menu-item-role.entity';
 import { MenuItems } from './entities/menu_items.entity';
 import { MenuItemAccess } from './entities/menu-items-access.entity'; // Agregar MenuItemAccess aquí
 import { MenuItemAccessUser } from './entities/menu-items-access-user.entity'; // Agregar MenuItemAccessUser aquí
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { CacheTTL } from '../common/cache-ttl.config';
 @Injectable()
 export class MenuItemRoleService {
+	private readonly logger = new Logger('MenuItemRoleService');
 
 	constructor(
 		@InjectRepository(Usuario)
@@ -20,6 +24,7 @@ export class MenuItemRoleService {
 		private readonly menuItemAccessRepository: Repository<MenuItemAccess>, // Agregar MenuItemAccess aquí
 		@InjectRepository(MenuItemAccessUser)
 		private readonly menuItemAccessUserRepository: Repository<MenuItemAccessUser>, // Agregar MenuItemAccessUser aquí
+		@Inject(CACHE_MANAGER) private cacheManager: Cache,
 	) { }
 
 	async getUserMenuItems(userId: number) {
@@ -37,7 +42,21 @@ export class MenuItemRoleService {
 	}
 
 	async getPermissionsComponents(idmenu_items: number, idUsuario: number) {
-		const queryBuilder = this.menuItemsRepository.createQueryBuilder('m')
+
+		const cacheKey = `permissions_components_${idmenu_items}_${idUsuario}`;
+
+		// 1️⃣ Buscar en caché
+		const cached = await this.cacheManager.get<any>(cacheKey);
+		if (cached) {
+			this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+			return cached;
+		}
+
+		this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+
+		// 2️⃣ Construir el query
+		const queryBuilder = this.menuItemsRepository
+			.createQueryBuilder('m')
 			.innerJoin('menu_items_access', 'n', 'm.idmenu_items = n.idmenu_items')
 			.innerJoin('menu_item_roles', 'r', 'r.idmenu_items = n.idmenu_items')
 			.innerJoin('Usuario', 'u', 'u.idUsuario = r.idUsuario')
@@ -45,11 +64,24 @@ export class MenuItemRoleService {
 			.where('n.idmenu_items = :idmenu_items', { idmenu_items })
 			.andWhere('u.idUsuario = :idUsuario', { idUsuario })
 			.andWhere('us.idUsuario = :idUsuario', { idUsuario })
-			.select(['n.idmenu_items', 'n.Permisos', 'us.Activo']);
+			.select([
+				'n.idmenu_items AS idmenu_items',
+				'n.Permisos AS Permisos',
+				'us.Activo AS Activo'
+			]);
 
+		// 3️⃣ Ejecutar query
 		const result = await queryBuilder.getRawMany();
+
+		// 4️⃣ Guardar en cache SOLO EL RESULTADO (NO el queryBuilder)
+		await this.cacheManager.set(cacheKey, result, CacheTTL.menu_item_role);
+
+		this.logger.log(`💾 Datos guardados en Redis para: ${cacheKey}`);
+
+		// 5️⃣ Retornar resultado
 		return result;
-	};
+	}
+
 
 
 	async getPermissionsMenu(idUsuario: number) {
@@ -85,28 +117,28 @@ export class MenuItemRoleService {
 	async createSingleMenuItemAccessRole(idUsuario: number, idmenu_items_access: number): Promise<string> {
 		// Verificamos si ya existe para evitar duplicados
 		const existing = await this.menuItemAccessUserRepository.findOne({
-		  where: {
-			idUsuario: Equal(idUsuario),
-			idmenu_items_access: Equal(idmenu_items_access),
-		  }
+			where: {
+				idUsuario: Equal(idUsuario),
+				idmenu_items_access: Equal(idmenu_items_access),
+			}
 		});
-	  
+
 		if (existing) {
-		  return `El acceso ya existe para el usuario ${idUsuario}`;
+			return `El acceso ya existe para el usuario ${idUsuario}`;
 		}
-	  
+
 		const newAccess = this.menuItemAccessUserRepository.create({
 			idUsuario: { idUsuario },
 			idmenu_items_access: { idmenu_items_access },
 			Activo: true
-		  });
-		  
-	  
+		});
+
+
 		await this.menuItemAccessUserRepository.save(newAccess);
-	  
+
 		return `Acceso ${idmenu_items_access} creado correctamente para el usuario ${idUsuario}`;
-	  }
-	  
+	}
+
 
 	async deleteSingleMenuItemAccessRole(idUsuario: number, idmenu_items_access: number): Promise<string> {
 		const entry = await this.menuItemAccessUserRepository.findOne({
