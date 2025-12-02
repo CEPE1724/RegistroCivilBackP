@@ -28,7 +28,7 @@ export class CreSolicitudWebService {
   private readonly logger = new Logger('CreSolicitudWebService');
 
   private readonly processingRequests = new Map<string, { timestamp: number }>();
-  private readonly LOCK_TIMEOUT = 60000; // 60 segundos
+  private readonly LOCK_TIMEOUT = 30000; // 30 segundos
 
   constructor(
     @InjectRepository(CreSolicitudWeb)
