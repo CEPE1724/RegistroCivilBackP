@@ -1007,7 +1007,7 @@ export class CreSolicitudWebService {
   async verificarCedulaBodega(cedula: string): Promise<{ existe: boolean, solicitud: object }> {
     const solicitudExistente = await this.creSolicitudWebRepository.findOne({
       where: { Cedula: cedula, Estado: In([1, 2]) },
-      select: ['idCre_SolicitudWeb'],
+      select: ['idCre_SolicitudWeb', 'PrimerNombre', 'ApellidoPaterno', 'Cedula', 'NumeroSolicitud'],
     });
 
     return {
