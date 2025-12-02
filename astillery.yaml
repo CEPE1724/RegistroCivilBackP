@@ -12,21 +12,21 @@ config:
     # Empieza con 1 usuario/seg y aumenta gradualmente hasta 5 usuarios/seg
     - duration: 60
       arrivalRate: 1
-      rampTo: 5
+      rampTo: 10
       name: Warm up
     
     # Fase 2: Incremento - 60 segundos
     # Empieza con 5 usuarios/seg y aumenta hasta 10 usuarios/seg
     - duration: 60
       arrivalRate: 5
-      rampTo: 10
+      rampTo: 20
       name: Ramp up
     
     # Fase 3: Pico de carga - 30 segundos
     # Empieza con 10 usuarios/seg y aumenta hasta 30 usuarios/seg
     - duration: 30
       arrivalRate: 10
-      rampTo: 30
+      rampTo: 40
       name: Spike
   
   # Plugins para medición y validación

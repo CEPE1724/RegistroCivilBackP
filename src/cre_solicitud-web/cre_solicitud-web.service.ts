@@ -1005,10 +1005,19 @@ export class CreSolicitudWebService {
     }
   }
   async verificarCedulaBodega(cedula: string): Promise<{ existe: boolean, solicitud: object }> {
-    const solicitudExistente = await this.creSolicitudWebRepository.findOne({
-      where: { Cedula: cedula, Estado: In([1, 2]) },
-      select: ['idCre_SolicitudWeb', 'PrimerNombre', 'ApellidoPaterno', 'Cedula', 'NumeroSolicitud'],
-    });
+    // Optimización: Usar queryBuilder para select específico
+    const solicitudExistente = await this.creSolicitudWebRepository
+      .createQueryBuilder('csw')
+      .select([
+        'csw.idCre_SolicitudWeb',
+        'csw.NumeroSolicitud',
+        'csw.Cedula',
+        'csw.PrimerNombre',
+        'csw.ApellidoPaterno'
+      ])
+      .where('csw.Cedula = :cedula', { cedula })
+      .andWhere('csw.Estado IN (:...estados)', { estados: [1, 2] })
+      .getOne();
 
     return {
       existe: !!solicitudExistente,
