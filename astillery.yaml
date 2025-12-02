@@ -1,0 +1,58 @@
+config:
+  # URL del servidor a probar (producción)
+  target: https://backregistrocivil.appservices.com.ec
+  
+  # Variables globales
+  variables:
+    authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJFQ0VQRURBIiwiaWRVc3VhcmlvIjo0NTgsImlkR3J1cG8iOjEsIkFjdGl2byI6dHJ1ZSwiaWF0IjoxNzY0Njg4MTAyLCJleHAiOjE3NjQ2OTg5MDJ9.08MDcE5475mtKW66vr3pddEw4HQuHqUnPNTFwc_t_Ng"
+  
+  # Fases de carga progresiva
+  phases:
+    # Fase 1: Calentamiento - 60 segundos
+    # Empieza con 1 usuario/seg y aumenta gradualmente hasta 5 usuarios/seg
+    - duration: 60
+      arrivalRate: 1
+      rampTo: 5
+      name: Warm up
+    
+    # Fase 2: Incremento - 60 segundos
+    # Empieza con 5 usuarios/seg y aumenta hasta 10 usuarios/seg
+    - duration: 60
+      arrivalRate: 5
+      rampTo: 10
+      name: Ramp up
+    
+    # Fase 3: Pico de carga - 30 segundos
+    # Empieza con 10 usuarios/seg y aumenta hasta 30 usuarios/seg
+    - duration: 30
+      arrivalRate: 10
+      rampTo: 30
+      name: Spike
+  
+  # Plugins para medición y validación
+  plugins:
+    ensure: {}  # Asegura que se cumplan los umbrales definidos
+    apdex: {}  # Mide la satisfacción del usuario basado en tiempos de respuesta
+    metrics-by-endpoint: {}  # Métricas separadas por endpoint
+  
+  # Umbral APDEX: considera aceptable si el tiempo de respuesta es <= 500ms (ajustado para producción)
+  apdex:
+    threshold: 500
+  
+  # Umbrales de validación - la prueba falla si no se cumplen (ajustado para producción)
+  ensure:
+    thresholds:
+      - http.response_time.p99: 500  # El 99% de respuestas debe ser < 500ms
+      - http.response_time.p95: 300   # El 95% de respuestas debe ser < 300ms
+
+# Escenarios de prueba
+scenarios:
+  - name: "GET tipo-cliente"
+    flow:
+      # Loop: repite la petición GET 50 veces por cada usuario virtual
+      - loop:
+          - get:
+              url: '/api/v1/tipo-cliente'
+              headers:
+                Authorization: "Bearer {{ authToken }}"
+        count: 50  # Número de repeticiones por usuario
