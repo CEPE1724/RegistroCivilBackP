@@ -738,10 +738,9 @@ export class CreSolicitudWebService {
       queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionTelefonica = :EstadoTelefonica OR :EstadoTelefonica = 0)', { EstadoTelefonica });
     }
     // Agregar el filtro para bodegas usando IN si el array de bodegasIds no está vacío
-    if (bodega && bodega.length > 0) {
+    if (bodega && bodega.length === 1) {
       queryBuilder.andWhere('cre_solicitud_web.bodega IN (:...bodega)', { bodega });
     }
-
 
     if (cedula) {
       queryBuilder.andWhere('cre_solicitud_web.Cedula LIKE :cedula', {
@@ -776,18 +775,21 @@ export class CreSolicitudWebService {
     if (idCompraEncuesta !== undefined) {
       queryBuilder.andWhere('(cre_solicitud_web.idCompraEncuesta = :idCompraEncuesta OR :idCompraEncuesta = 0)', { idCompraEncuesta });
     }
-    // Obtener el conteo total de registros
-    const totalCount = await queryBuilder
-      .clone()
-      .select('COUNT(1)', 'cnt')
-      .getRawOne()
-      .then(r => parseInt(r.cnt, 10));
 
-    const data = await queryBuilder
-      .orderBy('cre_solicitud_web.Fecha', 'DESC')
-      .skip(offset)
-      .take(limit)
-      .getMany();
+    // Optimización: Ejecutar data y count en paralelo
+    const [data, totalCount] = await Promise.all([
+      queryBuilder
+        .clone()
+        .orderBy('cre_solicitud_web.Fecha', 'DESC')
+        .skip(offset)
+        .take(limit)
+        .getMany(),
+      queryBuilder
+        .clone()
+        .select('COUNT(1)', 'cnt')
+        .getRawOne()
+        .then(r => parseInt(r.cnt, 10))
+    ]);
 
     return {
       data,          // ya contiene los registros paginados

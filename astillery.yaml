@@ -4,7 +4,7 @@ config:
   
   # Variables globales
   variables:
-    authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJFQ0VQRURBIiwiaWRVc3VhcmlvIjo0NTgsImlkR3J1cG8iOjEsIkFjdGl2byI6dHJ1ZSwiaWF0IjoxNzY0Njg4MTAyLCJleHAiOjE3NjQ2OTg5MDJ9.08MDcE5475mtKW66vr3pddEw4HQuHqUnPNTFwc_t_Ng"
+    authToken: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJOb21icmUiOiJFQ0VQRURBIiwiaWRVc3VhcmlvIjo0NTgsImlkR3J1cG8iOjEsIkFjdGl2byI6dHJ1ZSwiaWF0IjoxNzY0NzEyNjAyLCJleHAiOjE3NjQ3MjM0MDJ9.W84mLlNZ5_qLHLcTtOf99tiCGjX657ki-ueKkjF9N28"
   
   # Fases de carga progresiva
   phases:
@@ -47,12 +47,28 @@ config:
 
 # Escenarios de prueba
 scenarios:
-  - name: "GET tipo-cliente"
+  - name: "POST solicitudes web con filtros"
     flow:
-      # Loop: repite la petición GET 50 veces por cada usuario virtual
+      # Loop: repite la petición POST 50 veces por cada usuario virtual
       - loop:
-          - get:
-              url: '/api/v1/tipo-cliente'
+          - post:
+              url: '/api/v1/cre-solicitud-web/all-cresolicitudweb'
               headers:
                 Authorization: "Bearer {{ authToken }}"
+                Content-Type: "application/json"
+              json:
+                limit: 5
+                offset: 0
+                fechaInicio: "2025-11-30"
+                fechaFin: "2025-12-02"
+                bodega: [43,106,118,140,101,1,11,156,63,77,70,57,66,5,128,148,41,95,20,125,212,164,6,123,119,25,145,60,117,111,122,76,162,207,147,121,107,47,103,82,154,155,73,149,99,29,75,31,85,165,166,167,131,168,113,169,94,157,170,171,172,173,161,36,139,174,133,175,176,177,178,179,132,180,181,182,183,184,185,137,163,186,208,187,127,138,81,130,188,189,190,134,191,192,193,194,195,196,197,49,135,114,79,198,199,200,116,136,201,202,203,115,204,205,206,64,96,83,38,37,126,158,159,39,150]
+                estado: 0
+                vendedor: 0
+                analista: 0
+                EstadoSolicitud: 0
+                EstadoDocumental: 0
+                EstadoTelefonica: 0
+                EstadoDomicilio: 0
+                EstadoLaboral: 0
+                operador: 0
         count: 50  # Número de repeticiones por usuario

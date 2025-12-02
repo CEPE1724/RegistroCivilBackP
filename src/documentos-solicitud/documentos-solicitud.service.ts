@@ -9,6 +9,9 @@ import { HistorialObservaciones } from './entities/historial-observaciones.entit
 import { CreateHistorialObservacionesDto } from './dto/create-historial-observacion.dto';
 import { Logger, HttpException, HttpStatus } from '@nestjs/common';
 import { number } from 'joi';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { CacheTTL } from '../common/cache-ttl.config';
 
 @Injectable()
 export class DocumentosSolicitudService {
@@ -18,7 +21,9 @@ export class DocumentosSolicitudService {
     @InjectRepository(DocumentosSolicitud)
     private readonly documentosSolicitudRepository: Repository<DocumentosSolicitud>,
     @InjectRepository(HistorialObservaciones)
-    private readonly historialObservacionesRepository: Repository<HistorialObservaciones>
+    private readonly historialObservacionesRepository: Repository<HistorialObservaciones>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+
   ) { }
 
   // Crear un nuevo documento
@@ -175,10 +180,19 @@ export class DocumentosSolicitudService {
 
 
   async areRequiredDocsApproved(idSolicitud: number): Promise<boolean> {
+    const cacheKey = `required-docs-approved-${idSolicitud}`;
+    console.log(cacheKey)
+    const cached = await this.cacheManager.get<boolean>(cacheKey);
+    if (cached !== undefined) {
+      this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+      return cached;
+    }
+    this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+
     const documentos = await this.documentosSolicitudRepository.find({
       where: {
         idCre_SolicitudWeb: idSolicitud,
-        idEstadoDocumento: In ([1]), // Consideramos documentos aprobados o en revisión
+        idEstadoDocumento: In([1]), // Consideramos documentos aprobados o en revisión
         idTipoDocumentoWEB: In([2, 12, 13, 26])
       }
     });
@@ -191,7 +205,12 @@ export class DocumentosSolicitudService {
     const obligatoriosOk = obligatorios.every(tipo => tiposAprobados.includes(tipo));
     const opcionalPresente = opcionales.some(tipo => tiposAprobados.includes(tipo));
 
-    return obligatoriosOk && opcionalPresente;
+    const result = obligatoriosOk && opcionalPresente;
+
+    // Guardar en Redis el resultado por un tiempo definido
+    await this.cacheManager.set(cacheKey, result, CacheTTL.areRequiredDocsApproved);
+
+    return result;
   }
 
 }

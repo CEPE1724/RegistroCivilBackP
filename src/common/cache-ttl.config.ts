@@ -28,5 +28,6 @@ export const CacheTTL = {
   cre_tipoempresa: 172800000, // 48 horas
   cre_tiposueldo: 172800000, // 48 horas
   cre_tipovivienda: 172800000, // 48 horas
+  areRequiredDocsApproved: 180000, // 3 minutos
   // Agrega más según tus endpoints
 };
