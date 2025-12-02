@@ -145,7 +145,7 @@ export class CreSolicitudWebController {
   }
 
   @Get('MotivoContinuidad/:Vendedor')
-  @Auth()
+  //@Auth()
   async getMotivoContinuidad(@Param('Vendedor') Vendedor: number) {
     return await this.creSolicitudWebService.getMotivoContinuidad(Vendedor);
   }
