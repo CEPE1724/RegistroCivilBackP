@@ -407,9 +407,16 @@ export class AuthService {
 
                 existingRecord.fechaMatrimonio = apiData.personaNaturalConyuge.fechaMatrimonio;
 
-                existingRecord.idNivelEducacion = apiData.nivelEducacion.nivelEducacion.idNivelEducacion;
-                existingRecord.NivelEducacion = apiData.nivelEducacion.nivelEducacion.descripcion;
-                existingRecord.nivel = apiData.nivelEducacion.nivelEducacion.nivel;
+                // Validar si nivelEducacion existe y no es null
+                if (apiData.nivelEducacion && apiData.nivelEducacion.nivelEducacion) {
+                    existingRecord.idNivelEducacion = apiData.nivelEducacion.nivelEducacion.idNivelEducacion;
+                    existingRecord.NivelEducacion = apiData.nivelEducacion.nivelEducacion.descripcion;
+                    existingRecord.nivel = apiData.nivelEducacion.nivelEducacion.nivel;
+                } else {
+                    existingRecord.idNivelEducacion = 0;
+                    existingRecord.NivelEducacion = '';
+                    existingRecord.nivel = 0;
+                }
 
                 existingRecord.Tipo = Tipo;
 
@@ -436,9 +443,10 @@ export class AuthService {
                     idEstadoCivil: apiData.estadoCivil.estadoCivil.idEstadoCivil,
                     EstadoCivil: apiData.estadoCivil.estadoCivil.descripcion,
                     fechaMatrimonio: apiData.personaNaturalConyuge.fechaMatrimonio,
-                    idNivelEducacion: apiData.nivelEducacion.nivelEducacion.idNivelEducacion,
-                    NivelEducacion: apiData.nivelEducacion.nivelEducacion.descripcion,
-                    nivel: apiData.nivelEducacion.nivelEducacion.nivel,
+                    // Validar si nivelEducacion existe y no es null
+                    idNivelEducacion: apiData.nivelEducacion?.nivelEducacion?.idNivelEducacion || 0,
+                    NivelEducacion: apiData.nivelEducacion?.nivelEducacion?.descripcion || '',
+                    nivel: apiData.nivelEducacion?.nivelEducacion?.nivel || 0,
                     Tipo: 0,
                 };
                 const newRecord = this.cognoPersonaNaturalRepository.create(createCognopersonanaturalDto);
