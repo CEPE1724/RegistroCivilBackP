@@ -223,10 +223,10 @@ export class AuthService {
                 data,
             };
         } catch (error) {
-            console.error('Error al obtener datos de empleo desde API:', error.message);
+            console.error('Error al obtener datos de jubilado desde API:', error.message);
             return {
                 success: false,
-                mensaje: 'No se pudo conectar con la API de empleo',
+                mensaje: 'No se pudo conectar con la API de jubilado',
             };
         }
     }

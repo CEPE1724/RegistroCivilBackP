@@ -16,4 +16,7 @@ export class Almacen {
 
   @Column({ type: 'varchar', length: 200, nullable: true })
   Nombre: string;
+
+  @Column({ type: 'int', nullable: true })
+  CrediDigital: number;
 }

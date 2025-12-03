@@ -48,6 +48,7 @@ export class UsuarioBodegaService {
       .innerJoin(UsuarioBodega, 'ub', 'ub.Bodega = b.Bodega')
       .innerJoin(Usuario, 'u', 'u.idUsuario = ub.idUsuario')
       .where('u.idUsuario = :idUsuario', { idUsuario })
+      .andWhere('b.CrediDigital = 1') // Solo bodegas con CrediDigital = 1
 
     queryBuilder.orderBy('b.Nombre', 'ASC');
 

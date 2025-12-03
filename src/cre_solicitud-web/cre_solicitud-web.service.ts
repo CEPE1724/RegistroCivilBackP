@@ -103,264 +103,138 @@ export class CreSolicitudWebService {
 
 
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
-    const cedula = createCreSolicitudWebDto.Cedula;
+  const cedula = createCreSolicitudWebDto.Cedula;
 
-    // ✅ 1. Verificar si ya hay una solicitud en proceso para esta cédula
-    const processing = this.processingRequests.get(cedula);
-    if (processing && Date.now() - processing.timestamp < this.LOCK_TIMEOUT) {
+
+  const processing = this.processingRequests.get(cedula);
+  if (processing && Date.now() - processing.timestamp < this.LOCK_TIMEOUT) {
+    return {
+      success: false,
+      mensaje: 'Ya existe una solicitud en proceso para esta cédula. Por favor espere.',
+      errorOrigen: 'SolicitudEnProceso',
+      data: null,
+    };
+  }
+  this.processingRequests.set(cedula, { timestamp: Date.now() });
+
+  try {
+
+    const existingSolicitud = await this.creSolicitudWebRepository.findOne({
+      where: { Cedula: cedula, Estado: In([1, 2]) },
+    });
+
+    if (existingSolicitud) {
       return {
         success: false,
-        mensaje: 'Ya existe una solicitud en proceso para esta cédula. Por favor espere.',
-        errorOrigen: 'SolicitudEnProceso',
+        mensaje: `Ya existe una solicitud activa (N° ${existingSolicitud.NumeroSolicitud}) para la cédula ${cedula}.`,
+        errorOrigen: 'SolicitudExistente',
         data: null,
       };
     }
 
-    // ✅ 2. Marcar como "en proceso"
-    this.processingRequests.set(cedula, { timestamp: Date.now() });
 
-    // ✅ 3. Usar transacción para garantizar atomicidad
-    const queryRunner = this.creSolicitudWebRepository.manager.connection.createQueryRunner();
-    await queryRunner.connect();
-    await queryRunner.startTransaction();
+    let debeConsultarEquifax = true;
+    let eqfxData = await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
 
-    try {
-      /* consultar cedula en cre_solicitud_web con estado in (1,2)*/
-      const existingSolicitud = await queryRunner.manager.findOne(CreSolicitudWeb, {
-        where: {
-          Cedula: cedula,
-          Estado: In([1, 2]),
-        },
-      });
+    if (eqfxData.success) {
+      const fechaConsulta = new Date(eqfxData.data.FechaSistema);
+      const fechaActual = new Date();
+      if (fechaConsulta.getMonth() === fechaActual.getMonth() &&
+          fechaConsulta.getFullYear() === fechaActual.getFullYear()) {
+        debeConsultarEquifax = false; // Datos recientes, no consultar API externa
+      }
+    }
 
-      if (existingSolicitud) {
-        await queryRunner.rollbackTransaction(); // ✅ Ya lo tienes
+
+    if (debeConsultarEquifax) {
+      const equifaxResult = await this.EquifaxDataUAT('C', cedula);
+      if (!equifaxResult.success) {
         return {
           success: false,
-          mensaje: `Ya existe una solicitud activa (N° ${existingSolicitud.NumeroSolicitud}) para la cédula ${cedula}. No se puede crear una nueva solicitud.`,
-          errorOrigen: 'SolicitudExistente',
+          mensaje: 'No se pudo consultar los datos en Equifax. Intente nuevamente más tarde.',
+          errorOrigen: 'Equifax',
           data: null,
         };
       }
+    }
 
-      let debeConsultarEquifax = false;
-
-      // 1. Consultar Equifax local
-      let eqfxData = await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
-
-      if (eqfxData.success) {
-        const FechaConsulta = eqfxData.data.FechaSistema;
-        const fechaActual = new Date();
-        const fechaSistema = new Date(FechaConsulta);
-
-        const mismoMes = fechaActual.getMonth() === fechaSistema.getMonth();
-        const mismoAnio = fechaActual.getFullYear() === fechaSistema.getFullYear();
-
-        if (!(mismoMes && mismoAnio)) {
-          debeConsultarEquifax = true;
-        }
-      } else {
-        debeConsultarEquifax = true;
-      }
-
-      // 2. Si es necesario, consultar Equifax externo
-      if (debeConsultarEquifax) {
-        console.log('Consultando Equifax externo para cédula:', cedula);
-        let equifaxResult = await this.EquifaxDataUAT('C', cedula);
-
-        if (!equifaxResult.success) {
-          await queryRunner.rollbackTransaction(); // ✅ AGREGADO
-          return {
-            success: false,
-            mensaje: 'No se pudo consultar los datos en Equifax. Por favor, intente nuevamente más tarde.',
-            errorOrigen: 'Equifax',
-            data: null,
-          };
-        }
-      }
-
-      /* sección Cogno*/
-      const token = await this.authService.getToken(cedula);
-
-      if (!token) {
-        await queryRunner.rollbackTransaction(); // ✅ AGREGADO
-        return {
-          success: false,
-          mensaje: 'Token Cogno falló. No se pudo continuar con el proceso.',
-          errorOrigen: 'AuthService',
-          data: null,
-        };
-      }
-
-      // 2. Consultar API externa Datos generales cogno
-      const apiResult = await this.authService.getApiData(token, cedula);
-
-      if (!apiResult.success) {
-        await queryRunner.rollbackTransaction(); // ✅ AGREGADO
-        return {
-          success: false,
-          mensaje: `Error desde API externa: ${apiResult.mensaje}`,
-          errorOrigen: 'ApiExterna',
-          data: null,
-        };
-      }
-
-      const apiData = apiResult.data;
-
-      // 3. Consultar API externa Datos laborales
-      const idSituacionLaboral = createCreSolicitudWebDto.idSituacionLaboral;
-      const idActEconomina = createCreSolicitudWebDto.idActEconomina;
-      let trabajos = [];
-      const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
-      const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
-      const deudaData: DeudaEmovDto = deudaEmovResult.data?.deudaEmov?.[0];
-      const JubiladoResult = await this.authService.getApiDataJubilado(token, cedula);
-
-      const trabajoJubilado = JubiladoResult.success && Array.isArray(JubiladoResult.data?.trabajos) && JubiladoResult.data.trabajos.length > 0 ? true : false;
-
-      if (idSituacionLaboral === 1 && idActEconomina !== 301) {
-        if (!trabajoResult.success || !trabajoResult.data?.trabajos?.length) {
-          await queryRunner.rollbackTransaction(); // ✅ AGREGADO
-          return {
-            success: false,
-            mensaje: 'La información laboral es obligatoria y no fue posible obtenerla desde COGNO.',
-            errorOrigen: 'ApiEmpleo',
-            data: null,
-          };
-        }
-        trabajos = trabajoResult.data.trabajos;
-      } else {
-        if (trabajoResult.success && trabajoResult.data?.trabajos?.length) {
-          trabajos = trabajoResult.data.trabajos;
-        } else {
-          this.logger.warn(`API de empleo no devolvió datos para ${cedula}, pero no es obligatorio (idSituacionLaboral = ${idSituacionLaboral}).`);
-        }
-      }
-
-      let bApiDataTrabajo = false;
-      if (trabajos.length > 0) {
-        bApiDataTrabajo = true;
-      }
-
-      if (trabajoJubilado && idActEconomina === 301) {
-        bApiDataTrabajo = true;
-      }
-
-      console.log('Datos recibidos para crear solicitud web:', createCreSolicitudWebDto);
-
-      // ✅ 4. Crear la solicitud dentro de la transacción
-      const creSolicitudWeb = queryRunner.manager.create(CreSolicitudWeb, createCreSolicitudWebDto);
-      const savedSolicitud = await queryRunner.manager.save(creSolicitudWeb);
-      const idSolicitud = savedSolicitud.idCre_SolicitudWeb;
-
-      const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
-
-      await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
-
-      if (apiData.personaNaturalConyuge.personaConyuge.identificacion && apiData.personaNaturalConyuge.personaConyuge.nombre) {
-        if (apiData.personaNaturalConyuge.personaConyuge.identificacion !== null && apiData.personaNaturalConyuge.personaConyuge.nombre !== '') {
-          await this.authService.createNaturalConyugue(apiData, saveData.idCognoSolicitudCredito, 1);
-        }
-      }
-
-      if (apiData.personaNatural.lugarNacimiento !== null && apiData.personaNatural.lugarNacimiento !== '') {
-        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
-      }
-
-      if (apiData.estadoCivil.estadoCivil.descripcion === 'CASADO') {
-        console.log('Domicilio del cónyuge:', apiData);
-        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
-      }
-
-      await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
-      await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
-
-      if (deudaData) {
-        await this.authService.guardarDeudaEmovConInfracciones(deudaData, saveData.idCognoSolicitudCredito);
-      }
-
-      if (!trabajoJubilado && bApiDataTrabajo && trabajos && trabajos.length > 0 && trabajos[0].fechaActualizacion) {
-        console.log('Trabajos a guardar:', trabajos);
-        await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
-      }
-
-      if (trabajoJubilado) {
-        console.log('Trabajos de jubilado a guardar:', JubiladoResult);
-        await this.authService.createTrabajoLite(JubiladoResult.data.trabajos, saveData.idCognoSolicitudCredito);
-      }
-
-      // 4. Ejecutar stored procedure
-      const storedProcedureResult = await queryRunner.manager.query(
-        `EXEC Cre_RetornaTipoCliente @Cedula = @0, @idSolicitud = @1`,
-        [cedula, idSolicitud]
-      );
-      if (!storedProcedureResult || storedProcedureResult.length === 0) {
-        await queryRunner.rollbackTransaction();
-        return {
-          success: false,
-          mensaje: 'El procedimiento almacenado no devolvió resultados.',
-          errorOrigen: 'StoredProcedure',
-          data: null,
-        };
-      }
-
-      console.log('Resultado del procedimiento almacenado:', storedProcedureResult);
-      const tipoCliente = storedProcedureResult[0].TipoCliente;
-      const Resultado = storedProcedureResult[0].Resultado;
-
-      // 5. Actualizar la solicitud con tipo cliente y estado
-      const estado = Resultado === 0 ? 5 : 1;
-      await queryRunner.manager.update(CreSolicitudWeb, idSolicitud, {
-        idTipoCliente: tipoCliente || 0,
-        Estado: estado,
-      });
-
-      // Traer la información actualizada de la solicitud
-      const updatedSolicitud = await queryRunner.manager.findOne(CreSolicitudWeb, {
-        where: { idCre_SolicitudWeb: idSolicitud },
-      });
-
-      console.log('Solicitud web creada y actualizada con éxito:', updatedSolicitud);
-
-      // ✅ 5. Confirmar transacción
-      await queryRunner.commitTransaction();
-
-      // Emitir evento WebSocket
-      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
-        id: savedSolicitud.idCre_SolicitudWeb, // ✅ CORREGIDO: usar savedSolicitud
-        cambios: createCreSolicitudWebDto,
-      });
-
-      return {
-        success: true,
-        mensaje: `Solicitud N° ${savedSolicitud.NumeroSolicitud} creada exitosamente.`,
-        data: updatedSolicitud,
-      };
-
-    } catch (error) {
-      // ✅ 6. Revertir en caso de error
-      await queryRunner.rollbackTransaction();
-      this.logger.error(`Error en create para cédula ${cedula}: ${error.message}`, error.stack); // ✅ Más descriptivo
+    const token = await this.authService.getToken(cedula);
+    if (!token) {
       return {
         success: false,
-        mensaje: 'Ocurrió un error inesperado al procesar la solicitud.',
-        error: error.message,
-        errorOrigen: 'Servidor',
+        mensaje: 'Token Cogno falló. No se pudo continuar con el proceso.',
+        errorOrigen: 'AuthService',
+        data: null,
       };
-    } finally {
-      // ✅ 7. SIEMPRE liberar recursos
-      await queryRunner.release();
-      this.processingRequests.delete(cedula);
     }
-  }
 
-  // ...existing code...
+    const apiResult = await this.authService.getApiData(token, cedula);
+    if (!apiResult.success) {
+      return {
+        success: false,
+        mensaje: `Error desde API externa: ${apiResult.mensaje}`,
+        errorOrigen: 'ApiExterna',
+        data: null,
+      };
+    }
+
+    // Datos laborales
+    const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
+    const JubiladoResult = await this.authService.getApiDataJubilado(token, cedula);
+
+    const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
+    const savedSolicitud = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+
+    await this.authService.create(apiResult.data, trabajoResult.success && trabajoResult.data?.trabajos?.length > 0, savedSolicitud.idCre_SolicitudWeb);
+
+    if (JubiladoResult.success && JubiladoResult.data?.trabajos?.length) {
+      await this.authService.createTrabajoLite(JubiladoResult.data.trabajos, savedSolicitud.idCre_SolicitudWeb);
+    }
+
+    const storedProcedureResult = await this.creSolicitudWebRepository.query(
+      `EXEC Cre_RetornaTipoCliente @Cedula = @0, @idSolicitud = @1`,
+      [cedula, savedSolicitud.idCre_SolicitudWeb]
+    );
+
+    const tipoCliente = storedProcedureResult?.[0]?.TipoCliente || 0;
+    const estado = storedProcedureResult?.[0]?.Resultado === 0 ? 5 : 1;
+
+    await this.creSolicitudWebRepository.update(savedSolicitud.idCre_SolicitudWeb, {
+      idTipoCliente: tipoCliente,
+      Estado: estado,
+    });
+
+
+    this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+      id: savedSolicitud.idCre_SolicitudWeb,
+      cambios: createCreSolicitudWebDto,
+    });
+
+    return {
+      success: true,
+      mensaje: `Solicitud N° ${savedSolicitud.NumeroSolicitud} creada exitosamente.`,
+      data: await this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: savedSolicitud.idCre_SolicitudWeb } }),
+    };
+
+  } catch (error) {
+    this.logger.error(`Error en create para cédula ${cedula}: ${error.message}`, error.stack);
+    return {
+      success: false,
+      mensaje: 'Ocurrió un error inesperado al procesar la solicitud.',
+      error: error.message,
+      errorOrigen: 'Servidor',
+    };
+  } finally {
+    this.processingRequests.delete(cedula);
+  }
+}
+
+
 
   async procesarDatosCogno(cedula: string) {
     try {
-      /** ────────────────────────────────
-       * 🔐 1. Obtener token COGNO
-       * ──────────────────────────────── */
+
       const token = await this.authService.getToken(cedula);
       if (!token) {
         return {
@@ -371,9 +245,7 @@ export class CreSolicitudWebService {
         };
       }
 
-      /** ────────────────────────────────
-       * 🧠 2. Consultar datos generales COGNO
-       * ──────────────────────────────── */
+
       const apiResult = await this.authService.getApiData(token, cedula);
       if (!apiResult.success) {
         return {
