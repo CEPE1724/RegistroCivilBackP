@@ -1,7 +1,10 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { CacheTTL } from '../common/cache-ttl.config';
 
 import { CreProfesion } from './entities/cre_profesion.entity';
 
@@ -14,10 +17,21 @@ export class CreProfesionService {
   constructor(
     @InjectRepository(CreProfesion)
     private readonly creProfesionRepository: Repository<CreProfesion>,
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
 
-  findAll() {
-    return this.creProfesionRepository.find();
+  async findAll() {
+    const cacheKey = 'cre_profesion_all';
+    const cached = await this.cacheManager.get<CreProfesion[]>(cacheKey);
+    if (cached) {
+      this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+      return cached;
+    }
+    this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+    const result = await this.creProfesionRepository.find();
+    await this.cacheManager.set(cacheKey, result, CacheTTL.cre_profesion);
+    this.logger.log(`💾 Datos guardados en Redis para: ${cacheKey}`);
+    return result;
   }
 
   private handleDBExceptions(error: any) {

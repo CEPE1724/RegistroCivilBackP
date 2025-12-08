@@ -1,7 +1,11 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import {  Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreTipodocumento } from './entities/cre_tipodocumento.entity';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { CacheTTL } from '../common/cache-ttl.config';
+
 
 @Injectable()
 export class CreTipodocumentoService {
@@ -11,11 +15,22 @@ export class CreTipodocumentoService {
  constructor(
    @InjectRepository(CreTipodocumento)
    private readonly creTipodocumentoRepository: Repository<CreTipodocumento>,
- )
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
+  )
   { }
 
-  findAll() {
-    return this.creTipodocumentoRepository.find();
+  async findAll() {
+    const cacheKey = 'cre_tipodocumento_all';
+    const cached = await this.cacheManager.get<CreTipodocumento[]>(cacheKey);
+    if (cached) {
+      this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+      return cached;
+    }
+    this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+    const result = await this.creTipodocumentoRepository.find();
+    await this.cacheManager.set(cacheKey, result, CacheTTL.cre_tipodocumento);
+    this.logger.log(`💾 Datos guardados en Redis para: ${cacheKey}`);
+    return result;
   }
 
   private handleDBExceptions(error: any) {
