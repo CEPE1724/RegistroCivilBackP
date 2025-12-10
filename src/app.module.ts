@@ -169,14 +169,15 @@ import { AlmacenesModule } from './almacenes/almacenes.module';
 import { CacheModule } from '@nestjs/cache-manager';
 import { BullModule } from '@nestjs/bull';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { ThrottlerGuard } from '@nestjs/throttler';
-
 import * as redisStore from 'cache-manager-redis-store';
 import Redis from 'ioredis';
 import redisConfig from './config/redis.config';
 import { RedisModule } from './redis/redis.module';
-
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
+import { MetricsController } from './metrics.controller';
+import { PrometheusInterceptor } from './common/interceptors/prometheus.interceptor';
 
 
 
@@ -186,6 +187,12 @@ import { RedisModule } from './redis/redis.module';
       load: [ApiConfig],
       validationSchema: JoinValidationSchema,
       isGlobal: true,
+    }),
+    // PrometheusModule.register(),
+     PrometheusModule.register({
+      defaultMetrics: {
+        enabled: true,
+      },
     }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'public'),
@@ -444,6 +451,7 @@ import { RedisModule } from './redis/redis.module';
     GeoreferenciaEntregaDomicilioModule,
     UatEqfxIndicadorImpactoEconomicoModule,
     UatEqfxResultadoModule,
+
     UatEqfxScoreModule,
      CacheModule.registerAsync({
       isGlobal: true,
@@ -479,6 +487,15 @@ import { RedisModule } from './redis/redis.module';
     AlmacenesModule
 
   ],
-  providers: [EmailService, DflStoregoogleService],
+  providers: [
+    EmailService, 
+    DflStoregoogleService,
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: PrometheusInterceptor,
+    },
+  ],
+  controllers: [MetricsController],
 })
 export class AppModule { }
+ 
