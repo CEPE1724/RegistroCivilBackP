@@ -1,7 +1,8 @@
-import { Controller, Post, Body, Param } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
 import { OtpcodigoService } from './otpcodigo.service';
 import { Auth } from 'src/auth/decorators';
 import { BSONSymbol } from 'typeorm';
+import { EnvTokenAuthGuard } from 'src/metrics/otp-auth.guard';
 
 @Controller('otp')
 export class OtpController {
@@ -10,6 +11,23 @@ export class OtpController {
 @Post('generate')
 @Auth() 
 async generateOtp(
+  @Body('phoneNumber') phoneNumber: string,
+  @Body('email') email: string,
+  @Body('cedula') cedula: string,
+  @Body('bodega') bodega: number,
+  @Body('nombreCompleto') nombreCompleto: string,
+) {
+  try {
+    const otpCode = await this.otpService.generateOtp(phoneNumber, email, nombreCompleto, cedula, bodega);
+    return { success: true, otpCode }; // Opcionalmente no devuelvas el OTP en producción
+  } catch (error) {
+    return { success: false, message: error.message };
+  }
+}
+
+@Post('generate/grafana')
+@UseGuards(new EnvTokenAuthGuard('OTP_TOKEN'))
+async generateOtpGrafana(
   @Body('phoneNumber') phoneNumber: string,
   @Body('email') email: string,
   @Body('cedula') cedula: string,
