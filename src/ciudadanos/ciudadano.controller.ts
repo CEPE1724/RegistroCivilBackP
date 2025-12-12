@@ -61,6 +61,47 @@ export class CiudadanoController {
     }
   }
 
+  @Auth()
+  @Post('reconocimiento-facial')
+  async consultarCiudadano(
+    @Body() body: { cedula: string; dactilar: string; usuario: string },
+  ): Promise<any> {
+    const { cedula, dactilar, usuario } = body;
+
+    // Validar parámetros
+    if (!cedula || !dactilar || !usuario) {
+      throw new HttpException(
+        'Los parámetros cedula, dactilar y usuario son obligatorios',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    try {
+      // Usar el nuevo servicio centralizado
+      const resultado = await this.ciudadanoService.buscarOConsultarCiudadano(
+        cedula,
+        dactilar,
+        usuario,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        ...resultado,
+      };
+    } catch (error) {
+      console.error(`❌ Error en endpoint consultar:`, error.message);
+
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      throw new HttpException(
+        'Error interno al consultar el ciudadano',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
   @Auth() 
   @Get()
   async obtenerTodos(

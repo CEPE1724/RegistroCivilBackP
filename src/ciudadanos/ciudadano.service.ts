@@ -17,6 +17,71 @@ export class CiudadanoService {
     private readonly configService: ConfigService,
   ) { }
 
+  /**
+   * Método principal: Busca ciudadano en BD local, si no existe consulta Registro Civil
+   */
+  async buscarOConsultarCiudadano(cedula: string, dactilar: string, usuario: string): Promise<{
+    success: boolean;
+    message: string;
+    source: 'local' | 'registro_civil' | null;
+    data: Ciudadano | null;
+    error?: string;
+  }> {
+    try {
+      // 1. Buscar primero en la base de datos local
+      console.log(`🔍 Buscando ciudadano ${cedula} en base de datos local...`);
+      let ciudadano = await this.findByNUI(cedula);
+      
+      // 2. Si se encuentra en BD local, retornar
+      if (ciudadano) {
+        console.log(`✅ Ciudadano ${cedula} encontrado en BD local`);
+        return {
+          success: true,
+          message: 'Ciudadano encontrado en base de datos local',
+          source: 'local',
+          data: ciudadano,
+        };
+      }
+
+      // 3. Si no existe en BD local, consultar al Registro Civil
+      console.log(`🌐 Ciudadano ${cedula} no encontrado en BD. Consultando Registro Civil...`);
+      
+      try {
+        ciudadano = await this.consultarDactilar(cedula, dactilar, usuario);
+
+        console.log(`✅ Ciudadano ${cedula} consultado y guardado desde Registro Civil`);
+        
+        return {
+          success: true,
+          message: 'Ciudadano consultado desde Registro Civil y guardado exitosamente',
+          source: 'registro_civil',
+          data: ciudadano,
+        };
+      } catch (rcError) {
+        console.error(`❌ Error al consultar Registro Civil para ${cedula}:`, rcError.message);
+        
+        // Si falla la consulta al Registro Civil
+        return {
+          success: false,
+          message: `No se pudo encontrar el ciudadano con cédula ${cedula} en el Registro Civil`,
+          source: null,
+          data: null,
+          error: rcError.message,
+        };
+      }
+    } catch (error) {
+      console.error(`❌ Error general en búsqueda de ciudadano ${cedula}:`, error.message);
+      
+      return {
+        success: false,
+        message: 'Error interno al buscar el ciudadano',
+        source: null,
+        data: null,
+        error: error.message,
+      };
+    }
+  }
+
   async guardarCiudadano(data: any, dactilar: string, usuario: string): Promise<Ciudadano> {
     try {
       const ciudadano = new Ciudadano();
@@ -98,16 +163,10 @@ export class CiudadanoService {
   }
 
 
-  async findByNUI(NUI: string): Promise<Ciudadano> {
+  async findByNUI(NUI: string): Promise<Ciudadano | null> {
     try {
       const ciudadano = await this.ciudadanoRepository.findOneBy({ NUI });
-      if (!ciudadano) {
-        throw new HttpException(
-          'Ciudadano no encontrado en nuestra BDD',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-      return ciudadano;
+      return ciudadano || null;
     } catch (error) {
       console.error(
         `Error al buscar ciudadano con Cédula ${NUI}:`,
