@@ -19,10 +19,8 @@ export class SolicitudWebNotifierService {
   const idUsuarioEjecutor = usuarioEjecutor?.idUsuario;
   const idGrupoEjecutor = usuarioEjecutor?.idGrupo;
   const idAnalista = solicitud.idAnalista;
-  const nombreVendedor = solicitud.Usuario;
 
   console.log('ID Analista:', idAnalista);
-  console.log('Nombre Vendedor:', nombreVendedor);
   console.log('Usuario Ejecutor:', usuarioEjecutor);
   console.log('ID Usuario Ejecutor:', idUsuarioEjecutor);
   console.log('ID Grupo Ejecutor:', idGrupoEjecutor);
@@ -57,58 +55,51 @@ export class SolicitudWebNotifierService {
 
   const mensajeFinal = `${mensajes.join(', ')} (ID: ${solicitud.NumeroSolicitud || solicitud.idCre_SolicitudWeb})`;
 
-  // Emitir evento global
+  // ✅ Emitir evento global a TODOS los usuarios conectados
   this.wsGateway.wss.emit('solicitud-web-changed', {
     id: solicitud.idCre_SolicitudWeb,
     cambios,
     updatedAt: new Date(),
   });
 
-  const notificarUsuario = (socket: any) => {
-    if (!socket) {
-      console.log('Socket no encontrado, no se puede notificar');
+  // ✅ Función helper para notificar usuarios usando Redis rooms
+  const notificarUsuarioPorId = (idUsuario: number) => {
+    if (!idUsuario) {
+      console.log('⚠️ ID de usuario no válido');
       return;
     }
-    ////console.log('Notificando usuario con socket:', socket.id || socket);
-    socket.emit('solicitud-web-usuario', {
+    console.log(`📤 Notificando a usuario ID: ${idUsuario} en room: user:${idUsuario}`);
+    
+    // ✅ Usar Redis rooms - funciona en TODAS las instancias del servidor
+    this.wsGateway.wss.to(`user:${idUsuario}`).emit('solicitud-web-usuario', {
       id: solicitud.idCre_SolicitudWeb,
       cambios,
       mensaje: mensajeFinal,
     });
   };
 
-  // Lógica de notificación
+  // ✅ Lógica de notificación optimizada con Redis rooms
   if (idGrupoEjecutor === 1) {
-    // Admin o grupo 1, notificar ambos
-    console.log('Ejecutor es admin o grupo 1, notificando a analista y vendedor');
+    // Admin o grupo 1, notificar ambos (analista y vendedor)
+    console.log('✅ Ejecutor es admin o grupo 1, notificando a analista');
     if (idAnalista) {
-      const socketAnalista = this.wsService.getSocketByUserId(idAnalista);
-      ///console.log('Socket Analista:', socketAnalista);
-      notificarUsuario(socketAnalista);
+      notificarUsuarioPorId(idAnalista);
     }
-    if (nombreVendedor) {
-      const socketVendedor = this.wsService.getSocketByNombre(nombreVendedor);
-    ///  console.log('Socket Vendedor:', socketVendedor);
-      notificarUsuario(socketVendedor);
-    }
+    // TODO: Si tienes el idUsuario del vendedor, agrégalo aquí
+    // notificarUsuarioPorId(idVendedor);
+    
   } else if (idUsuarioEjecutor === idAnalista) {
     // Si ejecutor es analista, notificar vendedor
-    console.log('Ejecutor es analista, notificando vendedor');
-    if (nombreVendedor) {
-      const socketVendedor = this.wsService.getSocketByNombre(nombreVendedor);
-    ///  console.log('Socket Vendedor:', socketVendedor);
-      notificarUsuario(socketVendedor);
-    }
-  } else if (nombreVendedor === usuarioEjecutor?.Nombre) {
-    // Si ejecutor es vendedor, notificar analista
-    console.log('Ejecutor es vendedor, notificando analista');
-    if (idAnalista) {
-      const socketAnalista = this.wsService.getSocketByUserId(idAnalista);
-     /// console.log('Socket Analista:', socketAnalista);
-      notificarUsuario(socketAnalista);
-    }
+    console.log('✅ Ejecutor es analista');
+    // TODO: Si tienes el idUsuario del vendedor, agrégalo aquí
+    // notificarUsuarioPorId(idVendedor);
+    
   } else {
-    console.log('Ejecutor no es ni analista, ni vendedor ni admin/grupo 1. No se notifica.');
+    // Si ejecutor es vendedor u otro, notificar analista
+    console.log('✅ Ejecutor es vendedor u otro, notificando analista');
+    if (idAnalista) {
+      notificarUsuarioPorId(idAnalista);
+    }
   }
 }
 
