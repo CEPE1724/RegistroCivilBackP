@@ -14,29 +14,31 @@ export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayD
     private readonly jwtService: JwtService,
   ) { }
 
-  async handleConnection(client: Socket) {
-    const token = client.handshake.headers.authentication as string;
-    let payload: JwtPayload;
-  
-    try {
-      payload = this.jwtService.verify<JwtPayload>(token);
-  
-      // Guarda usuario y grupo en el cliente conectado
-      client.data.idUsuario = payload.idUsuario;
-      client.data.idGrupo = payload.idGrupo;
-      client.data.Nombre = payload.Nombre;
-  
-      await this.creSolicitudwebWsService.registerClient(client, payload.idUsuario);
-    } catch (error) {
-      client.disconnect();
-      return;
-    }
-  
-    console.log('Client connected:', payload);
-    console.log('Client ID:', client.id);
-  
-    //this.wss.emit('clients-updated', this.creSolicitudwebWsService.getConnectedClients());
+ async handleConnection(client: Socket) {
+  const token = client.handshake.auth?.token as string; // ✅ viene del front
+
+  if (!token) {
+    client.disconnect();
+    return;
   }
+
+  try {
+    const payload = this.jwtService.verify<JwtPayload>(token);
+
+    client.data.idUsuario = payload.idUsuario;
+    client.data.idGrupo = payload.idGrupo;
+    client.data.Nombre = payload.Nombre;
+
+    await this.creSolicitudwebWsService.registerClient(client, payload.idUsuario);
+
+    console.log("Client connected:", payload);
+    console.log("Client ID:", client.id);
+  } catch (error) {
+    client.disconnect();
+    return;
+  }
+}
+
   
 
   
