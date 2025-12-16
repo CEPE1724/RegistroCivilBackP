@@ -5,7 +5,15 @@ import { NewCreSolicitudwebDto } from './dto/new-cre_solicitudweb.dto';
 import { JwtService } from '@nestjs/jwt';
 import { JwtPayload } from '../auth/interfaces';
 
-@WebSocketGateway({ cors: true })
+@WebSocketGateway({
+  path: '/socket.io',
+  cors: {
+    origin: '*',
+    credentials: false,
+  },
+  transports: ['websocket', 'polling'],
+  allowEIO3: true,
+})
 export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer() wss: Server;
@@ -13,7 +21,7 @@ export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayD
     private readonly creSolicitudwebWsService: CreSolicitudwebWsService,
     private readonly jwtService: JwtService,
   ) { }
-
+/*
  async handleConnection(client: Socket) {
   const token = client.handshake.auth?.token as string; // ✅ viene del front
 
@@ -38,6 +46,45 @@ export class CreSolicitudwebWsGateway implements OnGatewayConnection, OnGatewayD
     return;
   }
 }
+*/
+async handleConnection(client: Socket) {
+  try {
+    // 1️⃣ Obtener token desde auth (Socket.IO browser)
+    let token = client.handshake.auth?.token as string;
+
+    // 2️⃣ Si no viene por auth, intentar por header Authorization
+    if (!token) {
+      const authHeader = client.handshake.headers?.authorization as string;
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.slice(7);
+      }
+    }
+
+    if (!token) {
+      throw new Error("NO_TOKEN");
+    }
+
+    // 3️⃣ Verificar JWT
+    const payload = this.jwtService.verify<JwtPayload>(token);
+
+    client.data.idUsuario = payload.idUsuario;
+    client.data.idGrupo = payload.idGrupo;
+    client.data.Nombre = payload.Nombre;
+
+    await this.creSolicitudwebWsService.registerClient(
+      client,
+      payload.idUsuario
+    );
+
+    console.log("✅ Socket conectado:", client.id, payload.idUsuario);
+
+  } catch (e) {
+    console.log("❌ Socket rechazado:", e.message);
+    client.disconnect(true);
+  }
+}
+
+
 
   
 
