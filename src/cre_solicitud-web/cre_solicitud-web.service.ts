@@ -1,6 +1,9 @@
-import { BadRequestException, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Inject, Injectable, InternalServerErrorException, Logger, NotFoundException } from '@nestjs/common';
 import { Brackets, In, Repository } from 'typeorm';
 import axios from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
 import { CreateCreSolicitudWebDto } from './dto/create-cre_solicitud-web.dto';
 import { UpdateCreSolicitudWebDto } from './dto/update-cre_solicitud-web.dto';
 import { CreSolicitudWeb } from './entities/cre_solicitud-web.entity';
@@ -26,9 +29,7 @@ export class CreSolicitudWebService {
   private readonly EQFX_UAT_url = process.env.EQFX_UAT_url;
   private readonly EQFX_UAT_token = process.env.EQFX_UAT_token;
   private readonly logger = new Logger('CreSolicitudWebService');
-
-  private readonly processingRequests = new Map<string, { timestamp: number }>();
-  private readonly LOCK_TIMEOUT = 30000; // 30 segundos
+  private readonly LOCK_TIMEOUT = 90000; // 90 segundos (mayor que tiempo de COGNO)
 
   constructor(
     @InjectRepository(CreSolicitudWeb)
@@ -39,8 +40,178 @@ export class CreSolicitudWebService {
     private readonly creSolicitudwebWsService: CreSolicitudwebWsService,
     private readonly notifierService: SolicitudWebNotifierService,
     private readonly emailService: EmailService,
-
+    @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
+
+  /* =====================================================
+   *                  MÉTODOS HELPER REDIS
+   * ===================================================== */
+
+  /**
+   * Adquiere un lock distribuido usando Redis
+   */
+  private async adquirirLock(cedula: string): Promise<boolean> {
+    const lockKey = `lock:solicitud:${cedula}`;
+    const lockValue = Date.now().toString();
+
+    try {
+      // Intentar SET NX (solo si no existe) con expiración
+      const result = await this.cacheManager.set(
+        lockKey,
+        lockValue,
+        this.LOCK_TIMEOUT
+      );
+
+      if (result) {
+        this.logger.log(`🔒 Lock adquirido para: ${cedula}`);
+        return true;
+      }
+
+      // Verificar si es un lock antiguo (por si quedó colgado)
+      const existingLock = await this.cacheManager.get<string>(lockKey);
+      if (existingLock) {
+        const lockTime = parseInt(existingLock);
+        if (Date.now() - lockTime > this.LOCK_TIMEOUT) {
+          // Lock expirado, forzar liberación
+          await this.cacheManager.del(lockKey);
+          return await this.adquirirLock(cedula);
+        }
+      }
+
+      this.logger.warn(`⚠️ Lock ya existe para cédula: ${cedula}`);
+      return false;
+    } catch (error) {
+      this.logger.error(`Error al adquirir lock: ${error.message}`);
+      return false;
+    }
+  }
+
+  /**
+   * Libera el lock de Redis
+   */
+  private async liberarLock(cedula: string): Promise<void> {
+    const lockKey = `lock:solicitud:${cedula}`;
+    await this.cacheManager.del(lockKey);
+    this.logger.log(`🔓 Lock liberado para: ${cedula}`);
+  }
+
+  /**
+   * Verifica si una operación ya fue ejecutada (idempotencia)
+   */
+  private async verificarIdempotencia(
+    key: string,
+    operation: string
+  ): Promise<{ existe: boolean; resultado?: any }> {
+    const cacheKey = `idempotency:${operation}:${key}`;
+    const cached = await this.cacheManager.get(cacheKey);
+
+    if (cached) {
+      this.logger.log(`✅ IDEMPOTENCIA - Operación ya ejecutada: ${cacheKey}`);
+      return { existe: true, resultado: cached };
+    }
+
+    return { existe: false };
+  }
+
+  /**
+   * Guarda resultado de operación para idempotencia
+   */
+  private async guardarIdempotencia(
+    key: string,
+    operation: string,
+    resultado: any,
+    ttl: number = 86400 // 24 horas
+  ): Promise<void> {
+    const cacheKey = `idempotency:${operation}:${key}`;
+    await this.cacheManager.set(cacheKey, resultado, ttl);
+    this.logger.log(`💾 Idempotencia guardada: ${cacheKey}`);
+  }
+
+  /**
+   * Guarda el estado del proceso en Redis
+   */
+  private async guardarEstadoProceso(
+    idSolicitud: number,
+    estado: {
+      fase: string;
+      progreso: number;
+      mensaje?: string;
+      error?: string;
+      datos?: any;
+    }
+  ): Promise<void> {
+    const cacheKey = `proceso:solicitud:${idSolicitud}`;
+
+    const estadoActual = await this.cacheManager.get<any>(cacheKey) || {};
+
+    const nuevoEstado = {
+      ...estadoActual,
+      ...estado,
+      idSolicitud,
+      fechaUltimaActualizacion: new Date(),
+    };
+
+    await this.cacheManager.set(cacheKey, nuevoEstado, 86400); // 24 horas
+
+    // Emitir WebSocket para actualización en tiempo real
+    this.creSolicitudwebWsGateway.wss.emit('solicitud-progreso', nuevoEstado);
+
+    this.logger.log(
+      `📊 Estado actualizado - Solicitud ${idSolicitud}: ${estado.fase} (${estado.progreso}%)`
+    );
+  }
+
+  /**
+   * Obtiene el estado actual del proceso
+   */
+  async obtenerEstadoProceso(idSolicitud: number): Promise<any> {
+    const cacheKey = `proceso:solicitud:${idSolicitud}`;
+    const estado = await this.cacheManager.get(cacheKey);
+
+    if (!estado) {
+      throw new NotFoundException('Estado del proceso no encontrado o expirado');
+    }
+
+    return estado;
+  }
+
+  /**
+   * Obtiene datos de Equifax desde cache si existen
+   */
+  private async obtenerEquifaxCache(cedula: string): Promise<any> {
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
+    const cacheKey = `equifax:${cedula}:${year}-${month}`;
+
+    const cached = await this.cacheManager.get(cacheKey);
+
+    if (cached) {
+      this.logger.log(`✅ Equifax desde cache: ${cedula}`);
+      return cached;
+    }
+
+    return null;
+  }
+
+  /**
+   * Guarda resultado de Equifax en cache hasta fin de mes
+   */
+  private async guardarEquifaxCache(cedula: string, data: any): Promise<void> {
+    const year = new Date().getFullYear();
+    const month = new Date().getMonth() + 1;
+    const cacheKey = `equifax:${cedula}:${year}-${month}`;
+
+    // Cache hasta fin de mes
+    const finDeMes = new Date(year, month, 0, 23, 59, 59);
+    const ttl = Math.floor((finDeMes.getTime() - Date.now()) / 1000);
+
+    await this.cacheManager.set(cacheKey, data, ttl);
+    this.logger.log(`💾 Equifax guardado en cache: ${cacheKey} (TTL: ${ttl}s)`);
+  }
+
+  /* =====================================================
+   *              FIN MÉTODOS HELPER REDIS
+   * ===================================================== */
 
   private async EquifaxData(tipoDocumento: string, numeroDocumento: string): Promise<{ success: boolean, message: string }> {
     const PostData = {
@@ -102,105 +273,276 @@ export class CreSolicitudWebService {
 
 
 
+  /**
+   * MÉTODO ANTIGUO - DEPRECADO
+   * Usar iniciarProcesoSolicitud() en su lugar
+   * Mantenido para compatibilidad temporal
+   */
   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
-    const cedula = createCreSolicitudWebDto.Cedula;
+    this.logger.warn('⚠️ Método create() deprecado. Use iniciarProcesoSolicitud()');
+    return await this.iniciarProcesoSolicitud(createCreSolicitudWebDto);
+  }
 
-    // 🔒 1. Evitar solicitudes simultáneas para la misma cédula
-    const processing = this.processingRequests.get(cedula);
-    if (processing && Date.now() - processing.timestamp < this.LOCK_TIMEOUT) {
-      return {
-        success: false,
-        mensaje: 'Ya existe una solicitud en proceso para esta cédula. Por favor espere.',
-        errorOrigen: 'SolicitudEnProceso',
-        data: null,
-      };
-    }
-    this.processingRequests.set(cedula, { timestamp: Date.now() });
+  /* =====================================================
+   *      NUEVO FLUJO: PROCESAMIENTO ASÍNCRONO
+   * ===================================================== */
+
+  /**
+   * ENDPOINT PRINCIPAL - Fase 1: Iniciar Proceso (Síncrono - <2s)
+   * 
+   * - Validaciones rápidas
+   * - Creación de solicitud en estado PROCESANDO
+   * - Inicia procesamiento asíncrono
+   * - Retorna INMEDIATAMENTE
+   */
+  async iniciarProcesoSolicitud(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+    const cedula = createCreSolicitudWebDto.Cedula;
+    const idempotencyKey = createCreSolicitudWebDto.idempotencyKey || uuidv4();
+
+    this.logger.log(`🚀 Iniciando proceso de solicitud para cédula: ${cedula}`);
 
     try {
       /* =====================================================
-       *          2. VALIDAR SOLICITUD ACTIVA EXISTENTE
+       *          1. VERIFICAR IDEMPOTENCIA
+       * ===================================================== */
+      const idempotencia = await this.verificarIdempotencia(
+        idempotencyKey,
+        'crear-solicitud'
+      );
+
+      if (idempotencia.existe) {
+        this.logger.log(`✅ Solicitud ya procesada (idempotencia): ${idempotencyKey}`);
+        return idempotencia.resultado;
+      }
+
+      /* =====================================================
+       *          2. ADQUIRIR LOCK DISTRIBUIDO
+       * ===================================================== */
+      const lockAdquirido = await this.adquirirLock(cedula);
+
+      if (!lockAdquirido) {
+        const resultado = {
+          success: false,
+          mensaje: 'Ya existe una solicitud en proceso para esta cédula. Por favor espere.',
+          errorOrigen: 'SolicitudEnProceso',
+          data: null,
+        };
+        await this.guardarIdempotencia(idempotencyKey, 'crear-solicitud', resultado);
+        return resultado;
+      }
+
+      /* =====================================================
+       *          3. VALIDAR SOLICITUD ACTIVA EXISTENTE
        * ===================================================== */
       const existingSolicitud = await this.creSolicitudWebRepository.findOne({
         where: { Cedula: cedula, Estado: In([1, 2]) },
       });
 
       if (existingSolicitud) {
-        return {
+        await this.liberarLock(cedula);
+        const resultado = {
           success: false,
           mensaje: `Ya existe una solicitud activa (N° ${existingSolicitud.NumeroSolicitud}) para la cédula ${cedula}.`,
           errorOrigen: 'SolicitudExistente',
-          data: null,
+          data: existingSolicitud,
         };
+        await this.guardarIdempotencia(idempotencyKey, 'crear-solicitud', resultado);
+        return resultado;
       }
 
       /* =====================================================
-       *                        EQUIFAX
+       *          4. CREAR SOLICITUD EN ESTADO "PROCESANDO"
        * ===================================================== */
-      let debeConsultarEquifax = true;
-      const eqfxData = await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
+      const creSolicitudWeb = this.creSolicitudWebRepository.create({
+        ...createCreSolicitudWebDto,
+        Estado: 0, // PROCESANDO
+        Fecha: new Date(),
+      });
 
-      if (eqfxData.success) {
-        const fechaConsulta = new Date(eqfxData.data.FechaSistema);
-        const ahora = new Date();
+      const savedSolicitud = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      const idSolicitud = savedSolicitud.idCre_SolicitudWeb;
 
-        if (
-          fechaConsulta.getMonth() === ahora.getMonth() &&
-          fechaConsulta.getFullYear() === ahora.getFullYear()
-        ) {
-          debeConsultarEquifax = false;
-        }
-      }
+      this.logger.log(`✅ Solicitud ${savedSolicitud.NumeroSolicitud} creada en estado PROCESANDO`);
 
-      if (debeConsultarEquifax) {
+      /* =====================================================
+       *          5. GUARDAR ESTADO INICIAL EN REDIS
+       * ===================================================== */
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'INICIADO',
+        progreso: 5,
+        mensaje: 'Solicitud creada, iniciando procesamiento...',
+      });
+
+      /* =====================================================
+       *          6. INICIAR PROCESAMIENTO ASÍNCRONO
+       * ===================================================== */
+      // Ejecutar en background (sin await)
+      this.procesarSolicitudAsync(
+        idSolicitud,
+        cedula,
+        createCreSolicitudWebDto,
+        idempotencyKey
+      ).catch(async (error) => {
+        this.logger.error(
+          `❌ Error CRÍTICO en procesamiento async de solicitud ${idSolicitud}: ${error.message}`,
+          error.stack
+        );
+        
+        // Asegurar que el error llegue al frontend
+        await this.guardarEstadoProceso(idSolicitud, {
+          fase: 'ERROR',
+          progreso: 0,
+          mensaje: 'Error al procesar la solicitud',
+          error: error.message,
+        }).catch(() => {});
+        
+        this.creSolicitudwebWsGateway.wss.emit('solicitud-web-error', {
+          idSolicitud,
+          error: error.message,
+          fase: 'INICIO_PROCESAMIENTO',
+        });
+      });
+
+      /* =====================================================
+       *          7. RESPUESTA INMEDIATA
+       * ===================================================== */
+      const resultado = {
+        success: true,
+        mensaje: 'Solicitud iniciada. Recibirás notificaciones del progreso en tiempo real.',
+        data: {
+          idSolicitud: savedSolicitud.idCre_SolicitudWeb,
+          numeroSolicitud: savedSolicitud.NumeroSolicitud,
+          cedula: savedSolicitud.Cedula,
+          estado: 'PROCESANDO',
+          mensaje: 'Consultando información, por favor espere (esto puede tomar 1-2 minutos)...',
+        },
+      };
+
+      // Guardar en idempotencia
+      await this.guardarIdempotencia(idempotencyKey, 'crear-solicitud', resultado);
+
+      return resultado;
+    } catch (error) {
+      this.logger.error(`❌ Error al iniciar solicitud: ${error.message}`, error.stack);
+
+      await this.liberarLock(cedula).catch(() => {});
+
+      return {
+        success: false,
+        mensaje: 'Error al iniciar el proceso de solicitud.',
+        error: error.message,
+        errorOrigen: 'Servidor',
+      };
+    }
+  }
+
+  /**
+   * Fase 2: Procesamiento Asíncrono (Background - 30-60s)
+   * 
+   * - Consulta COGNO (30-60s)
+   * - Consulta Equifax (3-5s)
+   * - Guarda datos en BD (2-4s)
+   * - Califica crédito (2-3s)
+   * - Emite WebSocket al finalizar
+   */
+  private async procesarSolicitudAsync(
+    idSolicitud: number,
+    cedula: string,
+    dto: CreateCreSolicitudWebDto,
+    idempotencyKey: string
+  ): Promise<void> {
+    this.logger.log(`⚙️ [ASYNC-START] Iniciando procesamiento async de solicitud ${idSolicitud}`);
+
+    try {
+      /* =====================================================
+       *          FASE 1: CONSULTAR EQUIFAX (3-5s)
+       * ===================================================== */
+      this.logger.log(`📊 [EQUIFAX] Consultando Equifax para solicitud ${idSolicitud}`);
+      
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'CONSULTANDO_EQUIFAX',
+        progreso: 10,
+        mensaje: 'Verificando historial crediticio...',
+      });
+
+      // Verificar cache primero
+      let equifaxData = await this.obtenerEquifaxCache(cedula);
+
+      if (!equifaxData) {
+        this.logger.log(`📡 [EQUIFAX] Consultando API externa para cédula ${cedula}`);
         const equifaxResult = await this.EquifaxDataUAT('C', cedula);
 
         if (!equifaxResult.success) {
-          return {
-            success: false,
-            mensaje: 'No se pudo consultar los datos en Equifax. Intente nuevamente más tarde.',
-            errorOrigen: 'Equifax',
-            data: null,
-          };
+          throw new Error('No se pudo consultar Equifax');
         }
+
+        await this.guardarEquifaxCache(cedula, equifaxResult);
+        equifaxData = equifaxResult;
+        this.logger.log(`✅ [EQUIFAX] Consulta exitosa y guardada en cache`);
+      } else {
+        this.logger.log(`✅ [EQUIFAX] Datos obtenidos desde cache`);
       }
+
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'EQUIFAX_COMPLETADO',
+        progreso: 20,
+        mensaje: 'Historial crediticio verificado',
+      });
 
       /* =====================================================
-       *               TOKEN Y DATOS GENERALES COGNO
+       *          FASE 2: CONSULTAR COGNO (30-60s)
        * ===================================================== */
+      this.logger.log(`🏢 [COGNO] Iniciando consulta COGNO para solicitud ${idSolicitud}`);
+      
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'CONSULTANDO_COGNO',
+        progreso: 25,
+        mensaje: 'Consultando datos personales (esto puede tomar 1 minuto)...',
+      });
+
+      this.logger.log(`🔑 [COGNO] Obteniendo token...`);
       const token = await this.authService.getToken(cedula);
       if (!token) {
-        return {
-          success: false,
-          mensaje: 'No se pudo obtener el token Cogno.',
-          errorOrigen: 'AuthService',
-          data: null,
-        };
+        throw new Error('No se pudo obtener token COGNO');
       }
+      this.logger.log(`✅ [COGNO] Token obtenido`);
 
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'TOKEN_OBTENIDO',
+        progreso: 30,
+        mensaje: 'Obteniendo información personal...',
+      });
+
+      this.logger.log(`📋 [COGNO] Consultando datos generales...`);
       const apiResult = await this.authService.getApiData(token, cedula);
       if (!apiResult.success) {
-        return {
-          success: false,
-          mensaje: `Error desde API externa: ${apiResult.mensaje}`,
-          errorOrigen: 'ApiExterna',
-          data: null,
-        };
+        throw new Error(`Error API COGNO: ${apiResult.mensaje}`);
       }
+      this.logger.log(`✅ [COGNO] Datos generales obtenidos`);
 
       const apiData = apiResult.data;
 
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'DATOS_PERSONALES_OBTENIDOS',
+        progreso: 50,
+        mensaje: 'Consultando información laboral...',
+      });
+
       /* =====================================================
-       *                  DATOS LABORALES Y JUBILADO
+       *          FASE 3: DATOS LABORALES (10-20s)
        * ===================================================== */
+      this.logger.log(`💼 [COGNO] Consultando datos laborales...`);
+      
       const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
       const jubiladoResult = await this.authService.getApiDataJubilado(token, cedula);
       const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
 
+      this.logger.log(`✅ [COGNO] Datos laborales consultados`);
+
       const deudaData = deudaEmovResult.data?.deudaEmov?.[0];
 
-      const idSituacionLaboral = createCreSolicitudWebDto.idSituacionLaboral;
-      const idActEconomina = createCreSolicitudWebDto.idActEconomina;
+      const idSituacionLaboral = dto.idSituacionLaboral;
+      const idActEconomina = dto.idActEconomina;
 
       let trabajos = [];
       const esJubilado =
@@ -208,15 +550,10 @@ export class CreSolicitudWebService {
         Array.isArray(jubiladoResult.data?.trabajos) &&
         jubiladoResult.data.trabajos.length > 0;
 
-      // Obligatorio si es dependiente y no es actividad 301
+      // Validar datos laborales si son obligatorios
       if (idSituacionLaboral === 1 && idActEconomina !== 301) {
         if (!trabajoResult.success || !trabajoResult.data?.trabajos?.length) {
-          return {
-            success: false,
-            mensaje: 'Información laboral obligatoria no disponible.',
-            errorOrigen: 'ApiEmpleo',
-            data: null,
-          };
+          throw new Error('Información laboral obligatoria no disponible');
         }
         trabajos = trabajoResult.data.trabajos;
       } else {
@@ -227,19 +564,22 @@ export class CreSolicitudWebService {
 
       const bApiDataTrabajo = trabajos.length > 0 || (esJubilado && idActEconomina === 301);
 
-      /* =====================================================
-       *            CREAR SOLICITUD EN BASE DE DATOS
-       * ===================================================== */
-      const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
-      const savedSolicitud = await this.creSolicitudWebRepository.save(creSolicitudWeb);
-      const idSolicitud = savedSolicitud.idCre_SolicitudWeb;
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'DATOS_LABORALES_OBTENIDOS',
+        progreso: 70,
+        mensaje: 'Guardando información...',
+      });
 
       /* =====================================================
-       *            GUARDAR DATOS COMPLEMENTARIOS COGNO
+       *          FASE 4: GUARDAR DATOS EN BD (2-4s)
        * ===================================================== */
+      this.logger.log(`💾 [BD] Guardando datos en base de datos...`);
+      
       const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
+      this.logger.log(`✅ [BD] Registro principal creado: ${saveData.idCognoSolicitudCredito}`);
 
       await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
+      this.logger.log(`✅ [BD] Datos naturales guardados`);
 
       if (
         apiData.personaNaturalConyuge?.personaConyuge?.identificacion &&
@@ -248,62 +588,74 @@ export class CreSolicitudWebService {
         await this.authService.createNaturalConyugue(
           apiData,
           saveData.idCognoSolicitudCredito,
-          1,
+          1
         );
+        this.logger.log(`✅ [BD] Datos de cónyuge guardados`);
       }
 
       if (apiData.personaNatural.lugarNacimiento) {
         await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
+        this.logger.log(`✅ [BD] Lugar de nacimiento guardado`);
       }
 
       if (apiData.estadoCivil.estadoCivil.descripcion === 'CASADO') {
         await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
+        this.logger.log(`✅ [BD] Datos domicilio cónyuge guardados`);
       }
 
       await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
       await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
+      this.logger.log(`✅ [BD] Nacionalidades y profesiones guardadas`);
 
       // Datos laborales
       if (!esJubilado && trabajos.length > 0) {
         await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
+        this.logger.log(`✅ [BD] Trabajos guardados (${trabajos.length} registros)`);
       }
 
       if (esJubilado) {
         await this.authService.createTrabajoLite(
           jubiladoResult.data.trabajos,
-          saveData.idCognoSolicitudCredito,
+          saveData.idCognoSolicitudCredito
         );
+        this.logger.log(`✅ [BD] Datos de jubilado guardados`);
       }
 
       if (deudaData) {
         await this.authService.guardarDeudaEmovConInfracciones(
           deudaData,
-          saveData.idCognoSolicitudCredito,
+          saveData.idCognoSolicitudCredito
         );
+        this.logger.log(`✅ [BD] Deuda EMOV guardada`);
       }
 
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'DATOS_GUARDADOS',
+        progreso: 85,
+        mensaje: 'Calificando crédito...',
+      });
+
       /* =====================================================
-       *        EXEC STORED PROCEDURE + ACTUALIZACIÓN FINAL
+       *          FASE 5: CALIFICACIÓN (2-3s)
        * ===================================================== */
+      this.logger.log(`🎯 [CALIFICACIÓN] Ejecutando procedimiento almacenado...`);
+      
       const storedProcedureResult = await this.creSolicitudWebRepository.query(
         `EXEC Cre_RetornaTipoCliente @Cedula = @0, @idSolicitud = @1`,
-        [cedula, idSolicitud],
+        [cedula, idSolicitud]
       );
 
       if (!storedProcedureResult || storedProcedureResult.length === 0) {
-        return {
-          success: false,
-          mensaje: 'El procedimiento almacenado no devolvió resultados.',
-          errorOrigen: 'StoredProcedure',
-          data: null,
-        };
+        throw new Error('Procedimiento almacenado no devolvió resultados');
       }
 
       const tipoCliente = storedProcedureResult[0].TipoCliente;
       const Resultado = storedProcedureResult[0].Resultado;
       const estado = Resultado === 0 ? 5 : 1;
 
-      // Actualizar solicitud
+      this.logger.log(`✅ [CALIFICACIÓN] Tipo cliente: ${tipoCliente}, Resultado: ${Resultado}, Estado: ${estado}`);
+
+      // Actualizar solicitud con estado final
       await this.creSolicitudWebRepository.update(idSolicitud, {
         idTipoCliente: tipoCliente || 0,
         Estado: estado,
@@ -314,32 +666,64 @@ export class CreSolicitudWebService {
       });
 
       /* =====================================================
-       *                  EVENTO WEBSOCKET
+       *          FASE 6: NOTIFICACIÓN FINAL
        * ===================================================== */
-      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
-        id: savedSolicitud.idCre_SolicitudWeb,
-        cambios: createCreSolicitudWebDto,
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'COMPLETADO',
+        progreso: 100,
+        mensaje: estado === 1 ? 'Solicitud aprobada' : 'Solicitud procesada',
+        datos: updatedSolicitud,
       });
 
-      /* =====================================================
-       *                       RESPUESTA
-       * ===================================================== */
-      return {
-        success: true,
-        mensaje: `Solicitud N° ${savedSolicitud.NumeroSolicitud} creada exitosamente.`,
-        data: updatedSolicitud,
-      };
+      // Emitir WebSocket de completado
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-completada', {
+        idSolicitud,
+        numeroSolicitud: updatedSolicitud.NumeroSolicitud,
+        estado: estado === 1 ? 'APROBADA' : 'RECHAZADA',
+        tipoCliente,
+        solicitud: updatedSolicitud,
+      });
+
+      this.logger.log(`✅✅✅ [COMPLETADO] Solicitud ${idSolicitud} procesada exitosamente`);
     } catch (error) {
-      this.logger.error(`Error en create para cédula ${cedula}: ${error.message}`, error.stack);
-      return {
-        success: false,
-        mensaje: 'Ocurrió un error inesperado al procesar la solicitud.',
+      this.logger.error(
+        `❌❌❌ [ERROR] Error procesando solicitud ${idSolicitud}: ${error.message}`,
+        error.stack
+      );
+
+      // Actualizar solicitud a estado ERROR (6)
+      await this.creSolicitudWebRepository
+        .update(idSolicitud, { Estado: 6 })
+        .catch((err) => {
+          this.logger.error(`Error al actualizar estado a ERROR: ${err.message}`);
+        });
+
+      // Guardar estado de error
+      await this.guardarEstadoProceso(idSolicitud, {
+        fase: 'ERROR',
+        progreso: 0,
+        mensaje: 'Error al procesar la solicitud',
         error: error.message,
-        errorOrigen: 'Servidor',
-      };
+      }).catch((err) => {
+        this.logger.error(`Error al guardar estado ERROR en Redis: ${err.message}`);
+      });
+
+      // Emitir WebSocket de error
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-error', {
+        idSolicitud,
+        error: error.message,
+        fase: 'PROCESAMIENTO',
+        stack: error.stack,
+      });
+
+      this.logger.error(`🔔 [WEBSOCKET] Evento de error emitido para solicitud ${idSolicitud}`);
     } finally {
-      // Liberar lock
-      this.processingRequests.delete(cedula);
+      // Liberar lock siempre
+      await this.liberarLock(cedula).catch((err) => {
+        this.logger.error(`Error al liberar lock: ${err.message}`);
+      });
+      
+      this.logger.log(`🔓 [LOCK] Lock liberado para cédula ${cedula}`);
     }
   }
 
