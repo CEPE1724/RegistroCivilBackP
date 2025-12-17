@@ -30,6 +30,7 @@ export class CreSolicitudWebService {
   private readonly EQFX_UAT_token = process.env.EQFX_UAT_token;
   private readonly logger = new Logger('CreSolicitudWebService');
   private readonly LOCK_TIMEOUT = 90000; // 90 segundos (mayor que tiempo de COGNO)
+  private readonly processingRequests = new Map<string, { timestamp: number }>();
 
   constructor(
     @InjectRepository(CreSolicitudWeb)
@@ -42,6 +43,220 @@ export class CreSolicitudWebService {
     private readonly emailService: EmailService,
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
+
+   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+    const cedula = createCreSolicitudWebDto.Cedula;
+    const processing = this.processingRequests.get(cedula);
+    if (processing && Date.now() - processing.timestamp < this.LOCK_TIMEOUT) {
+      return {
+        success: false,
+        mensaje: 'Ya existe una solicitud en proceso para esta cédula. Por favor espere.',
+        errorOrigen: 'SolicitudEnProceso',
+        data: null,
+      };
+    }
+    this.processingRequests.set(cedula, { timestamp: Date.now() });
+
+    try {
+
+      const existingSolicitud = await this.creSolicitudWebRepository.findOne({
+        where: { Cedula: cedula, Estado: In([1, 2]) },
+      });
+
+      if (existingSolicitud) {
+        return {
+          success: false,
+          mensaje: `Ya existe una solicitud activa (N° ${existingSolicitud.NumeroSolicitud}) para la cédula ${cedula}.`,
+          errorOrigen: 'SolicitudExistente',
+          data: null,
+        };
+      }
+
+      let debeConsultarEquifax = true;
+      const eqfxData = await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
+
+      if (eqfxData.success) {
+        const fechaConsulta = new Date(eqfxData.data.FechaSistema);
+        const ahora = new Date();
+
+        if (
+          fechaConsulta.getMonth() === ahora.getMonth() &&
+          fechaConsulta.getFullYear() === ahora.getFullYear()
+        ) {
+          debeConsultarEquifax = false;
+        }
+      }
+
+      if (debeConsultarEquifax) {
+        const equifaxResult = await this.EquifaxDataUAT('C', cedula);
+
+        if (!equifaxResult.success) {
+          return {
+            success: false,
+            mensaje: 'No se pudo consultar los datos en Equifax. Intente nuevamente más tarde.',
+            errorOrigen: 'Equifax',
+            data: null,
+          };
+        }
+      }
+
+      const token = await this.authService.getToken(cedula);
+      if (!token) {
+        return {
+          success: false,
+          mensaje: 'No se pudo obtener el token Cogno.',
+          errorOrigen: 'AuthService',
+          data: null,
+        };
+      }
+
+      const apiResult = await this.authService.getApiData(token, cedula);
+      if (!apiResult.success) {
+        return {
+          success: false,
+          mensaje: `Error desde API externa: ${apiResult.mensaje}`,
+          errorOrigen: 'ApiExterna',
+          data: null,
+        };
+      }
+
+      const apiData = apiResult.data;
+
+      const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
+      const jubiladoResult = await this.authService.getApiDataJubilado(token, cedula);
+      const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
+
+      const deudaData = deudaEmovResult.data?.deudaEmov?.[0];
+
+      const idSituacionLaboral = createCreSolicitudWebDto.idSituacionLaboral;
+      const idActEconomina = createCreSolicitudWebDto.idActEconomina;
+
+      let trabajos = [];
+      const esJubilado =
+        jubiladoResult.success &&
+        Array.isArray(jubiladoResult.data?.trabajos) &&
+        jubiladoResult.data.trabajos.length > 0;
+
+      // Obligatorio si es dependiente y no es actividad 301
+      if (idSituacionLaboral === 1 && idActEconomina !== 301) {
+        if (!trabajoResult.success || !trabajoResult.data?.trabajos?.length) {
+          return {
+            success: false,
+            mensaje: 'Información laboral obligatoria no disponible.',
+            errorOrigen: 'ApiEmpleo',
+            data: null,
+          };
+        }
+        trabajos = trabajoResult.data.trabajos;
+      } else {
+        if (trabajoResult.success && trabajoResult.data?.trabajos?.length) {
+          trabajos = trabajoResult.data.trabajos;
+        }
+      }
+
+      const bApiDataTrabajo = trabajos.length > 0 || (esJubilado && idActEconomina === 301);
+
+
+      const creSolicitudWeb = this.creSolicitudWebRepository.create(createCreSolicitudWebDto);
+      const savedSolicitud = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+      const idSolicitud = savedSolicitud.idCre_SolicitudWeb;
+
+      const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
+
+      await this.authService.createNatural(apiData, saveData.idCognoSolicitudCredito, 0);
+
+      if (
+        apiData.personaNaturalConyuge?.personaConyuge?.identificacion &&
+        apiData.personaNaturalConyuge?.personaConyuge?.nombre
+      ) {
+        await this.authService.createNaturalConyugue(
+          apiData,
+          saveData.idCognoSolicitudCredito,
+          1,
+        );
+      }
+
+      if (apiData.personaNatural.lugarNacimiento) {
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 0);
+      }
+
+      if (apiData.estadoCivil.estadoCivil.descripcion === 'CASADO') {
+        await this.authService.createLugarNacimiento(apiData, saveData.idCognoSolicitudCredito, 1);
+      }
+
+      await this.authService.createNacionalidades(apiData, saveData.idCognoSolicitudCredito);
+      await this.authService.createProfesiones(apiData, saveData.idCognoSolicitudCredito);
+
+      // Datos laborales
+      if (!esJubilado && trabajos.length > 0) {
+        await this.authService.createTrabajo(trabajos, saveData.idCognoSolicitudCredito);
+      }
+
+      if (esJubilado) {
+        await this.authService.createTrabajoLite(
+          jubiladoResult.data.trabajos,
+          saveData.idCognoSolicitudCredito,
+        );
+      }
+
+      if (deudaData) {
+        await this.authService.guardarDeudaEmovConInfracciones(
+          deudaData,
+          saveData.idCognoSolicitudCredito,
+        );
+      }
+
+      const storedProcedureResult = await this.creSolicitudWebRepository.query(
+        `EXEC Cre_RetornaTipoCliente @Cedula = @0, @idSolicitud = @1`,
+        [cedula, idSolicitud],
+      );
+
+      if (!storedProcedureResult || storedProcedureResult.length === 0) {
+        return {
+          success: false,
+          mensaje: 'El procedimiento almacenado no devolvió resultados.',
+          errorOrigen: 'StoredProcedure',
+          data: null,
+        };
+      }
+
+      const tipoCliente = storedProcedureResult[0].TipoCliente;
+      const Resultado = storedProcedureResult[0].Resultado;
+      const estado = Resultado === 0 ? 5 : 1;
+
+      // Actualizar solicitud
+      await this.creSolicitudWebRepository.update(idSolicitud, {
+        idTipoCliente: tipoCliente || 0,
+        Estado: estado,
+      });
+
+      const updatedSolicitud = await this.creSolicitudWebRepository.findOne({
+        where: { idCre_SolicitudWeb: idSolicitud },
+      });
+
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+        id: savedSolicitud.idCre_SolicitudWeb,
+        cambios: createCreSolicitudWebDto,
+      });
+
+      return {
+        success: true,
+        mensaje: `Solicitud N° ${savedSolicitud.NumeroSolicitud} creada exitosamente.`,
+        data: updatedSolicitud,
+      };
+    } catch (error) {
+      this.logger.error(`Error en create para cédula ${cedula}: ${error.message}`, error.stack);
+      return {
+        success: false,
+        mensaje: 'Ocurrió un error inesperado al procesar la solicitud.',
+        error: error.message,
+        errorOrigen: 'Servidor',
+      };
+    } finally {
+      // Liberar lock
+      this.processingRequests.delete(cedula);
+    }
+  }
 
   /* =====================================================
    *                  MÉTODOS HELPER REDIS
@@ -127,8 +342,88 @@ export class CreSolicitudWebService {
     this.logger.log(`💾 Idempotencia guardada: ${cacheKey}`);
   }
 
+  /* =====================================================
+   *                  MÉTODOS HELPER REDIS
+   * ===================================================== */
+
   /**
-   * Guarda el estado del proceso en Redis
+   * Adquiere un lock distribuido usando Redis
+   */
+   
+  async obtenerEstadoProceso(idSolicitud: number): Promise<any> {
+    const cacheKey = `proceso:solicitud:${idSolicitud}`;
+    const estado = await this.cacheManager.get(cacheKey);
+
+    if (!estado) {
+      // Si no hay estado en cache, consultar BD para obtener info básica
+      const solicitud = await this.creSolicitudWebRepository.findOne({
+        where: { idCre_SolicitudWeb: idSolicitud }
+      });
+
+      if (!solicitud) {
+        throw new NotFoundException('Solicitud no encontrada');
+      }
+
+      return {
+        idSolicitud,
+        fase: this.obtenerFaseByEstado(solicitud.Estado),
+        progreso: this.obtenerProgresoByEstado(solicitud.Estado),
+        mensaje: this.obtenerMensajeByEstado(solicitud.Estado),
+        estado: solicitud.Estado,
+        numeroSolicitud: solicitud.NumeroSolicitud,
+        fechaUltimaActualizacion: solicitud.Fecha,
+        encontradoEnBD: true
+      };
+    }
+
+    return estado;
+  }
+
+  /**
+   * Obtiene el estado de una solicitud por cédula
+   */
+  async obtenerEstadoPorCedula(cedula: string): Promise<any> {
+    // Buscar solicitud activa por cédula
+    const solicitud = await this.creSolicitudWebRepository.findOne({
+      where: { Cedula: cedula, Estado: In([0, 1, 2]) }, // PROCESANDO, APROBADA, PENDIENTE
+      order: { Fecha: 'DESC' }
+    });
+
+    if (!solicitud) {
+      throw new NotFoundException('No se encontró una solicitud activa para esta cédula');
+    }
+
+    return await this.obtenerEstadoProceso(solicitud.idCre_SolicitudWeb);
+  }
+
+  /**
+   * Obtiene historial completo del proceso de una solicitud
+   */
+  async obtenerHistorialProceso(idSolicitud: number): Promise<any> {
+    const cacheKey = `proceso:solicitud:${idSolicitud}`;
+    const historialKey = `historial:solicitud:${idSolicitud}`;
+    
+    // Obtener estado actual
+    const estadoActual = await this.cacheManager.get(cacheKey);
+    
+    // Obtener historial almacenado
+    const historial: any[] = (await this.cacheManager.get<any[]>(historialKey)) || [];
+    
+    // Obtener datos de la solicitud de BD
+    const solicitud = await this.creSolicitudWebRepository.findOne({
+      where: { idCre_SolicitudWeb: idSolicitud }
+    });
+
+    return {
+      solicitud,
+      estadoActual,
+      historial,
+      resumen: this.generarResumenProceso(estadoActual, historial, solicitud)
+    };
+  }
+
+  /**
+   * Guarda el estado del proceso en Redis con historial
    */
   private async guardarEstadoProceso(
     idSolicitud: number,
@@ -141,6 +436,7 @@ export class CreSolicitudWebService {
     }
   ): Promise<void> {
     const cacheKey = `proceso:solicitud:${idSolicitud}`;
+    const historialKey = `historial:solicitud:${idSolicitud}`;
 
     const estadoActual = await this.cacheManager.get<any>(cacheKey) || {};
 
@@ -151,7 +447,22 @@ export class CreSolicitudWebService {
       fechaUltimaActualizacion: new Date(),
     };
 
+    // Guardar estado actual
     await this.cacheManager.set(cacheKey, nuevoEstado, 86400); // 24 horas
+
+    // Guardar en historial
+    const historial = await this.cacheManager.get<any[]>(historialKey) || [];
+    historial.push({
+      ...nuevoEstado,
+      timestamp: new Date()
+    });
+    
+    // Mantener solo los últimos 50 estados en el historial
+    if (historial.length > 50) {
+      historial.splice(0, historial.length - 50);
+    }
+    
+    await this.cacheManager.set(historialKey, historial, 172800); // 48 horas
 
     // Emitir WebSocket para actualización en tiempo real
     this.creSolicitudwebWsGateway.wss.emit('solicitud-progreso', nuevoEstado);
@@ -162,17 +473,80 @@ export class CreSolicitudWebService {
   }
 
   /**
-   * Obtiene el estado actual del proceso
+   * Helper para obtener fase por estado de BD
    */
-  async obtenerEstadoProceso(idSolicitud: number): Promise<any> {
-    const cacheKey = `proceso:solicitud:${idSolicitud}`;
-    const estado = await this.cacheManager.get(cacheKey);
+  private obtenerFaseByEstado(estado: number): string {
+    const estados = {
+      0: 'PROCESANDO',
+      1: 'APROBADA',
+      2: 'PENDIENTE', 
+      3: 'EN_VERIFICACION',
+      4: 'VERIFICADA',
+      5: 'RECHAZADA',
+      6: 'ERROR'
+    };
+    return estados[estado] || 'DESCONOCIDO';
+  }
 
-    if (!estado) {
-      throw new NotFoundException('Estado del proceso no encontrado o expirado');
-    }
+  /**
+   * Helper para obtener progreso por estado de BD
+   */
+  private obtenerProgresoByEstado(estado: number): number {
+    const progreso = {
+      0: 50,   // PROCESANDO
+      1: 100,  // APROBADA
+      2: 90,   // PENDIENTE
+      3: 95,   // EN_VERIFICACION
+      4: 100,  // VERIFICADA
+      5: 100,  // RECHAZADA
+      6: 0     // ERROR
+    };
+    return progreso[estado] || 0;
+  }
 
-    return estado;
+  /**
+   * Helper para obtener mensaje por estado de BD
+   */
+  private obtenerMensajeByEstado(estado: number): string {
+    const mensajes = {
+      0: 'Solicitud en procesamiento...',
+      1: 'Solicitud aprobada',
+      2: 'Solicitud pendiente de documentación',
+      3: 'En verificación telefónica',
+      4: 'Solicitud verificada',
+      5: 'Solicitud rechazada',
+      6: 'Error en el procesamiento'
+    };
+    return mensajes[estado] || 'Estado desconocido';
+  }
+
+  /**
+   * Genera un resumen del proceso
+   */
+  private generarResumenProceso(estadoActual: any, historial: any[], solicitud: any): any {
+    const fasesCompletadas = historial?.map(h => h.fase) || [];
+    const tiempoTotal = solicitud ? new Date().getTime() - new Date(solicitud.Fecha).getTime() : 0;
+    
+    return {
+      fasesCompletadas: [...new Set(fasesCompletadas)],
+      tiempoTranscurridoMs: tiempoTotal,
+      tiempoTranscurridoFormateado: this.formatearTiempo(tiempoTotal),
+      ultimaFase: estadoActual?.fase || 'DESCONOCIDO',
+      progreso: estadoActual?.progreso || 0,
+      error: estadoActual?.error || null,
+      estadoBD: solicitud?.Estado,
+      numeroSolicitud: solicitud?.NumeroSolicitud
+    };
+  }
+
+  /**
+   * Formatea tiempo en ms a texto legible
+   */
+  private formatearTiempo(ms: number): string {
+    if (ms < 1000) return `${ms}ms`;
+    if (ms < 60000) return `${Math.round(ms/1000)}s`;
+    if (ms < 3600000) return `${Math.round(ms/60000)}min`;
+    return `${Math.round(ms/3600000)}h`;
   }
 
   /**
@@ -278,7 +652,7 @@ export class CreSolicitudWebService {
    * Usar iniciarProcesoSolicitud() en su lugar
    * Mantenido para compatibilidad temporal
    */
-  async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+  async createnuevasolicitud(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     this.logger.warn('⚠️ Método create() deprecado. Use iniciarProcesoSolicitud()');
     return await this.iniciarProcesoSolicitud(createCreSolicitudWebDto);
   }
