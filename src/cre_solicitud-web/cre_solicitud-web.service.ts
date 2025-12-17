@@ -387,15 +387,15 @@ export class CreSolicitudWebService {
           `❌ Error CRÍTICO en procesamiento async de solicitud ${idSolicitud}: ${error.message}`,
           error.stack
         );
-        
+
         // Asegurar que el error llegue al frontend
         await this.guardarEstadoProceso(idSolicitud, {
           fase: 'ERROR',
           progreso: 0,
           mensaje: 'Error al procesar la solicitud',
           error: error.message,
-        }).catch(() => {});
-        
+        }).catch(() => { });
+
         this.creSolicitudwebWsGateway.wss.emit('solicitud-web-error', {
           idSolicitud,
           error: error.message,
@@ -425,7 +425,7 @@ export class CreSolicitudWebService {
     } catch (error) {
       this.logger.error(`❌ Error al iniciar solicitud: ${error.message}`, error.stack);
 
-      await this.liberarLock(cedula).catch(() => {});
+      await this.liberarLock(cedula).catch(() => { });
 
       return {
         success: false,
@@ -458,7 +458,7 @@ export class CreSolicitudWebService {
        *          FASE 1: CONSULTAR EQUIFAX (3-5s)
        * ===================================================== */
       this.logger.log(`📊 [EQUIFAX] Consultando Equifax para solicitud ${idSolicitud}`);
-      
+
       await this.guardarEstadoProceso(idSolicitud, {
         fase: 'CONSULTANDO_EQUIFAX',
         progreso: 10,
@@ -467,18 +467,43 @@ export class CreSolicitudWebService {
 
       // Verificar cache primero
       let equifaxData = await this.obtenerEquifaxCache(cedula);
-
+     
+      // Si no está en cache, verificar si ya fue consultado este mes en BD
       if (!equifaxData) {
-        this.logger.log(`📡 [EQUIFAX] Consultando API externa para cédula ${cedula}`);
-        const equifaxResult = await this.EquifaxDataUAT('C', cedula);
+        this.logger.log(`🔍 [EQUIFAX] No encontrado en cache, verificando BD...`);
+        
+        let debeConsultarEquifax = true;
+        const eqfxData = await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
 
-        if (!equifaxResult.success) {
-          throw new Error('No se pudo consultar Equifax');
+        if (eqfxData.success) {
+          const fechaConsulta = new Date(eqfxData.data.FechaSistema);
+          const ahora = new Date();
+
+          if (
+            fechaConsulta.getMonth() === ahora.getMonth() &&
+            fechaConsulta.getFullYear() === ahora.getFullYear()
+          ) {
+            debeConsultarEquifax = false;
+            this.logger.log(`✅ [EQUIFAX] Encontrado en BD del mes actual, reutilizando datos`);
+            // Reutilizar datos existentes y guardarlos en cache
+            equifaxData = eqfxData;
+            await this.guardarEquifaxCache(cedula, equifaxData);
+          }
         }
 
-        await this.guardarEquifaxCache(cedula, equifaxResult);
-        equifaxData = equifaxResult;
-        this.logger.log(`✅ [EQUIFAX] Consulta exitosa y guardada en cache`);
+        // Solo consultar API si no existe en BD del mes actual
+        if (debeConsultarEquifax) {
+          this.logger.log(`📡 [EQUIFAX] Consultando API externa para cédula ${cedula}`);
+          const equifaxResult = await this.EquifaxDataUAT('C', cedula);
+
+          if (!equifaxResult.success) {
+            throw new Error('No se pudo consultar Equifax');
+          }
+
+          await this.guardarEquifaxCache(cedula, equifaxResult);
+          equifaxData = equifaxResult;
+          this.logger.log(`✅ [EQUIFAX] Consulta exitosa y guardada en cache`);
+        }
       } else {
         this.logger.log(`✅ [EQUIFAX] Datos obtenidos desde cache`);
       }
@@ -493,7 +518,7 @@ export class CreSolicitudWebService {
        *          FASE 2: CONSULTAR COGNO (30-60s)
        * ===================================================== */
       this.logger.log(`🏢 [COGNO] Iniciando consulta COGNO para solicitud ${idSolicitud}`);
-      
+
       await this.guardarEstadoProceso(idSolicitud, {
         fase: 'CONSULTANDO_COGNO',
         progreso: 25,
@@ -532,7 +557,7 @@ export class CreSolicitudWebService {
        *          FASE 3: DATOS LABORALES (10-20s)
        * ===================================================== */
       this.logger.log(`💼 [COGNO] Consultando datos laborales...`);
-      
+
       const trabajoResult = await this.authService.getApiDataTrabajo(token, cedula);
       const jubiladoResult = await this.authService.getApiDataJubilado(token, cedula);
       const deudaEmovResult = await this.authService.getApiDataDeudaEmov(token, cedula);
@@ -574,7 +599,7 @@ export class CreSolicitudWebService {
        *          FASE 4: GUARDAR DATOS EN BD (2-4s)
        * ===================================================== */
       this.logger.log(`💾 [BD] Guardando datos en base de datos...`);
-      
+
       const saveData = await this.authService.create(apiData, bApiDataTrabajo, idSolicitud);
       this.logger.log(`✅ [BD] Registro principal creado: ${saveData.idCognoSolicitudCredito}`);
 
@@ -639,7 +664,7 @@ export class CreSolicitudWebService {
        *          FASE 5: CALIFICACIÓN (2-3s)
        * ===================================================== */
       this.logger.log(`🎯 [CALIFICACIÓN] Ejecutando procedimiento almacenado...`);
-      
+
       const storedProcedureResult = await this.creSolicitudWebRepository.query(
         `EXEC Cre_RetornaTipoCliente @Cedula = @0, @idSolicitud = @1`,
         [cedula, idSolicitud]
@@ -722,7 +747,7 @@ export class CreSolicitudWebService {
       await this.liberarLock(cedula).catch((err) => {
         this.logger.error(`Error al liberar lock: ${err.message}`);
       });
-      
+
       this.logger.log(`🔓 [LOCK] Lock liberado para cédula ${cedula}`);
     }
   }
