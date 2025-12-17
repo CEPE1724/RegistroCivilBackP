@@ -69,13 +69,67 @@ export class CreSolicitudwebWsService {
         return this.connectedClients[socketId]?.user.Nombre || 'Unknown User';
     }
 
-    private checkUserConnection( user: Usuario){
-        for (const clientId of Object.keys(this.connectedClients)) {
-            const connectedClient = this.connectedClients[clientId];
-            if (connectedClient.user.idUsuario === user.idUsuario) {
-                connectedClient.socekt.disconnect();
-                break;
-            }
+    private checkUserConnection(user: Usuario): void {
+        // Buscar todas las conexiones existentes del usuario
+        const existingConnections = Object.entries(this.connectedClients)
+            .filter(([clientId, client]) => client.user.idUsuario === user.idUsuario);
+
+        if (existingConnections.length > 0) {
+            console.log(`🔄 Usuario ${user.Nombre} (ID: ${user.idUsuario}) ya conectado en ${existingConnections.length} sesión(es). Desconectando sesiones anteriores...`);
+            
+            // Desconectar todas las sesiones existentes
+            existingConnections.forEach(([clientId, client]) => {
+                console.log(`❌ Desconectando sesión anterior: ${clientId}`);
+                
+                // Notificar al cliente que será desconectado por sesión duplicada
+                client.socekt.emit('session-terminated', {
+                    reason: 'duplicate_session',
+                    message: 'Tu sesión ha sido cerrada porque iniciaste sesión en otro dispositivo',
+                    timestamp: new Date().toISOString()
+                });
+                
+                // Desconectar después de un pequeño delay para asegurar que el mensaje se envíe
+                setTimeout(() => {
+                    client.socekt.disconnect(true);
+                    // Limpiar de la lista de conectados
+                    delete this.connectedClients[clientId];
+                }, 500);
+            });
         }
+    }
+
+    // Método para obtener información detallada de usuarios conectados
+    getConnectedUsersInfo(): any[] {
+        return Object.entries(this.connectedClients).map(([socketId, client]) => ({
+            socketId,
+            userId: client.user.idUsuario,
+            userName: client.user.Nombre,
+            userGroup: client.user.idGrupo,
+            isActive: client.user.Activo
+        }));
+    }
+
+    // Método para forzar desconexión de un usuario específico (para administradores)
+    disconnectUser(userId: number, reason: string = 'admin_disconnect'): boolean {
+        const client = Object.values(this.connectedClients)
+            .find(client => client.user.idUsuario === userId);
+        
+        if (client) {
+            console.log(`🔧 Admin desconectando usuario ${client.user.Nombre} (ID: ${userId})`);
+            
+            client.socekt.emit('session-terminated', {
+                reason,
+                message: 'Tu sesión ha sido cerrada por un administrador',
+                timestamp: new Date().toISOString()
+            });
+            
+            setTimeout(() => {
+                client.socekt.disconnect(true);
+            }, 500);
+            
+            return true;
+        }
+        
+        return false;
     }
 }
