@@ -12,12 +12,20 @@ import { ValidRoles } from '../auth/interfaces';
 export class CreSolicitudWebController {
   constructor(private readonly creSolicitudWebService: CreSolicitudWebService) { }
 
-  @Post()
+  @Post('Nueva-solicitud-web')
+  @Auth()
+  createNuevaSolicitud(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+
+    return this.creSolicitudWebService.createnuevasolicitud(createCreSolicitudWebDto);
+  }
+
+  @Post('')
   @Auth()
   create(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
 
     return this.creSolicitudWebService.create(createCreSolicitudWebDto);
   }
+
   /* para el eccommerce*/
   @Post('web')
   createweb(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
@@ -153,6 +161,24 @@ export class CreSolicitudWebController {
   @Get('procesarDatosCogno/:Cedula')
   async procesarDatosCogno(@Param('Cedula') Cedula: string) {
     return await this.creSolicitudWebService.procesarDatosCogno(Cedula);
+  }
+
+  // 📊 ENDPOINT PARA CONSULTAR ESTADO DE SOLICITUD
+  @Get('estado/:idSolicitud')
+  async obtenerEstadoSolicitud(@Param('idSolicitud') idSolicitud: number) {
+    return await this.creSolicitudWebService.obtenerEstadoProceso(idSolicitud);
+  }
+
+  // 📊 ENDPOINT PARA CONSULTAR ESTADO POR CÉDULA
+  @Get('estado/cedula/:cedula')
+  async obtenerEstadoPorCedula(@Param('cedula') cedula: string) {
+    return await this.creSolicitudWebService.obtenerEstadoPorCedula(cedula);
+  }
+
+  // 📊 ENDPOINT PARA OBTENER HISTORIAL COMPLETO DE ESTADO
+  @Get('historial/:idSolicitud')
+  async obtenerHistorialProceso(@Param('idSolicitud') idSolicitud: number) {
+    return await this.creSolicitudWebService.obtenerHistorialProceso(idSolicitud);
   }
 
 }

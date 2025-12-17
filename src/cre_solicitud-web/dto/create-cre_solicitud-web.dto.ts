@@ -29,7 +29,8 @@ import {
     IsNotEmpty, IsString, IsNumber, IsBoolean, IsDate, IsOptional, isNumber, Min,
     MinLength,
     IsPositive,
-    isString
+    isString,
+    IsUUID
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
@@ -216,13 +217,12 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     idEstadoAnalisisDeIdentidad: number;
 
-
-
-  
-
-    
-    
-
-    
+    /**
+     * UUID único para idempotencia
+     * Si el frontend no lo envía, el backend genera uno automáticamente
+     */
+    @IsUUID()
+    @IsOptional()
+    idempotencyKey?: string;
 
 }
