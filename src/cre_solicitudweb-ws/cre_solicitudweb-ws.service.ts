@@ -23,18 +23,29 @@ export class CreSolicitudwebWsService {
         private readonly userRepository: Repository<Usuario>
     ) { }
 
-    async registerClient(client: Socket, userId: number) {
+    async registerClient(client: Socket, userId: number, isNewLogin: boolean = false) {
         const user = await this.userRepository.findOne({ where: { idUsuario: userId } });
         if (!user) throw new Error('User not found');
         if(!user.Activo) throw new Error('User is inactive');
         if(user.idGrupo == 36) throw new Error('User is not authorized');
-        this.checkUserConnection(user);
+        
+        // Solo desconectar sesiones anteriores si es un NUEVO LOGIN
+        if (isNewLogin) {
+            console.log(`🔄 Nuevo login detectado para ${user.Nombre}. Cerrando sesiones anteriores...`);
+            this.checkUserConnection(user);
+        }
+        
         this.connectedClients[client.id] = 
         {
             socekt: client,
             user: user
         };
-        console.log('Client registered:', client.id);
+        
+        // Contar cuántas sesiones tiene el usuario
+        const userSessions = Object.values(this.connectedClients)
+            .filter(c => c.user.idUsuario === userId).length;
+        
+        console.log(`✅ Cliente registrado: ${client.id} | Usuario: ${user.Nombre} | Sesiones activas: ${userSessions} | Nuevo login: ${isNewLogin}`);
 
     }
 

@@ -54,6 +54,7 @@ async handleConnection(client: Socket) {
   try {
     // 1️⃣ Obtener token desde auth (Socket.IO browser)
     let token = client.handshake.auth?.token as string;
+    const isNewLogin = client.handshake.auth?.isNewLogin === true; // Flag para nuevo login
 
     // 2️⃣ Si no viene por auth, intentar por header Authorization
     if (!token) {
@@ -78,10 +79,11 @@ async handleConnection(client: Socket) {
     client.data.userAgent = userAgent;
     client.data.connectedAt = new Date();
 
-    // Registrar cliente - esto automáticamente desconectará sesiones anteriores
+    // Registrar cliente - solo desconectará sesiones anteriores si es nuevo login
     await this.creSolicitudwebWsService.registerClient(
       client,
-      payload.idUsuario
+      payload.idUsuario,
+      isNewLogin
     );
 
     console.log(`✅ Socket conectado: ${client.id} | Usuario: ${payload.Nombre} (ID: ${payload.idUsuario}) | IP: ${clientIp}`);
