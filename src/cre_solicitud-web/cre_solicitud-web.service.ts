@@ -1083,6 +1083,11 @@ export class CreSolicitudWebService {
         solicitud: updatedSolicitud,
       });
 
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-changed', {
+        idSolicitud,
+        nuevoEstado: estado,
+      });
+
       this.logger.log(`✅✅✅ [COMPLETADO] Solicitud ${idSolicitud} procesada exitosamente`);
     } catch (error) {
       this.logger.error(
