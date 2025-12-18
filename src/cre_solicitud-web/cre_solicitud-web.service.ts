@@ -648,13 +648,23 @@ export class CreSolicitudWebService {
 
 
   /**
-   * MÉTODO ANTIGUO - DEPRECADO
-   * Usar iniciarProcesoSolicitud() en su lugar
-   * Mantenido para compatibilidad temporal
+   * 🚀 MÉTODO PRINCIPAL - FLUJO ASÍNCRONO COMPLETO
+   * 
+   * FASE 1: Respuesta inmediata (<2s)
+   * - Validaciones rápidas
+   * - Creación de solicitud en estado PROCESANDO
+   * - Inicia procesamiento asíncrono
+   * - Retorna INMEDIATAMENTE
+   * 
+   * FASE 2: Procesamiento en background (30-60s)
+   * - Consulta COGNO + Equifax
+   * - Guardar datos en BD
+   * - Calificar crédito
+   * - Emite WebSocket al finalizar
    */
-  async createnuevasolicitud(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
-    this.logger.warn('⚠️ Método create() deprecado. Use iniciarProcesoSolicitud()');
-    return await this.iniciarProcesoSolicitud(createCreSolicitudWebDto);
+  async createnuevasolicitud(createCreSolicitudWebDto: CreateCreSolicitudWebDto, idUsuario: number) {
+    this.logger.log(`🚀 [NUEVA-SOLICITUD] Iniciando flujo asíncrono para cédula: ${createCreSolicitudWebDto.Cedula}`);
+    return await this.iniciarProcesoSolicitud(createCreSolicitudWebDto, idUsuario);
   }
 
   /* =====================================================
@@ -669,7 +679,7 @@ export class CreSolicitudWebService {
    * - Inicia procesamiento asíncrono
    * - Retorna INMEDIATAMENTE
    */
-  async iniciarProcesoSolicitud(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+  async iniciarProcesoSolicitud(createCreSolicitudWebDto: CreateCreSolicitudWebDto, idUsuario: number) {
     const cedula = createCreSolicitudWebDto.Cedula;
     const idempotencyKey = createCreSolicitudWebDto.idempotencyKey || uuidv4();
 
@@ -741,7 +751,7 @@ export class CreSolicitudWebService {
       /* =====================================================
        *          5. GUARDAR ESTADO INICIAL EN REDIS
        * ===================================================== */
-      await this.guardarEstadoProceso(idSolicitud, {
+     await this.guardarEstadoProceso(idSolicitud, {
         fase: 'INICIADO',
         progreso: 5,
         mensaje: 'Solicitud creada, iniciando procesamiento...',

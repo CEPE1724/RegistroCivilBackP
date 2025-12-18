@@ -12,11 +12,11 @@ import { ValidRoles } from '../auth/interfaces';
 export class CreSolicitudWebController {
   constructor(private readonly creSolicitudWebService: CreSolicitudWebService) { }
 
-  @Post('Nueva-solicitud-web')
+  @Post('Nueva-solicitud-web')  
   @Auth()
-  createNuevaSolicitud(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+  createNuevaSolicitud(@Body() createCreSolicitudWebDto: CreateCreSolicitudWebDto, @GetUser('idUsuario') idUsuario: number) {
 
-    return this.creSolicitudWebService.createnuevasolicitud(createCreSolicitudWebDto);
+    return this.creSolicitudWebService.createnuevasolicitud(createCreSolicitudWebDto, idUsuario);
   }
 
   @Post('')
