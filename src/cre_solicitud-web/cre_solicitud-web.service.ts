@@ -29,7 +29,7 @@ export class CreSolicitudWebService {
   private readonly EQFX_UAT_url = process.env.EQFX_UAT_url;
   private readonly EQFX_UAT_token = process.env.EQFX_UAT_token;
   private readonly logger = new Logger('CreSolicitudWebService');
-  private readonly LOCK_TIMEOUT = 90000; // 90 segundos (mayor que tiempo de COGNO)
+  private readonly LOCK_TIMEOUT = 90000; // 90 segundos (tiempo suficiente para COGNO completo)
   private readonly processingRequests = new Map<string, { timestamp: number }>();
 
   constructor(
@@ -433,7 +433,8 @@ export class CreSolicitudWebService {
       mensaje?: string;
       error?: string;
       datos?: any;
-    }
+    },
+    idUsuario?: number  // ← ID del usuario para envío dirigido
   ): Promise<void> {
     const cacheKey = `proceso:solicitud:${idSolicitud}`;
     const historialKey = `historial:solicitud:${idSolicitud}`;
@@ -464,12 +465,26 @@ export class CreSolicitudWebService {
     
     await this.cacheManager.set(historialKey, historial, 172800); // 48 horas
 
-    // Emitir WebSocket para actualización en tiempo real
-    this.creSolicitudwebWsGateway.wss.emit('solicitud-progreso', nuevoEstado);
-
-    this.logger.log(
-      `📊 Estado actualizado - Solicitud ${idSolicitud}: ${estado.fase} (${estado.progreso}%)`
-    );
+    // 🎯 ENVÍO DIRIGIDO A USUARIO ESPECÍFICO
+    if (idUsuario) {
+      const success = this.creSolicitudwebWsGateway.sendToUser(
+        idUsuario,
+        'solicitud-progreso',
+        nuevoEstado
+      );
+      
+      if (success) {
+        this.logger.log(`📡 [DIRIGIDO] Progreso enviado a usuario ${idUsuario} - Solicitud ${idSolicitud}: ${estado.fase} (${estado.progreso}%)`);
+      } else {
+        this.logger.warn(`⚠️ [DIRIGIDO] No se pudo enviar a usuario ${idUsuario}, usando broadcast`);
+        // Fallback a broadcast global
+        this.creSolicitudwebWsGateway.wss.emit('solicitud-progreso', nuevoEstado);
+      }
+    } else {
+      // Si no hay idUsuario, usar broadcast global
+      this.creSolicitudwebWsGateway.wss.emit('solicitud-progreso', nuevoEstado);
+      this.logger.log(`📊 [GLOBAL] Estado actualizado - Solicitud ${idSolicitud}: ${estado.fase} (${estado.progreso}%)`);
+    }
   }
 
   /**
@@ -755,7 +770,7 @@ export class CreSolicitudWebService {
         fase: 'INICIADO',
         progreso: 5,
         mensaje: 'Solicitud creada, iniciando procesamiento...',
-      });
+      }, idUsuario);  // ← Usar idUsuario del parámetro
 
       /* =====================================================
        *          6. INICIAR PROCESAMIENTO ASÍNCRONO
@@ -765,7 +780,8 @@ export class CreSolicitudWebService {
         idSolicitud,
         cedula,
         createCreSolicitudWebDto,
-        idempotencyKey
+        idempotencyKey,
+        idUsuario  // ← Pasar idUsuario para eventos dirigidos
       ).catch(async (error) => {
         this.logger.error(
           `❌ Error CRÍTICO en procesamiento async de solicitud ${idSolicitud}: ${error.message}`,
@@ -778,13 +794,22 @@ export class CreSolicitudWebService {
           progreso: 0,
           mensaje: 'Error al procesar la solicitud',
           error: error.message,
-        }).catch(() => { });
+        }, idUsuario).catch(() => { });
 
-        this.creSolicitudwebWsGateway.wss.emit('solicitud-web-error', {
-          idSolicitud,
-          error: error.message,
-          fase: 'INICIO_PROCESAMIENTO',
-        });
+        // 🎯 Envío dirigido de error
+        if (idUsuario) {
+          this.creSolicitudwebWsGateway.sendToUser(idUsuario, 'solicitud-web-error', {
+            idSolicitud,
+            error: error.message,
+            fase: 'INICIO_PROCESAMIENTO',
+          });
+        } else {
+          this.creSolicitudwebWsGateway.wss.emit('solicitud-web-error', {
+            idSolicitud,
+            error: error.message,
+            fase: 'INICIO_PROCESAMIENTO',
+          });
+        }
       });
 
       /* =====================================================
@@ -833,9 +858,11 @@ export class CreSolicitudWebService {
     idSolicitud: number,
     cedula: string,
     dto: CreateCreSolicitudWebDto,
-    idempotencyKey: string
+    idempotencyKey: string,
+    idUsuario: number  // ← USUARIO PARA WEBSOCKET DIRIGIDO
   ): Promise<void> {
     this.logger.log(`⚙️ [ASYNC-START] Iniciando procesamiento async de solicitud ${idSolicitud}`);
+    this.logger.log(`👤 [USUARIO] Enviando eventos dirigidos a usuario: ${idUsuario}`);
 
     try {
       /* =====================================================
@@ -847,7 +874,7 @@ export class CreSolicitudWebService {
         fase: 'CONSULTANDO_EQUIFAX',
         progreso: 10,
         mensaje: 'Verificando historial crediticio...',
-      });
+      }, idUsuario);
 
       // Verificar cache primero
       let equifaxData = await this.obtenerEquifaxCache(cedula);
@@ -896,7 +923,7 @@ export class CreSolicitudWebService {
         fase: 'EQUIFAX_COMPLETADO',
         progreso: 20,
         mensaje: 'Historial crediticio verificado',
-      });
+      }, idUsuario);
 
       /* =====================================================
        *          FASE 2: CONSULTAR COGNO (30-60s)
@@ -907,7 +934,7 @@ export class CreSolicitudWebService {
         fase: 'CONSULTANDO_COGNO',
         progreso: 25,
         mensaje: 'Consultando datos personales (esto puede tomar 1 minuto)...',
-      });
+      }, idUsuario);
 
       this.logger.log(`🔑 [COGNO] Obteniendo token...`);
       const token = await this.authService.getToken(cedula);
@@ -920,7 +947,7 @@ export class CreSolicitudWebService {
         fase: 'TOKEN_OBTENIDO',
         progreso: 30,
         mensaje: 'Obteniendo información personal...',
-      });
+      }, idUsuario);
 
       this.logger.log(`📋 [COGNO] Consultando datos generales...`);
       const apiResult = await this.authService.getApiData(token, cedula);
@@ -935,7 +962,7 @@ export class CreSolicitudWebService {
         fase: 'DATOS_PERSONALES_OBTENIDOS',
         progreso: 50,
         mensaje: 'Consultando información laboral...',
-      });
+      }, idUsuario);
 
       /* =====================================================
        *          FASE 3: DATOS LABORALES (10-20s)
@@ -977,7 +1004,7 @@ export class CreSolicitudWebService {
         fase: 'DATOS_LABORALES_OBTENIDOS',
         progreso: 70,
         mensaje: 'Guardando información...',
-      });
+      }, idUsuario);
 
       /* =====================================================
        *          FASE 4: GUARDAR DATOS EN BD (2-4s)
@@ -1042,7 +1069,7 @@ export class CreSolicitudWebService {
         fase: 'DATOS_GUARDADOS',
         progreso: 85,
         mensaje: 'Calificando crédito...',
-      });
+      }, idUsuario);
 
       /* =====================================================
        *          FASE 5: CALIFICACIÓN (2-3s)
@@ -1082,16 +1109,27 @@ export class CreSolicitudWebService {
         progreso: 100,
         mensaje: estado === 1 ? 'Solicitud aprobada' : 'Solicitud procesada',
         datos: updatedSolicitud,
-      });
+      }, idUsuario);
 
-      // Emitir WebSocket de completado
-      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-completada', {
-        idSolicitud,
-        numeroSolicitud: updatedSolicitud.NumeroSolicitud,
-        estado: estado === 1 ? 'APROBADA' : 'RECHAZADA',
-        tipoCliente,
-        solicitud: updatedSolicitud,
-      });
+      // 🎯 Emitir WebSocket dirigido a usuario específico
+      if (idUsuario) {
+        this.creSolicitudwebWsGateway.sendToUser(idUsuario, 'solicitud-web-completada', {
+          idSolicitud,
+          numeroSolicitud: updatedSolicitud.NumeroSolicitud,
+          estado: estado === 1 ? 'APROBADA' : 'RECHAZADA',
+          tipoCliente,
+          solicitud: updatedSolicitud,
+        });
+      } else {
+        // Fallback: broadcast global
+        this.creSolicitudwebWsGateway.wss.emit('solicitud-web-completada', {
+          idSolicitud,
+          numeroSolicitud: updatedSolicitud.NumeroSolicitud,
+          estado: estado === 1 ? 'APROBADA' : 'RECHAZADA',
+          tipoCliente,
+          solicitud: updatedSolicitud,
+        });
+      }
 
       this.logger.log(`✅✅✅ [COMPLETADO] Solicitud ${idSolicitud} procesada exitosamente`);
     } catch (error) {
@@ -1113,17 +1151,27 @@ export class CreSolicitudWebService {
         progreso: 0,
         mensaje: 'Error al procesar la solicitud',
         error: error.message,
-      }).catch((err) => {
+      }, idUsuario).catch((err) => {
         this.logger.error(`Error al guardar estado ERROR en Redis: ${err.message}`);
       });
 
-      // Emitir WebSocket de error
-      this.creSolicitudwebWsGateway.wss.emit('solicitud-web-error', {
-        idSolicitud,
-        error: error.message,
-        fase: 'PROCESAMIENTO',
-        stack: error.stack,
-      });
+      // 🎯 Emitir WebSocket de error dirigido
+      if (idUsuario) {
+        this.creSolicitudwebWsGateway.sendToUser(idUsuario, 'solicitud-web-error', {
+          idSolicitud,
+          error: error.message,
+          fase: 'PROCESAMIENTO',
+          stack: error.stack,
+        });
+      } else {
+        // Fallback: broadcast global
+        this.creSolicitudwebWsGateway.wss.emit('solicitud-web-error', {
+          idSolicitud,
+          error: error.message,
+          fase: 'PROCESAMIENTO',
+          stack: error.stack,
+        });
+      }
 
       this.logger.error(`🔔 [WEBSOCKET] Evento de error emitido para solicitud ${idSolicitud}`);
     } finally {
