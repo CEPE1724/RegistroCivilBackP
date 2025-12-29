@@ -178,6 +178,8 @@ import { RedisModule } from './redis/redis.module';
 import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { MetricsController } from './metrics.controller';
 import { PrometheusInterceptor } from './common/interceptors/prometheus.interceptor';
+import { CreEntidadFinancieraModule } from './cre-entidad-financiera/cre-entidad-financiera.module';
+import { PersonalBddModule } from './personal-bdd/personal-bdd.module';
 
 
 
@@ -484,7 +486,9 @@ import { PrometheusInterceptor } from './common/interceptors/prometheus.intercep
     ]),*/
     
     RedisModule,
-    AlmacenesModule
+    AlmacenesModule,
+    CreEntidadFinancieraModule,
+    PersonalBddModule
 
   ],
   providers: [

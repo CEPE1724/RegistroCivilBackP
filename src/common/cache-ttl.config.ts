@@ -31,5 +31,7 @@ export const CacheTTL = {
   areRequiredDocsApproved: 180000, // 3 minutos
   menu_item_role : 3600000, // 10 minutos
   nominaById: 1800000, // 30 minutos
+  cre_entidadfinanciera: 86400000, // 48 horas
+  personal_bdd: 86400000, // 24 horas
   // Agrega más según tus endpoints
 };
