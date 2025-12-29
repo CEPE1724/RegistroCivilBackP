@@ -1834,6 +1834,7 @@ export class CreSolicitudWebService {
 
 
 
+
   remove(id: number) {
     return `This action removes a #${id} creSolicitudWeb`;
   }
@@ -1846,4 +1847,26 @@ export class CreSolicitudWebService {
     throw new InternalServerErrorException('Unexpected error');
 
   }
+
+
+async updateEstado(idCre_SolicitudWeb: number): Promise<CreSolicitudWeb> {
+	const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
+		where: { idCre_SolicitudWeb },
+	});
+
+	if (!creSolicitudWeb) {
+		throw new NotFoundException('Registro no encontrado');
+	}
+
+	try {
+		creSolicitudWeb.Estado = 2;
+		const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+		console.log(`\x1b[31mSOLICITUD APROBADA SIN REG CIVIL, solicitud #${idCre_SolicitudWeb}\x1b[0m`);
+		
+		return updated;
+	} catch (error) {
+		this.handleDBException(error);
+	}
+}
 }

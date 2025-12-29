@@ -181,4 +181,12 @@ export class CreSolicitudWebController {
     return await this.creSolicitudWebService.obtenerHistorialProceso(idSolicitud);
   }
 
+
+  @Patch('updateEstadozz/:idCre_SolicitudWeb')
+  @Auth()
+  async updateEstado(
+    @Param('idCre_SolicitudWeb') idCre_SolicitudWeb: number) {
+    return this.creSolicitudWebService.updateEstado(idCre_SolicitudWeb)
+  }
+
 }
