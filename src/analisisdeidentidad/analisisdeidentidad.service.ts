@@ -104,6 +104,16 @@ export class AnalisisdeidentidadService {
     }
   }
 
+  async findAnalisis(identidad: string, idCre_SolicitudWeb: number) {
+    try {
+      const analisis = await this.analisisDeIdentidadRepository.findOne({ where: { identificacion: identidad, idCre_SolicitudWeb, idEstadoAnalisisDeIdentidad: In([1, 3]) } });
+      return analisis;
+    }
+    catch (error) {
+      this.logger.error('❌ Error al obtener análisis de identidad por cre_solicitud', error.stack);
+      throw new InternalServerErrorException('Error al obtener análisis de identidad por cre_solicitud');
+    }
+  }
   async updateEstadoPorCodigo(codigo: string, idEstadoAnalisisDeIdentidad: number, mensajeError?: string) {
     try {
       this.logger.log(`🔄 Actualizando estado por código: ${codigo} -> Estado ${idEstadoAnalisisDeIdentidad}`);
