@@ -146,7 +146,7 @@ export class CreSolicitudWeb {
 	@Column('int')
 	idCompra: number;
     @Column('int')
-    bFirmaElectronica: number;
+    idFirmaElectronica: number;
 
     @Column('int')
     idEstadoAnalisisDeIdentidad: number;

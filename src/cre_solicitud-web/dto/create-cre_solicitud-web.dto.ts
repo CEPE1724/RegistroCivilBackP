@@ -211,7 +211,7 @@ export class CreateCreSolicitudWebDto {
 
     @IsNumber()
     @IsOptional()
-    bFirmaElectronica: number;
+    idFirmaElectronica: number;
 
     @IsNumber()
     @IsOptional()
