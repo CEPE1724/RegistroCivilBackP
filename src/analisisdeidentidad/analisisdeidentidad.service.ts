@@ -3,7 +3,7 @@ import { CreateAnalisisdeidentidadDto } from './dto/create-analisisdeidentidad.d
 import { UpdateAnalisisdeidentidadDto } from './dto/update-analisisdeidentidad.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Analisisdeidentidad } from './entities/analisisdeidentidad.entity';
-import { In, MoreThan, Repository } from 'typeorm';
+import { In, LessThan, MoreThan, Repository } from 'typeorm';
 import { url } from 'inspector';
 
 @Injectable()
@@ -25,6 +25,28 @@ export class AnalisisdeidentidadService {
     }
   }
 
+  async updateCresolicitud(identificacion: string, cre_solicitud: number) {
+    try {
+      /* solo actualizar el campo cre_solicitud 
+       update analisisdeidentidad set idCre_SolicitudWeb = cre_solicitud where idAnalisisDeIdentidad = idAnalisisDeIdentidad; */
+      this.logger.log(`🔄 Actualizando cre_solicitud para identificacion: ${identificacion} -> cre_solicitud: ${cre_solicitud}`);
+      const analisis = await this.analisisDeIdentidadRepository.findOne({ where: { identificacion, idEstadoAnalisisDeIdentidad: 1 } });
+
+      if (!analisis) {
+        this.logger.error(`❌ No se encontró un análisis de identidad con identificacion ${identificacion}`);
+        throw new InternalServerErrorException('Análisis de identidad no encontrado');
+      }
+      analisis.idCre_SolicitudWeb = cre_solicitud;
+
+      const actualizado = await this.analisisDeIdentidadRepository.save(analisis);
+      this.logger.log(`✅ cre_solicitud actualizado correctamente para identificacion ${identificacion}`);
+      return actualizado;
+    } catch (error) {
+      this.logger.error('❌ Error al actualizar cre_solicitud de análisis de identidad', error.stack);
+      throw new InternalServerErrorException('Error al actualizar cre_solicitud de análisis de identidad');
+    }
+  }
+
   async findAll(identificacion: string, cre_solicitud: number) {
     try {
       /* Hora actual Ecuador (UTC-5) */
@@ -38,7 +60,7 @@ export class AnalisisdeidentidadService {
         where: {
           identificacion: identificacion,
           valido_hasta: MoreThan(horaActual), // 👈 clave: comparar fecha
-          idCre_SolicitudWeb: cre_solicitud,
+          //idCre_SolicitudWeb: cre_solicitud,
           idEstadoAnalisisDeIdentidad: 1,
         },
         order: { idAnalisisDeIdentidad: 'DESC' },
@@ -55,6 +77,30 @@ export class AnalisisdeidentidadService {
     } catch (error) {
       this.logger.error('❌ Error al obtener análisis de identidad', error.stack);
       throw new InternalServerErrorException('Error al obtener análisis de identidad');
+    }
+  }
+
+  async updateRegistrosCaducados(identificacion: string) {
+    try {
+      /* buscar con la cedula los registros caducados y actualizar su estado a 3 (caducado) */
+      const horaActual = new Date();
+      horaActual.setHours(horaActual.getHours() - 5);
+      this.logger.log(`🔄 Actualizando registros caducados para identificacion: ${identificacion}`);
+      const registrosCaducados = await this.analisisDeIdentidadRepository.find({
+        where: {
+          identificacion: identificacion,
+          valido_hasta: LessThan(horaActual), // 👈 ahora sí compara menor a la fecha actual
+          idEstadoAnalisisDeIdentidad: 1,
+        },
+      });
+      for (const registro of registrosCaducados) {
+        registro.idEstadoAnalisisDeIdentidad = 2;
+        await this.analisisDeIdentidadRepository.save(registro);
+        this.logger.log(`✅ Registro caducado actualizado: ${registro.idAnalisisDeIdentidad}`);
+      }
+    } catch (error) {
+      this.logger.error('❌ Error al actualizar registros caducados', error.stack);
+      throw new InternalServerErrorException('Error al actualizar registros caducados');
     }
   }
 

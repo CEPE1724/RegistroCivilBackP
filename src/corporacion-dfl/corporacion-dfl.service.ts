@@ -106,6 +106,17 @@ export class CorporacionDflService {
         }
     }
 
+    private async actualizarRegistrosCaducados(identificacion: string): Promise<any> {
+        try {
+            this.logger.log('🔄 Actualizando registros caducados de análisis de identidad...', identificacion);
+            const actualizado = await this.analisisdeidentidadService.updateRegistrosCaducados(identificacion);
+            return actualizado;
+        } catch (error) {
+            this.logger.error('❌ Error al actualizar registros caducados de análisis de identidad', error);
+            throw new InternalServerErrorException('Error al actualizar registros caducados de análisis de identidad.');
+        }
+    }
+
     private async allAnalisisdeidentidad(identificacion: string, cre_solicitud: number): Promise<any> {
         try {
 
@@ -135,6 +146,16 @@ export class CorporacionDflService {
         } catch (error) {
             this.logger.error('❌ Error al crear análisis de identidad en la base de datos', error);
             throw new InternalServerErrorException('Error al crear análisis de identidad en la base de datos.');
+        }
+    }
+   
+    private async actualizarCreSolicitud(idAnalisisDeIdentidad: string, cre_solicitud: number): Promise<any> {
+        try {
+            const actualizado = await this.analisisdeidentidadService.updateCresolicitud(idAnalisisDeIdentidad, cre_solicitud);
+            return actualizado;
+        } catch (error) {
+            this.logger.error('❌ Error al actualizar cre_solicitud en análisis de identidad', error);
+            throw new InternalServerErrorException('Error al actualizar cre_solicitud en análisis de identidad.');
         }
     }
 
@@ -196,13 +217,14 @@ export class CorporacionDflService {
     }) {
         this.logger.log('🔄 Creando análisis de identidad...', form);
         const codigo_interno = await this.generateUniqueCode(form.identificacion);
-
+        await this.actualizarRegistrosCaducados(form.identificacion);
         const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, form.cre_solicitud);
         const tokenValido = await this.allTokens();
 
         this.logger.log('🔄 Verificando validez del token existente...', tokenValido);
         if (allAnalisisdeidentidad.count === 0) {
-
+            /* actualizar cre_solicitud en analisisdeidentidad si existe uno previo */
+        
             const nuevoAnalisis = await this.solicitarBiometrico(form, tokenValido);
             this.logger.log('✅ Solicitud biométrica enviada. Respuesta:', nuevoAnalisis);
             await this.crearAnalisisdeidentidad(form, codigo_interno, nuevoAnalisis.data.codigo, nuevoAnalisis.data.url, nuevoAnalisis.data.short_url, new Date(nuevoAnalisis.data.valido_hasta));
@@ -210,6 +232,7 @@ export class CorporacionDflService {
             console.log('✅ Nuevo análisis de identidad creado:', allAnalisisdeidentidad);
             return allAnalisisdeidentidad;
         }
+        await this.actualizarCreSolicitud(form.identificacion, form.cre_solicitud);
         this.logger.log('✅ Ya existe un análisis de identidad válido para esta identificación. No se crea uno nuevo.');
         return allAnalisisdeidentidad;
 
