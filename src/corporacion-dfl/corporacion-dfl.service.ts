@@ -148,7 +148,7 @@ export class CorporacionDflService {
             throw new InternalServerErrorException('Error al crear análisis de identidad en la base de datos.');
         }
     }
-   
+
     private async actualizarCreSolicitud(idAnalisisDeIdentidad: string, cre_solicitud: number): Promise<any> {
         try {
             const actualizado = await this.analisisdeidentidadService.updateCresolicitud(idAnalisisDeIdentidad, cre_solicitud);
@@ -224,7 +224,7 @@ export class CorporacionDflService {
         this.logger.log('🔄 Verificando validez del token existente...', tokenValido);
         if (allAnalisisdeidentidad.count === 0) {
             /* actualizar cre_solicitud en analisisdeidentidad si existe uno previo */
-        
+
             const nuevoAnalisis = await this.solicitarBiometrico(form, tokenValido);
             this.logger.log('✅ Solicitud biométrica enviada. Respuesta:', nuevoAnalisis);
             await this.crearAnalisisdeidentidad(form, codigo_interno, nuevoAnalisis.data.codigo, nuevoAnalisis.data.url, nuevoAnalisis.data.short_url, new Date(nuevoAnalisis.data.valido_hasta));
@@ -321,11 +321,11 @@ export class CorporacionDflService {
             const solicitud = callbackData.codigo || 'SIN_CODIGO';
             this.logger.log(`🔄 data callback: ${JSON.stringify(callbackData, null, 2)}`);
             // 📤 Subida de imágenes usando el método reutilizable
-            callbackData.data.img_frontal = await this.uploadSafe(callbackData.data.img_frontal, cedula, solicitud, 'frontal', callbackData);
-            callbackData.data.img_selfie = await this.uploadSafe(callbackData.data.img_selfie, cedula, solicitud, 'selfie', callbackData);
-            callbackData.data.img_reverso = await this.uploadSafe(callbackData.data.img_reverso, cedula, solicitud, 'reverso', callbackData);
-            callbackData.data.img_rostro_uno = await this.uploadSafe(callbackData.data.img_rostro_uno, cedula, solicitud, 'rostro_uno', callbackData);
-            callbackData.data.img_rostro_dos = await this.uploadSafe(callbackData.data.img_rostro_dos, cedula, solicitud, 'rostro_dos', callbackData);
+            callbackData.data.img_frontal = callbackData.data.img_frontal ? await this.uploadSafe(callbackData.data.img_frontal, cedula, solicitud, 'frontal', callbackData) : 'N/A';
+            callbackData.data.img_selfie = callbackData.data.img_selfie ? await this.uploadSafe(callbackData.data.img_selfie, cedula, solicitud, 'selfie', callbackData) : 'N/A';
+            callbackData.data.img_reverso = callbackData.data.img_reverso ? await this.uploadSafe(callbackData.data.img_reverso, cedula, solicitud, 'reverso', callbackData) : 'N/A';
+            callbackData.data.img_rostro_uno = callbackData.data.img_rostro_uno ? await this.uploadSafe(callbackData.data.img_rostro_uno, cedula, solicitud, 'rostro_uno', callbackData) : 'N/A';
+            callbackData.data.img_rostro_dos = callbackData.data.img_rostro_dos ? await this.uploadSafe(callbackData.data.img_rostro_dos, cedula, solicitud, 'rostro_dos', callbackData) : 'N/A';
 
             // 🧾 Guardado en base de datos (tu código actual aquí)
             const nuevoAnalisisBiometrico = await this.createDFLAnalisisBiometrico(callbackData);
@@ -350,6 +350,8 @@ export class CorporacionDflService {
             });
 
             // 👉 Metadata Procesada
+
+            const fechaCad = callbackData?.indicadores?.metadata?.procesada?.fecha_caducidad;
             await this.dflMetadataProcesadaService.create({
                 identificacion: callbackData.indicadores.metadata.procesada.identificacion,
                 codigo_dactilar: callbackData.indicadores.metadata.procesada.codigo_dactilar,
@@ -358,41 +360,41 @@ export class CorporacionDflService {
                 sexo: callbackData.indicadores.metadata.procesada.sexo,
                 fecha_nacimiento: callbackData.indicadores.metadata.procesada.fecha_nacimiento,
                 fecha_emision: callbackData.indicadores.metadata.procesada.fecha_emision,
-                fecha_caducidad: callbackData.indicadores.metadata.procesada.fecha_caducidad,
+                fecha_caducidad: fechaCad ? fechaCad : new Date('2000-01-01'),
                 nombre_completo: callbackData.indicadores.metadata.procesada.nombre_completo,
                 lugar_nacimiento: callbackData.indicadores.metadata.procesada.lugar_nacimiento,
                 idDFL_AnalisisBiometrico,
             });
-
-            // 👉 Referencia
-            await this.dflReferenciaService.create({
-                identificacion: callbackData.indicadores.metadata.referencia.identificacion,
-                codigo_dactilar: callbackData.indicadores.metadata.referencia.codigo_dactilar,
-                fecha_nacimiento: callbackData.indicadores.metadata.referencia.fecha_nacimiento,
-                fecha_mayor_edad: callbackData.indicadores.metadata.referencia.fecha_mayor_edad,
-                edad_actual: callbackData.indicadores.metadata.referencia.edad_actual,
-                fecha_actual: callbackData.indicadores.metadata.referencia.fecha_actual,
-                idDFL_AnalisisBiometrico,
-            });
-
-            // 👉 Resultado
-            await this.dflResultadoService.create({
-                ok_selfie_fuente: callbackData.indicadores.metadata.resultado.ok_selfie_fuente,
-                es_selfie_valida: callbackData.indicadores.metadata.resultado.es_selfie_valida,
-                ok_frontal_fuente: callbackData.indicadores.metadata.resultado.ok_frontal_fuente,
-                existe_fuente: callbackData.indicadores.metadata.resultado.existe_fuente,
-                cliente_en_lista_blanca: callbackData.indicadores.metadata.resultado.cliente_en_lista_blanca,
-                codigo_dactilar_detectado: callbackData.indicadores.metadata.resultado.codigo_dactilar_detectado,
-                es_cedula_mayor_edad: callbackData.indicadores.metadata.resultado.es_cedula_mayor_edad,
-                es_cedula_vigente: callbackData.indicadores.metadata.resultado.es_cedula_vigente,
-                es_horario_valido: callbackData.indicadores.metadata.resultado.es_horario_valido,
-                fecha_nacimiento_detectada: callbackData.indicadores.metadata.resultado.fecha_nacimiento_detectada,
-                identificacion_detectada: callbackData.indicadores.metadata.resultado.identificacion_detectada,
-                selfie_intentos_moderado: callbackData.indicadores.metadata.resultado.selfie_intentos_moderado,
-                texto_resumen: callbackData.indicadores.metadata.resultado.texto_resumen,
-                idDFL_AnalisisBiometrico,
-            });
-
+            
+                        // 👉 Referencia
+                        await this.dflReferenciaService.create({
+                            identificacion: callbackData.indicadores.metadata.referencia.identificacion,
+                            codigo_dactilar: callbackData.indicadores.metadata.referencia.codigo_dactilar,
+                            fecha_nacimiento: callbackData.indicadores.metadata.referencia.fecha_nacimiento,
+                            fecha_mayor_edad: callbackData.indicadores.metadata.referencia.fecha_mayor_edad,
+                            edad_actual: callbackData.indicadores.metadata.referencia.edad_actual,
+                            fecha_actual: callbackData.indicadores.metadata.referencia.fecha_actual,
+                            idDFL_AnalisisBiometrico,
+                        });
+            
+                        // 👉 Resultado
+                        await this.dflResultadoService.create({
+                            ok_selfie_fuente: callbackData.indicadores.metadata.resultado.ok_selfie_fuente,
+                            es_selfie_valida: callbackData.indicadores.metadata.resultado.es_selfie_valida,
+                            ok_frontal_fuente: callbackData.indicadores.metadata.resultado.ok_frontal_fuente,
+                            existe_fuente: callbackData.indicadores.metadata.resultado.existe_fuente,
+                            cliente_en_lista_blanca: callbackData.indicadores.metadata.resultado.cliente_en_lista_blanca,
+                            codigo_dactilar_detectado: callbackData.indicadores.metadata.resultado.codigo_dactilar_detectado,
+                            es_cedula_mayor_edad: callbackData.indicadores.metadata.resultado.es_cedula_mayor_edad,
+                            es_cedula_vigente: callbackData.indicadores.metadata.resultado.es_cedula_vigente,
+                            es_horario_valido: callbackData.indicadores.metadata.resultado.es_horario_valido,
+                            fecha_nacimiento_detectada: callbackData.indicadores.metadata.resultado.fecha_nacimiento_detectada,
+                            identificacion_detectada: callbackData.indicadores.metadata.resultado.identificacion_detectada,
+                            selfie_intentos_moderado: callbackData.indicadores.metadata.resultado.selfie_intentos_moderado,
+                            texto_resumen: callbackData.indicadores.metadata.resultado.texto_resumen,
+                            idDFL_AnalisisBiometrico,
+                        });
+            
             // actualizar AnalisisDeIdentidad estado
             let estadoStatues = callbackData.status === 200 ? 3 : 4; // 2 = Completado, 3 = Error
             let mensajeError = callbackData.status === 200 ? 'Análisis completado correctamente' : `Error en análisis: ${callbackData.error}`;
@@ -455,8 +457,8 @@ export class CorporacionDflService {
                         Numeracion: webSolicitud.NumeroCasa || 'SN',
                         CalleSecundaria: webSolicitud.CalleSecundaria || 'BARRANQUILLA',
                         ReferenciaDireccion: webSolicitud.ReferenciaUbicacion || 'None',
-                        CodigoPaisDireccion:  '593',
-                        CodigoProvinciaDireccion:  '217',
+                        CodigoPaisDireccion: '593',
+                        CodigoProvinciaDireccion: '217',
                         CodigoCiudadDireccion: '21701',
                         CodigoParroquiaDireccion: '2170103',
                     },
