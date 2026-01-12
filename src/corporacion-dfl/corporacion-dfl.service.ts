@@ -411,9 +411,17 @@ export class CorporacionDflService {
         try {
             // Lógica para crear la firma digital
             const tokenGuardado = await this.allTokens();
-            const codigo_interno = await this.allAnalisisdeidentidad(identidad, 38952);
-            const base64_pdf1 = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(35757);
-            const webSolicitud = await this.webSolicitudgrandeService.findOneId(38952);
+            const codigo_interno = await this.allAnalisisdeidentidad(identidad, idSolicitud);
+            const base64_pdf1 = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(idSolicitud);
+			const base64_gastoCobranza = await this.storeReportsPhoneVerificationService.getGastosCobranzasBase64Report(idSolicitud);
+			const base64_consentTratDatos = await this.storeReportsPhoneVerificationService.getConsentimientoTratDatosBase64(idSolicitud);
+			const base64_pagareOrden = await this.storeReportsPhoneVerificationService.getPagareALaOrdenBase64(idSolicitud);
+			const base64_entregaDocCred = await this.storeReportsPhoneVerificationService.getActaEntregaDocsBase64(idSolicitud);
+			const base64_compromisoLugPag = await this.storeReportsPhoneVerificationService.getCompromisoLugPagoBase64(idSolicitud);
+			const base64_declarComprom = await this.storeReportsPhoneVerificationService.getDeclaracionCompromisosBase64(idSolicitud);
+			const base64_contratComprVent = await this.storeReportsPhoneVerificationService.getcompraVentaResDominioBase64(idSolicitud);
+			const base64_tabAmortizacion = await this.storeReportsPhoneVerificationService.getTablaAmortizacionBase64(idSolicitud);
+            const webSolicitud = await this.webSolicitudgrandeService.findOneId(idSolicitud);
             this.logger.log(`✅ PDF generado en base64 para la solicitud ID: ${idSolicitud}`);
             this.logger.log(`Base64 PDF 1: ${codigo_interno}`);
             this.logger.log(`Código interno obtenido: ${JSON.stringify(codigo_interno)}`);
@@ -496,12 +504,29 @@ export class CorporacionDflService {
                         code: "ANALISIS_DOMICILIARIO",
                         name: "Analisis Dom",
                         base64: base64_pdf1
-                    },
-                    {
-                        code: "ANEXO4",
-                        name: "Anexo",
-                        base64: base64_pdf1
                     }
+                    // {
+                    //     code: "ANEXO4",
+                    //     name: "Anexo",
+                    //     base64: base64_entregaDocCred
+                    // },					
+					// {
+					// 	code: "COMPROMISO_LUGAR_PAGO",
+                    //     name: "",
+                    //     base64: base64_compromisoLugPag
+					// },{
+					// 	code: "DECLARACION_COMPROMISO",
+                    //     name: "",
+                    //     base64: base64_declarComprom
+					// },{
+					// 	code: "COMPRA_VENTA",
+                    //     name: "",
+                    //     base64: base64_contratComprVent
+					// },{
+					// 	code: "TABLA_AMORTIZACION",
+                    //     name: "",
+                    //     base64: base64_tabAmortizacion
+					// }
                 ]
             };
 

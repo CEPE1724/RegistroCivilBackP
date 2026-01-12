@@ -250,6 +250,28 @@ export class StoreReportsPhoneVerificationService {
 		}
 	}
 
+	async getGastosCobranzasBase64Report(id: number) {
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+
+			const docDefinition = GastosCobranzasReport({
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+				Fecha: creSolicitud.Fecha
+			});
+
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
+
+			//return this.printerService.createPdf(docDefinition);
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
+
 	async getConsentimientoTratDatos(id: number) {
 		try {
 			const creSolicitud = await this.findCreSolicitud(id);
@@ -268,7 +290,25 @@ export class StoreReportsPhoneVerificationService {
 		}
 	}
 
+	async getConsentimientoTratDatosBase64(id: number) {
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
 
+			const docDefinition = ConsentimientoTratDatosReport({
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+				Celular: creSolicitud.Celular
+			});
+
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
 
 
 	async getPagareALaOrden(id: number) {
@@ -322,6 +362,59 @@ export class StoreReportsPhoneVerificationService {
 		}
 	}
 
+	async getPagareALaOrdenBase64(id: number) {
+
+		function formatoFechaParaProcedimiento(fechaStr: Date): string {
+			const date = new Date(fechaStr);
+			const pad = (n: number) => n.toString().padStart(2, '0');
+
+			const year = date.getFullYear();
+			const month = pad(date.getMonth() + 1);
+			const day = pad(date.getDate());
+
+			return `${year}${month}${day}`;
+		}
+
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+			const compra = await this.findCompra(creSolicitud.idCompra)
+
+			const fecha = formatoFechaParaProcedimiento(compra.Fecha)
+
+			const query = `EXEC Cre_RetornaTasasDeInteres @FechaGenera = '${fecha}'`;
+			const result = await this.creSolicitudWebRepository.query(query);
+
+			const query2 = `EXEC ReportePagarePrefactura @idCompra = ${creSolicitud.idCompra}`;
+			const result2 = await this.creSolicitudWebRepository.query(query2);
+
+			const docDefinition = PagareALaOrdenReport({
+				TasaNominal: result[0]?.TasaAnual,
+				TasaEfectiva: result[0]?.TasaEfectiva,
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+				Celular: creSolicitud.Celular,
+				TasaNominal2: result2[0]?.TasaAnual,
+				TasaEfectiva2: result2[0]?.TasaEfectiva,
+				Total: result2[0].Total,
+				TotalLetras: result2[0].TotalLetras,
+				NumCuotas: result2[0].NumCuotas,
+				ValorCuotas: result2[0].ValorCuotas,
+				Cuotaletras: result2[0].Cuotaletras,
+				PrimerPago: result2[0].PrimerPago,
+				UltimoPago: result2[0].UltimoPago,
+				CiuMesAnio: `En ${result2[0].Ciudad}, a los ${result2[0].Dia} días del mes de ${result2[0].Mes} del ${result2[0].Año}`
+			});
+
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
+
 
 	async getActaEntregaDocs(id: number) {
 		try {
@@ -347,6 +440,32 @@ export class StoreReportsPhoneVerificationService {
 		}
 	}
 
+	async getActaEntregaDocsBase64(id: number) {
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+			const nomina = await this.findNomina(creSolicitud.idVendedor)
+			const compra = await this.findCompra(creSolicitud.idCompra)
+			
+
+			const docDefinition = actaEntregaDocsReport({
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+				Celular: creSolicitud.Celular,
+				nombreVendedor: `${nomina.ApellidoPaterno} ${nomina.ApellidoMaterno} ${nomina.PrimerNombre} ${nomina.SegundoNombre}`,
+				CedulaVendedor: nomina.NIdentificacion,
+				Fecha: compra.FechaIngreso
+			});
+
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
+
 	async getCompromisoLugPago(id: number) {
 		try {
 			const creSolicitud = await this.findCreSolicitud(id);
@@ -357,6 +476,25 @@ export class StoreReportsPhoneVerificationService {
 			});
 
 			return this.printerService.createPdf(docDefinition);
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
+
+	async getCompromisoLugPagoBase64(id: number) {
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+
+			const docDefinition = compromisoLugPagReport({
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+			});
+
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
 
 		} catch (error) {
 			this.logger.error('Error generating DFL Firma Digital report', error.stack);
@@ -381,10 +519,42 @@ export class StoreReportsPhoneVerificationService {
 		}
 	}
 
+	async getDeclaracionCompromisosBase64(id: number) {
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+
+			const docDefinition = declaracionCompromisosReport({
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+			});
+
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
+
 	async getcompraVentaResDominio() {
 		try {
 			const docDefinition = compraVentaResDominioReport();
 			return this.printerService.createPdf(docDefinition);
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
+
+	async getcompraVentaResDominioBase64(id: number) {
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+			const docDefinition = compraVentaResDominioReport();
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
 		} catch (error) {
 			this.logger.error('Error generating DFL Firma Digital report', error.stack);
 			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
@@ -429,8 +599,6 @@ export class StoreReportsPhoneVerificationService {
 			`;
 			const result2 = await this.creSolicitudWebRepository.query(query2);
 
-			console.log("result2", result2)
-
 			const docDefinition = tablaAmortizacionReport({
 				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
 				Cedula: creSolicitud.Cedula,
@@ -442,6 +610,64 @@ export class StoreReportsPhoneVerificationService {
 			});
 
 			return this.printerService.createPdf(docDefinition);
+
+		} catch (error) {
+			this.logger.error('Error generating DFL Firma Digital report', error.stack);
+			throw new InternalServerErrorException(error.message || 'Unexpected error generating DFL Firma Digital report');
+		}
+	}
+
+	async getTablaAmortizacionBase64(id: number) {
+
+		function formatoFechaParaProcedimiento(fechaStr: Date): string {
+			const date = new Date(fechaStr);
+			const pad = (n: number) => n.toString().padStart(2, '0');
+
+			const year = date.getFullYear();
+			const month = pad(date.getMonth() + 1);
+			const day = pad(date.getDate());
+
+			return `${year}${month}${day}`;
+		}
+
+		try {
+			const creSolicitud = await this.findCreSolicitud(id);
+			const compra = await this.findCompra(creSolicitud.idCompra)
+			const fecha = formatoFechaParaProcedimiento(compra.Fecha)
+			const fechaPrimPago = formatoFechaParaProcedimiento(compra.FechaPrimerPago)
+
+			const query = `EXEC CalculaCuotaInicial 
+			@Capital = ${compra.Total - compra.CuotaEntrada},
+			@Cuotas = ${compra.NumCuotas},
+			@IdCliente = ${compra.idCliente},
+			@FechaGenera = '${fecha}',
+			@IdEntidadFinanciera = 1
+			`;
+			const result = await this.creSolicitudWebRepository.query(query);
+
+			const query2 = `EXEC GeneraTablaDeAmortizacion 
+			@Capital = ${compra.Total - compra.CuotaEntrada},
+			@Cuotas = ${compra.NumCuotas},
+			@Fecha = '${fechaPrimPago}',
+			@FechaGenera = '${fecha}',
+			@idEntidadFinanciera = 1,
+			@AbonaCuota = 0
+			`;
+			const result2 = await this.creSolicitudWebRepository.query(query2);
+
+			const docDefinition = tablaAmortizacionReport({
+				Nombre: `${creSolicitud.ApellidoPaterno} ${creSolicitud.ApellidoMaterno} ${creSolicitud.PrimerNombre} ${creSolicitud.SegundoNombre}`,
+				Cedula: creSolicitud.Cedula,
+				Monto: compra.Total,
+				Plazo: compra.NumCuotas,
+				Tasa: result[0].TasaAnual,
+				Cuota: result[0].Cuota,
+				datosTabla: result2
+			});
+
+			const pdfDoc = this.printerService.createPdf(docDefinition);
+			const base64 = await this.pdfToBase64(pdfDoc);
+			return base64;
 
 		} catch (error) {
 			this.logger.error('Error generating DFL Firma Digital report', error.stack);
