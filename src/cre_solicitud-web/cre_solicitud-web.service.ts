@@ -1574,6 +1574,11 @@ export class CreSolicitudWebService {
     return result;
   }
 
+  /* traer idFirmaDigital igual 1 por cedula */
+  async findByCedulaWithFirmaDigital(cedula: string, idFirmaElectronica: number) {
+    return this.creSolicitudWebRepository.findOne({ where: { Cedula: cedula, idFirmaElectronica: idFirmaElectronica } });
+  }
+
   findOne(id: number) {
     return this.creSolicitudWebRepository.findOne({ where: { idCre_SolicitudWeb: id } });
   }
@@ -1834,7 +1839,7 @@ export class CreSolicitudWebService {
   }
 async findByCre_solicitud (idCre_SolicitudWeb: string): Promise<CreSolicitudWeb> {
   const creSolicitudWeb =  await this.creSolicitudWebRepository.findOne({
-    where: { sCre_SolicitudWeb: idCre_SolicitudWeb },
+    where: { sCre_SolicitudWeb: idCre_SolicitudWeb, Estado: 1 },
   });
   if (!creSolicitudWeb) {
     throw new NotFoundException('Registro no encontrado');

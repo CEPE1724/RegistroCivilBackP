@@ -117,6 +117,20 @@ export class AnalisisdeidentidadService {
       throw new InternalServerErrorException('Error al obtener análisis de identidad por cre_solicitud');
     }
   }
+
+  async findAnalisisBycodigo(codigo: string) {
+    try {
+
+      const analisis = await this.analisisDeIdentidadRepository.findOne(
+        { where: { codigo: codigo } });
+      return analisis;
+    }
+    catch (error) {
+      this.logger.error('❌ Error al obtener análisis de identidad por cre_solicitud', error.stack);
+      throw new InternalServerErrorException('Error al obtener análisis de identidad por cre_solicitud');
+    }
+  }
+
   async updateEstadoPorCodigo(codigo: string, idEstadoAnalisisDeIdentidad: number, mensajeError?: string) {
     try {
       this.logger.log(`🔄 Actualizando estado por código: ${codigo} -> Estado ${idEstadoAnalisisDeIdentidad}`);

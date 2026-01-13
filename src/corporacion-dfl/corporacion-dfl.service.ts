@@ -279,13 +279,13 @@ export class CorporacionDflService {
             await this.crearAnalisisdeidentidad(form, codigo_interno, nuevoAnalisis.data.codigo, nuevoAnalisis.data.url, nuevoAnalisis.data.short_url, new Date(nuevoAnalisis.data.valido_hasta));
             const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, 1);
             await this.updateSolicitudWebCreSolicitud(form.cre_solicitud, 2, form.usuario);
-            await this.actualizarCreSolicitud(allAnalisisdeidentidad.url, form.cre_solicitud);
-            await this.insertarTiempoSolicitudWeb(form, 2, 11, nuevoAnalisis.data.url);
+            //await this.actualizarCreSolicitud(allAnalisisdeidentidad.url, form.cre_solicitud);
+            await this.insertarTiempoSolicitudWeb(form, 2, 11, allAnalisisdeidentidad.short_url);
             console.log('✅ Nuevo análisis de identidad creado:', allAnalisisdeidentidad);
             return allAnalisisdeidentidad;
         }
-        await this.insertarTiempoSolicitudWeb(form, 2, 11, allAnalisisdeidentidad.short_url);
 
+        // await this.insertarTiempoSolicitudWeb(form, 2, 11, allAnalisisdeidentidad.short_url);
         this.logger.log('✅ Ya existe un análisis de identidad válido para esta identificación. No se crea uno nuevo.');
         return allAnalisisdeidentidad;
 
@@ -420,6 +420,7 @@ export class CorporacionDflService {
             });
 
             // 👉 Referencia
+            /*
             await this.dflReferenciaService.create({
                 identificacion: callbackData.indicadores.metadata.referencia.identificacion,
                 codigo_dactilar: callbackData.indicadores.metadata.referencia.codigo_dactilar,
@@ -447,16 +448,65 @@ export class CorporacionDflService {
                 texto_resumen: callbackData.indicadores.metadata.resultado.texto_resumen,
                 idDFL_AnalisisBiometrico,
             });
-
+*/
             // actualizar AnalisisDeIdentidad estado
-            let estadoStatues = callbackData.status === 200 ? 3 : 4; // 2 = Completado, 3 = Error
+            let estadoStatues = callbackData.status === 200 ? 3 : 4; // 3 = Completado, 4 = Error
             let mensajeError = callbackData.status === 200 ? 'Análisis completado correctamente' : `Error en análisis: ${callbackData.error}`;
             await this.analisisdeidentidadService.updateEstadoPorCodigo(callbackData.codigo, estadoStatues, mensajeError);
+            const analisisExistente = await this.findAnalisisBycodigo(callbackData.codigo);
+
+            if (analisisExistente && analisisExistente.idAnalisisDeIdentidad) {
+                // await this.actualizarCreSolicitud(analisisExistente.idAnalisisDeIdentidad, solicitud);
+
+                const cre_solicitud = await this.findByCedulaWithFirmaDigital(analisisExistente.identificacion, 2);
+                console.log('🔍 cre_solicitud encontrado:', cre_solicitud);
+                if (cre_solicitud && cre_solicitud.sCre_SolicitudWeb) {
+                    await this.updateSolicitudWebCreSolicitud(cre_solicitud.sCre_SolicitudWeb, estadoStatues, 'system_callback');
+                    /* insertar tiempo en tiemposolicitudesweb */
+                    await this.insertarTiempoSolicitudWeb(
+                        {
+                            identificacion: cedula,
+                            callback: '',
+                            motivo: 'Callback DFL',
+                            usuario: 'system_callback',
+                            cre_solicitud: cre_solicitud ? cre_solicitud.sCre_SolicitudWeb : undefined,
+                        },
+                        estadoStatues,
+                        11,
+                        '',
+                    );
+                }
+
+
+            }
+
             return { message: 'Callback procesado correctamente' };
         } catch (error) {
             await this.saveErrorLog('callback_general', callbackData, error);
             this.logger.error(`❌ Error procesando callback: ${error.message}`);
             return { message: 'Callback recibido, pero ocurrió un error interno (registrado en logs)' };
+        }
+    }
+
+    async findByCedulaWithFirmaDigital(cedula: string, idFirmaElectronica: number): Promise<any> {
+        try {
+            const analisisConFirma = await this.creSolicitudWebService.findByCedulaWithFirmaDigital(cedula, idFirmaElectronica);
+            return analisisConFirma;
+        }
+        catch (error) {
+            this.logger.error('❌ Error al obtener los análisis de identidad con firma digital', error);
+            throw new InternalServerErrorException('Error al obtener los análisis de identidad con firma digital desde la base de datos.');
+        }
+    }
+
+    async findAnalisisBycodigo(codigo: string): Promise<any> {
+        try {
+            const analisis = await this.analisisdeidentidadService.findAnalisisBycodigo(codigo);
+            return analisis;
+        }
+        catch (error) {
+            this.logger.error('❌ Error al obtener el análisis de identidad por código', error);
+            throw new InternalServerErrorException('Error al obtener el análisis de identidad por código desde la base de datos.');
         }
     }
 
