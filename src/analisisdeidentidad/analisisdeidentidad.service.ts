@@ -25,7 +25,7 @@ export class AnalisisdeidentidadService {
     }
   }
 
-  async updateCresolicitud(identificacion: string, cre_solicitud: number) {
+  async updateCresolicitud(identificacion: string, cre_solicitud: string) {
     try {
       /* solo actualizar el campo cre_solicitud 
        update analisisdeidentidad set idCre_SolicitudWeb = cre_solicitud where idAnalisisDeIdentidad = idAnalisisDeIdentidad; */
@@ -36,7 +36,7 @@ export class AnalisisdeidentidadService {
         this.logger.error(`❌ No se encontró un análisis de identidad con identificacion ${identificacion}`);
         throw new InternalServerErrorException('Análisis de identidad no encontrado');
       }
-      analisis.idCre_SolicitudWeb = cre_solicitud;
+      analisis.sCreSolicitudWeb = cre_solicitud;
 
       const actualizado = await this.analisisDeIdentidadRepository.save(analisis);
       this.logger.log(`✅ cre_solicitud actualizado correctamente para identificacion ${identificacion}`);
@@ -47,7 +47,7 @@ export class AnalisisdeidentidadService {
     }
   }
 
-  async findAll(identificacion: string, cre_solicitud: number) {
+  async findAll(identificacion: string, idEstadoAnalisisDeIdentidad: number) {
     try {
       /* Hora actual Ecuador (UTC-5) */
       const horaActual = new Date();
@@ -61,7 +61,7 @@ export class AnalisisdeidentidadService {
           identificacion: identificacion,
           valido_hasta: MoreThan(horaActual), // 👈 clave: comparar fecha
           //idCre_SolicitudWeb: cre_solicitud,
-          idEstadoAnalisisDeIdentidad: 1,
+          idEstadoAnalisisDeIdentidad: idEstadoAnalisisDeIdentidad,
         },
         order: { idAnalisisDeIdentidad: 'DESC' },
       });
@@ -104,9 +104,12 @@ export class AnalisisdeidentidadService {
     }
   }
 
-  async findAnalisis(identidad: string, idCre_SolicitudWeb: number) {
+  async findAnalisis(identidad: string) {
     try {
-      const analisis = await this.analisisDeIdentidadRepository.findOne({ where: { identificacion: identidad, idCre_SolicitudWeb, idEstadoAnalisisDeIdentidad: In([1, 3]) } });
+
+      const analisis = await this.analisisDeIdentidadRepository.findOne(
+        { where: { identificacion: identidad, 
+          idEstadoAnalisisDeIdentidad: In([1, 3]) } });
       return analisis;
     }
     catch (error) {

@@ -151,6 +151,10 @@ export class CreSolicitudWeb {
     @Column('int')
     idEstadoAnalisisDeIdentidad: number;
 
+    //ALTER TABLE [dbo].[Cre_SolicitudWeb] ADD  CONSTRAINT [DF_Cre_SolicitudWeb_sCre_SolicitudWeb]  DEFAULT (newsequentialid()) FOR [sCre_SolicitudWeb]
+    @Column('uniqueidentifier', { default: () => 'newsequentialid()' })
+    sCre_SolicitudWeb: string;
+
     @BeforeInsert()
     upperApellidos() {
         if (this.ApellidoMaterno) {

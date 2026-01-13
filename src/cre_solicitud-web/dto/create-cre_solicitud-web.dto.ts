@@ -225,4 +225,9 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     idempotencyKey?: string;
 
+    //ALTER TABLE [dbo].[Cre_SolicitudWeb] ADD  CONSTRAINT [DF_Cre_SolicitudWeb_sCre_SolicitudWeb]  DEFAULT (newsequentialid()) FOR [sCre_SolicitudWeb]
+    @IsUUID()
+    @IsOptional()
+    sCre_SolicitudWeb?: string;
+
 }

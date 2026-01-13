@@ -24,6 +24,8 @@ import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
 import { DflStoregoogleService } from 'src/dfl_storegoogle/dfl_storegoogle.service';
 import { WebSolicitudgrandeService } from 'src/web_solicitudgrande/web_solicitudgrande.service';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { CreSolicitudWebModule } from 'src/cre_solicitud-web/cre_solicitud-web.module';
+import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposolicitudesweb.service';
 
 @Module({
   imports: [
@@ -38,6 +40,7 @@ import { TypeOrmModule } from '@nestjs/typeorm';
       DflResultado,
     ]),
     StoreReportsPhoneVerificationModule,
+    CreSolicitudWebModule,
   ],
   controllers: [CorporacionDflController],
   providers: [
@@ -52,6 +55,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
     DflResultadoService,
     DflStoregoogleService,
     WebSolicitudgrandeService,
+    TiemposolicitudeswebService
+
   ],
   exports: [Tokensia365Service, AnalisisdeidentidadService],
 })

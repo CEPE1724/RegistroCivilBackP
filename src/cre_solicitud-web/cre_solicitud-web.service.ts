@@ -1456,10 +1456,6 @@ export class CreSolicitudWebService {
   }
 
 
-
-
-
-
   async findAll(paginationDto: PaginationDto, bodega: number[]) {
     const { limit, offset = 0, fechaInicio, fechaFin, estado, vendedor = 0, analista = 0, EstadoSolicitud = 0, EstadoDocumental = 0, EstadoTelefonica = 0, cedula, nombres, numeroSolicitud, idTipoCliente = 0, idCompraEncuesta = 0, operador = 0 } = paginationDto;
 
@@ -1567,53 +1563,6 @@ export class CreSolicitudWebService {
   }
 
 
-
-
-  /*async findAll(paginationDto: PaginationDto) {
-    const { limit = 10, offset = 0, Filtro = '' } = paginationDto;
-
-    let creSolicitudWeb: CreSolicitudWeb[];
-
-    const queryBuilder = this.creSolicitudWebRepository.createQueryBuilder('cre_solicitud_web');
-
-    // Solo agregar el filtro si Filtro tiene un valor
-    if (Filtro) {
-
-      // Aplica un filtro a las columnas
-      queryBuilder.where(
-        new Brackets(qb => {
-          qb.where('LOWER(cre_solicitud_web.NumeroSolicitud) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
-            .orWhere('LOWER(cre_solicitud_web.Cedula) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
-            .orWhere('LOWER(cre_solicitud_web.Apellidos) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
-            .orWhere('LOWER(cre_solicitud_web.Nombres) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
-            .orWhere('LOWER(cre_solicitud_web.Celular) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` })
-            .orWhere('LOWER(cre_solicitud_web.Email) LIKE LOWER(:Filtro)', { Filtro: `%${Filtro}%` });
-        })
-      );
-    }
-
-    // Aplicar la paginación
-    const totalCount = await queryBuilder.getCount();
-
-    // Aplicar la paginación
-    queryBuilder.skip(offset).take(limit);
-
-    // Ejecutar la consulta para obtener los registros
-    creSolicitudWeb = await queryBuilder.getMany();
-
-    if (creSolicitudWeb.length === 0) {
-      throw new NotFoundException('No se encontraron registros');
-    }
-
-    // Devolver los registros junto con el total de registros
-    return {
-      data: creSolicitudWeb,
-      total: totalCount, // Total de registros sin paginación
-    };
-  }*/
-
-
-
   async getSolicitudesWebRepositorio(anio?: number, mes?: number): Promise<any[]> {
 
     const anioValue = (anio != null && !isNaN(anio)) ? anio : 'NULL';
@@ -1651,19 +1600,6 @@ export class CreSolicitudWebService {
       };
       this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
       const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
-
-
-
-
-
-
-
-
-
-
-
-
-
       await this.notifierService.emitirCambioSolicitudWeb({
         solicitud: updated,
         cambios: updateCreSolicitudWebDto,
@@ -1772,6 +1708,55 @@ export class CreSolicitudWebService {
       this.handleDBException(error);
     }
   }
+
+  async updateSolicitudCre_solicitud(
+    idCre_SolicitudWeb: string,
+    updateCreSolicitudWebDto: UpdateCreSolicitudWebDto,
+    usuarioEjecutor?: any,
+  ) {
+    console.log('➡️ Ejecutando updateSolicitudCre_solicitud');
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
+      where: { sCre_SolicitudWeb: idCre_SolicitudWeb },
+    });
+
+    if (!creSolicitudWeb) {
+      console.log('❌ Registro no encontrado');
+      throw new NotFoundException('Registro no encontrado');
+    }
+
+    try {
+      // Actualizar la entidad
+      // Asegúrate de que no estás asignando valores a los métodos
+      const beforeUpdate: CreSolicitudWeb = {
+        ...creSolicitudWeb,
+        // No asignes valores a los métodos `upper*`
+        upperApellidos: undefined, // No necesitas asignar valores a estos métodos
+        upperNombres: undefined,
+        upperSegundoNombre: undefined,
+        uppperApellidoPaterno: undefined,
+      };
+
+
+      this.creSolicitudWebRepository.merge(creSolicitudWeb, updateCreSolicitudWebDto);
+      const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+      // ✅ Emitir evento y notificaciones desde un único punto
+      await this.notifierService.emitirCambioSolicitudWeb({
+        solicitud: updated,
+        cambios: updateCreSolicitudWebDto,
+        usuarioEjecutor,
+        original: beforeUpdate,
+      });
+
+      return updated;
+
+    } catch (error) {
+      console.error('❗ Error al actualizar la solicitud:', error);
+      this.handleDBException(error);
+    }
+  }
+
+
   async verificarCedulaBodega(cedula: string): Promise<{ existe: boolean, solicitud: object }> {
     // Optimización: Usar queryBuilder para select específico
     const solicitudExistente = await this.creSolicitudWebRepository
@@ -1847,7 +1832,15 @@ export class CreSolicitudWebService {
     throw new InternalServerErrorException('Unexpected error');
 
   }
-
+async findByCre_solicitud (idCre_SolicitudWeb: string): Promise<CreSolicitudWeb> {
+  const creSolicitudWeb =  await this.creSolicitudWebRepository.findOne({
+    where: { sCre_SolicitudWeb: idCre_SolicitudWeb },
+  });
+  if (!creSolicitudWeb) {
+    throw new NotFoundException('Registro no encontrado');
+  }
+  return creSolicitudWeb;
+}
 
 async updateEstado(idCre_SolicitudWeb: number): Promise<CreSolicitudWeb> {
 	const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({

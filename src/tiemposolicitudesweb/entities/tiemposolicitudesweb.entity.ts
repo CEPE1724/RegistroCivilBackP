@@ -1,11 +1,11 @@
 /*
 CREATE TABLE [dbo].[TiempoSolicitudesWeb](
-	[idTiempoSolicitudesWeb] [int] IDENTITY(1,1) NOT NULL,
-	[idEstadoVerificacionDocumental] [int] NULL,
-	[idCre_SolicitudWeb] [int] NULL,
-	[Tipo] [int] NULL,
-	[Usuario] [varchar](50) NULL,
-	[FechaSistema] [datetime] NULL,*/
+    [idTiempoSolicitudesWeb] [int] IDENTITY(1,1) NOT NULL,
+    [idEstadoVerificacionDocumental] [int] NULL,
+    [idCre_SolicitudWeb] [int] NULL,
+    [Tipo] [int] NULL,
+    [Usuario] [varchar](50) NULL,
+    [FechaSistema] [datetime] NULL,*/
 import { col } from "sequelize";
 import { Column, Entity, PrimaryGeneratedColumn, BeforeInsert } from "typeorm";
 
@@ -30,6 +30,12 @@ export class TiempoSolicitudesWeb {
     @Column({ name: 'FechaSistema', type: 'datetime', nullable: true })
     FechaSistema: Date;
 
-    @Column({name: 'Telefono', type:'varchar', length: 500, nullable: true})
+    @Column({ name: 'Telefono', type: 'varchar', length: 500, nullable: true })
     Telefono: string;
+
+
+    @Column('uniqueidentifier')
+    sCre_SolicitudWeb: string;
+
+
 }

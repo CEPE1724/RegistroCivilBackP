@@ -19,7 +19,7 @@ export class TiemposolicitudeswebService {
   }
 
 
-  findAllTipo(idCre_SolicitudWeb: number, tipo: number) {
+  findAllTipo(idCre_SolicitudWeb: number , tipo: number) {
     return this.tiemposolicitudeswebRepository.find({
       where: {
         idCre_SolicitudWeb: idCre_SolicitudWeb,

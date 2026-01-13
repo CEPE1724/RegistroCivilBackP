@@ -45,5 +45,7 @@ export class Analisisdeidentidad {
     Mensaje: string
     @Column({ type: 'datetime', nullable: true })
     FechaRespuesta: Date | null;
+    @Column({ type: 'varchar', length: 1000, nullable: true })
+    sCreSolicitudWeb: string 
 }
 

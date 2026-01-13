@@ -24,5 +24,6 @@ import { EmailModule } from 'src/email/email.module';
     EmailModule
     
   ],
+  exports: [CreSolicitudWebService],
 })
 export class CreSolicitudWebModule {}

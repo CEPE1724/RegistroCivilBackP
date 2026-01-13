@@ -1,6 +1,8 @@
 import { Controller, Post, Body, Logger, BadRequestException, Param } from '@nestjs/common';
 import { CorporacionDflService } from './corporacion-dfl.service';
 import { DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
+import { AuthGuard } from '@nestjs/passport';
+import { Auth, GetUser } from '../auth/decorators';
 @Controller('corporacion-dfl')
 export class CorporacionDflController {
   private readonly logger = new Logger(CorporacionDflController.name);
@@ -13,7 +15,7 @@ export class CorporacionDflController {
       identificacion: string;
       callback: string;
       motivo: string;
-      cre_solicitud: number | string;
+      cre_solicitud: string;
       usuario: string;
     },
   ) {
@@ -25,15 +27,10 @@ export class CorporacionDflController {
       throw new BadRequestException('Faltan campos obligatorios en el formulario');
     }
 
-    const solicitudNumber = Number(cre_solicitud);
-    if (isNaN(solicitudNumber) || solicitudNumber <= 0) {
-      this.logger.error(`❌ El campo "cre_solicitud" debe ser un número válido. Valor recibido: ${cre_solicitud}`);
-      throw new BadRequestException('El campo "cre_solicitud" debe ser un número válido y mayor que cero');
-    }
 
     return this.corporacionDflService.create({
       ...formData,
-      cre_solicitud: solicitudNumber,
+      cre_solicitud: cre_solicitud,
     });
   }
 

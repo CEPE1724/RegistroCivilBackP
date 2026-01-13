@@ -12,9 +12,9 @@ export class AnalisisdeidentidadController {
     return this.analisisdeidentidadService.create(createAnalisisdeidentidadDto);
   }
 
-  @Get('/find-all/:identificacion/:cre_solicitud')
-  findAnalisis(@Param('identificacion') identificacion: string, @Param('cre_solicitud') cre_solicitud: number) {
-    return this.analisisdeidentidadService.findAnalisis(identificacion, cre_solicitud);
+  @Get('/find-all/:identificacion')
+  findAnalisis(@Param('identificacion') identificacion: string) {
+    return this.analisisdeidentidadService.findAnalisis(identificacion);
   }
 
   

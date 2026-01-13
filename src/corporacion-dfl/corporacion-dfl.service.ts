@@ -10,10 +10,12 @@ import { DflAnalisisBiometricoService } from 'src/dfl_analisis-biometrico/dfl_an
 import { DflIndicadoresAnversoService } from 'src/dfl_indicadores-anverso/dfl_indicadores-anverso.service';
 import { DflIndicadoresReversoService } from 'src/dfl_indicadores-reverso/dfl_indicadores-reverso.service';
 import { DflMetadataProcesadaService } from 'src/dfl_metadata-procesada/dfl_metadata-procesada.service';
+import { CreSolicitudWebService } from 'src/cre_solicitud-web/cre_solicitud-web.service';
 import { DflReferenciaService } from 'src/dfl_referencia/dfl_referencia.service';
 import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
 import { DflStoregoogleService } from '../dfl_storegoogle/dfl_storegoogle.service';
 import { WebSolicitudgrandeService } from 'src/web_solicitudgrande/web_solicitudgrande.service';
+import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposolicitudesweb.service';
 import { join } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 @Injectable()
@@ -38,6 +40,8 @@ export class CorporacionDflService {
         private readonly dflStoregoogleService: DflStoregoogleService,
         private readonly storeReportsPhoneVerificationService: StoreReportsPhoneVerificationService,
         private readonly webSolicitudgrandeService: WebSolicitudgrandeService,
+        private readonly creSolicitudWebService: CreSolicitudWebService,
+        private readonly tiemposolicitudeswebService: TiemposolicitudeswebService,
     ) { }
 
     /**
@@ -117,10 +121,10 @@ export class CorporacionDflService {
         }
     }
 
-    private async allAnalisisdeidentidad(identificacion: string, cre_solicitud: number): Promise<any> {
+    private async allAnalisisdeidentidad(identificacion: string, idEstadoAnalisisDeIdentidad: number): Promise<any> {
         try {
 
-            const analisis = await this.analisisdeidentidadService.findAll(identificacion, cre_solicitud);
+            const analisis = await this.analisisdeidentidadService.findAll(identificacion, idEstadoAnalisisDeIdentidad);
             return analisis;
         }
         catch (error) {
@@ -128,8 +132,55 @@ export class CorporacionDflService {
             throw new InternalServerErrorException('Error al obtener los análisis de identidad desde la base de datos.');
         }
     }
+    // await this.insertarTiempoSolicitudWeb(form, 2,1, 2, nuevoAnalisis.data.url);
+    private async insertarTiempoSolicitudWeb(
+        form: { identificacion: string; callback: string; motivo: string; usuario: string; cre_solicitud?: string },
+        idEstadoVerificacionDocumental: number, Tipo: number, URLBiometrico: string) {
+        try {
+            const solicitudWeb = await this.findSolicitudWebCreSolicitud(form.cre_solicitud);
+            const nuevoTiempo = await this.tiemposolicitudeswebService.create({
+                idCre_SolicitudWeb: solicitudWeb ? solicitudWeb.idCre_SolicitudWeb : 0,
+                idEstadoVerificacionDocumental: idEstadoVerificacionDocumental,
+                Tipo: Tipo,
+                Telefono: URLBiometrico,
+                sCre_SolicitudWeb: form.cre_solicitud,
+                Usuario: form.usuario,
+            });
+            return nuevoTiempo;
+        } catch (error) {
+            this.logger.error('❌ Error al insertar tiempo en tiemposolicitudesweb', error);
+            throw new InternalServerErrorException('Error al insertar tiempo en tiemposolicitudesweb.');
+        }
+    }
 
-    private async crearAnalisisdeidentidad(form: { identificacion: string; callback: string; motivo: string, cre_solicitud: number, usuario: string }, codigo_interno: string, codigo: string, url: string, short_url: string, valido_hasta: Date): Promise<any> {
+    private async findSolicitudWebCreSolicitud(cre_solicitud: string): Promise<any> {
+        try {
+            const solicitud = await this.creSolicitudWebService.findByCre_solicitud(cre_solicitud);
+            return solicitud;
+        } catch (error) {
+            this.logger.error('❌ Error al buscar cre_solicitud en cre_solicitud_web', error);
+            throw new InternalServerErrorException('Error al buscar cre_solicitud en cre_solicitud_web.');
+        }
+    }
+
+
+
+
+    private async updateSolicitudWebCreSolicitud(cre_solicitud: string, idFirmaElectronica: number, usuario: string): Promise<any> {
+        try {
+            const actualizado = await this.creSolicitudWebService.updateSolicitudCre_solicitud(
+                cre_solicitud,
+                { idFirmaElectronica: idFirmaElectronica },
+                usuario
+            );
+            return actualizado;
+        } catch (error) {
+            this.logger.error('❌ Error al actualizar cre_solicitud en cre_solicitud_web', error);
+            throw new InternalServerErrorException('Error al actualizar cre_solicitud en cre_solicitud_web.');
+        }
+    }
+
+    private async crearAnalisisdeidentidad(form: { identificacion: string; callback: string; motivo: string, usuario: string }, codigo_interno: string, codigo: string, url: string, short_url: string, valido_hasta: Date): Promise<any> {
         try {
             const nuevoAnalisis = await this.analisisdeidentidadService.create({
                 identificacion: form.identificacion,
@@ -138,7 +189,6 @@ export class CorporacionDflService {
                 short_url: short_url,
                 valido_hasta: valido_hasta,
                 Usuario: form.usuario,
-                idCre_SolicitudWeb: form.cre_solicitud,
                 codigo_interno: codigo_interno,
                 idEstadoAnalisisDeIdentidad: 1,
             });
@@ -149,7 +199,7 @@ export class CorporacionDflService {
         }
     }
 
-    private async actualizarCreSolicitud(idAnalisisDeIdentidad: string, cre_solicitud: number): Promise<any> {
+    private async actualizarCreSolicitud(idAnalisisDeIdentidad: string, cre_solicitud: string): Promise<any> {
         try {
             const actualizado = await this.analisisdeidentidadService.updateCresolicitud(idAnalisisDeIdentidad, cre_solicitud);
             return actualizado;
@@ -160,7 +210,7 @@ export class CorporacionDflService {
     }
 
     private async solicitarBiometrico(
-        form: { identificacion: string; callback: string; motivo: string, cre_solicitud: number },
+        form: { identificacion: string; callback: string; motivo: string },
         token: string,
         codigo_interno?: string,
     ): Promise<any> {
@@ -170,7 +220,6 @@ export class CorporacionDflService {
             formData.append('callback', form.callback);
             formData.append('codigo_interno', codigo_interno || '');
             formData.append('motivo', form.motivo);
-            formData.append('cre_solicitud', form.cre_solicitud.toString());
 
             const config = {
                 method: 'post' as const,
@@ -212,27 +261,31 @@ export class CorporacionDflService {
         identificacion: string;
         callback: string;
         motivo: string;
-        cre_solicitud: number;
         usuario: string;
+        cre_solicitud?: string;
     }) {
         this.logger.log('🔄 Creando análisis de identidad...', form);
         const codigo_interno = await this.generateUniqueCode(form.identificacion);
         await this.actualizarRegistrosCaducados(form.identificacion);
-        const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, form.cre_solicitud);
+        const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, 1);
+        console.log('🔍 Análisis de identidad existente:', allAnalisisdeidentidad);
         const tokenValido = await this.allTokens();
 
         this.logger.log('🔄 Verificando validez del token existente...', tokenValido);
         if (allAnalisisdeidentidad.count === 0) {
             /* actualizar cre_solicitud en analisisdeidentidad si existe uno previo */
-
             const nuevoAnalisis = await this.solicitarBiometrico(form, tokenValido);
             this.logger.log('✅ Solicitud biométrica enviada. Respuesta:', nuevoAnalisis);
             await this.crearAnalisisdeidentidad(form, codigo_interno, nuevoAnalisis.data.codigo, nuevoAnalisis.data.url, nuevoAnalisis.data.short_url, new Date(nuevoAnalisis.data.valido_hasta));
-            const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, form.cre_solicitud);
+            const allAnalisisdeidentidad = await this.allAnalisisdeidentidad(form.identificacion, 1);
+            await this.updateSolicitudWebCreSolicitud(form.cre_solicitud, 2, form.usuario);
+            await this.actualizarCreSolicitud(allAnalisisdeidentidad.url, form.cre_solicitud);
+            await this.insertarTiempoSolicitudWeb(form, 2, 11, nuevoAnalisis.data.url);
             console.log('✅ Nuevo análisis de identidad creado:', allAnalisisdeidentidad);
             return allAnalisisdeidentidad;
         }
-        await this.actualizarCreSolicitud(form.identificacion, form.cre_solicitud);
+        await this.insertarTiempoSolicitudWeb(form, 2, 11, allAnalisisdeidentidad.short_url);
+
         this.logger.log('✅ Ya existe un análisis de identidad válido para esta identificación. No se crea uno nuevo.');
         return allAnalisisdeidentidad;
 
@@ -365,36 +418,36 @@ export class CorporacionDflService {
                 lugar_nacimiento: callbackData.indicadores.metadata.procesada.lugar_nacimiento,
                 idDFL_AnalisisBiometrico,
             });
-            
-                        // 👉 Referencia
-                        await this.dflReferenciaService.create({
-                            identificacion: callbackData.indicadores.metadata.referencia.identificacion,
-                            codigo_dactilar: callbackData.indicadores.metadata.referencia.codigo_dactilar,
-                            fecha_nacimiento: callbackData.indicadores.metadata.referencia.fecha_nacimiento,
-                            fecha_mayor_edad: callbackData.indicadores.metadata.referencia.fecha_mayor_edad,
-                            edad_actual: callbackData.indicadores.metadata.referencia.edad_actual,
-                            fecha_actual: callbackData.indicadores.metadata.referencia.fecha_actual,
-                            idDFL_AnalisisBiometrico,
-                        });
-            
-                        // 👉 Resultado
-                        await this.dflResultadoService.create({
-                            ok_selfie_fuente: callbackData.indicadores.metadata.resultado.ok_selfie_fuente,
-                            es_selfie_valida: callbackData.indicadores.metadata.resultado.es_selfie_valida,
-                            ok_frontal_fuente: callbackData.indicadores.metadata.resultado.ok_frontal_fuente,
-                            existe_fuente: callbackData.indicadores.metadata.resultado.existe_fuente,
-                            cliente_en_lista_blanca: callbackData.indicadores.metadata.resultado.cliente_en_lista_blanca,
-                            codigo_dactilar_detectado: callbackData.indicadores.metadata.resultado.codigo_dactilar_detectado,
-                            es_cedula_mayor_edad: callbackData.indicadores.metadata.resultado.es_cedula_mayor_edad,
-                            es_cedula_vigente: callbackData.indicadores.metadata.resultado.es_cedula_vigente,
-                            es_horario_valido: callbackData.indicadores.metadata.resultado.es_horario_valido,
-                            fecha_nacimiento_detectada: callbackData.indicadores.metadata.resultado.fecha_nacimiento_detectada,
-                            identificacion_detectada: callbackData.indicadores.metadata.resultado.identificacion_detectada,
-                            selfie_intentos_moderado: callbackData.indicadores.metadata.resultado.selfie_intentos_moderado,
-                            texto_resumen: callbackData.indicadores.metadata.resultado.texto_resumen,
-                            idDFL_AnalisisBiometrico,
-                        });
-            
+
+            // 👉 Referencia
+            await this.dflReferenciaService.create({
+                identificacion: callbackData.indicadores.metadata.referencia.identificacion,
+                codigo_dactilar: callbackData.indicadores.metadata.referencia.codigo_dactilar,
+                fecha_nacimiento: callbackData.indicadores.metadata.referencia.fecha_nacimiento,
+                fecha_mayor_edad: callbackData.indicadores.metadata.referencia.fecha_mayor_edad,
+                edad_actual: callbackData.indicadores.metadata.referencia.edad_actual,
+                fecha_actual: callbackData.indicadores.metadata.referencia.fecha_actual,
+                idDFL_AnalisisBiometrico,
+            });
+
+            // 👉 Resultado
+            await this.dflResultadoService.create({
+                ok_selfie_fuente: callbackData.indicadores.metadata.resultado.ok_selfie_fuente,
+                es_selfie_valida: callbackData.indicadores.metadata.resultado.es_selfie_valida,
+                ok_frontal_fuente: callbackData.indicadores.metadata.resultado.ok_frontal_fuente,
+                existe_fuente: callbackData.indicadores.metadata.resultado.existe_fuente,
+                cliente_en_lista_blanca: callbackData.indicadores.metadata.resultado.cliente_en_lista_blanca,
+                codigo_dactilar_detectado: callbackData.indicadores.metadata.resultado.codigo_dactilar_detectado,
+                es_cedula_mayor_edad: callbackData.indicadores.metadata.resultado.es_cedula_mayor_edad,
+                es_cedula_vigente: callbackData.indicadores.metadata.resultado.es_cedula_vigente,
+                es_horario_valido: callbackData.indicadores.metadata.resultado.es_horario_valido,
+                fecha_nacimiento_detectada: callbackData.indicadores.metadata.resultado.fecha_nacimiento_detectada,
+                identificacion_detectada: callbackData.indicadores.metadata.resultado.identificacion_detectada,
+                selfie_intentos_moderado: callbackData.indicadores.metadata.resultado.selfie_intentos_moderado,
+                texto_resumen: callbackData.indicadores.metadata.resultado.texto_resumen,
+                idDFL_AnalisisBiometrico,
+            });
+
             // actualizar AnalisisDeIdentidad estado
             let estadoStatues = callbackData.status === 200 ? 3 : 4; // 2 = Completado, 3 = Error
             let mensajeError = callbackData.status === 200 ? 'Análisis completado correctamente' : `Error en análisis: ${callbackData.error}`;
@@ -413,14 +466,14 @@ export class CorporacionDflService {
             const tokenGuardado = await this.allTokens();
             const codigo_interno = await this.allAnalisisdeidentidad(identidad, idSolicitud);
             const base64_pdf1 = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(idSolicitud);
-			const base64_gastoCobranza = await this.storeReportsPhoneVerificationService.getGastosCobranzasBase64Report(idSolicitud);
-			const base64_consentTratDatos = await this.storeReportsPhoneVerificationService.getConsentimientoTratDatosBase64(idSolicitud);
-			const base64_pagareOrden = await this.storeReportsPhoneVerificationService.getPagareALaOrdenBase64(idSolicitud);
-			const base64_entregaDocCred = await this.storeReportsPhoneVerificationService.getActaEntregaDocsBase64(idSolicitud);
-			const base64_compromisoLugPag = await this.storeReportsPhoneVerificationService.getCompromisoLugPagoBase64(idSolicitud);
-			const base64_declarComprom = await this.storeReportsPhoneVerificationService.getDeclaracionCompromisosBase64(idSolicitud);
-			const base64_contratComprVent = await this.storeReportsPhoneVerificationService.getcompraVentaResDominioBase64(idSolicitud);
-			const base64_tabAmortizacion = await this.storeReportsPhoneVerificationService.getTablaAmortizacionBase64(idSolicitud);
+            const base64_gastoCobranza = await this.storeReportsPhoneVerificationService.getGastosCobranzasBase64Report(idSolicitud);
+            const base64_consentTratDatos = await this.storeReportsPhoneVerificationService.getConsentimientoTratDatosBase64(idSolicitud);
+            const base64_pagareOrden = await this.storeReportsPhoneVerificationService.getPagareALaOrdenBase64(idSolicitud);
+            const base64_entregaDocCred = await this.storeReportsPhoneVerificationService.getActaEntregaDocsBase64(idSolicitud);
+            const base64_compromisoLugPag = await this.storeReportsPhoneVerificationService.getCompromisoLugPagoBase64(idSolicitud);
+            const base64_declarComprom = await this.storeReportsPhoneVerificationService.getDeclaracionCompromisosBase64(idSolicitud);
+            const base64_contratComprVent = await this.storeReportsPhoneVerificationService.getcompraVentaResDominioBase64(idSolicitud);
+            const base64_tabAmortizacion = await this.storeReportsPhoneVerificationService.getTablaAmortizacionBase64(idSolicitud);
             const webSolicitud = await this.webSolicitudgrandeService.findOneId(idSolicitud);
             this.logger.log(`✅ PDF generado en base64 para la solicitud ID: ${idSolicitud}`);
             this.logger.log(`Base64 PDF 1: ${codigo_interno}`);
@@ -510,23 +563,23 @@ export class CorporacionDflService {
                     //     name: "Anexo",
                     //     base64: base64_entregaDocCred
                     // },					
-					// {
-					// 	code: "COMPROMISO_LUGAR_PAGO",
+                    // {
+                    // 	code: "COMPROMISO_LUGAR_PAGO",
                     //     name: "",
                     //     base64: base64_compromisoLugPag
-					// },{
-					// 	code: "DECLARACION_COMPROMISO",
+                    // },{
+                    // 	code: "DECLARACION_COMPROMISO",
                     //     name: "",
                     //     base64: base64_declarComprom
-					// },{
-					// 	code: "COMPRA_VENTA",
+                    // },{
+                    // 	code: "COMPRA_VENTA",
                     //     name: "",
                     //     base64: base64_contratComprVent
-					// },{
-					// 	code: "TABLA_AMORTIZACION",
+                    // },{
+                    // 	code: "TABLA_AMORTIZACION",
                     //     name: "",
                     //     base64: base64_tabAmortizacion
-					// }
+                    // }
                 ]
             };
 

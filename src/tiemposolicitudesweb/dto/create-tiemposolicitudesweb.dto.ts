@@ -7,7 +7,7 @@
 	[FechaSistema] [datetime] NULL,
 */
 
-import { IsBoolean, IsDate, IsNumber, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsDate, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 import { Type } from 'class-transformer';
 export class CreateTiemposolicitudeswebDto {
 
@@ -15,6 +15,7 @@ export class CreateTiemposolicitudeswebDto {
     idEstadoVerificacionDocumental?: number;
 
     @IsNumber()
+    @IsOptional()
     idCre_SolicitudWeb?: number;
 
     @IsNumber()
@@ -26,6 +27,10 @@ export class CreateTiemposolicitudeswebDto {
     @IsString()
     @IsOptional()
     Telefono?: string;
+
+    @IsUUID()
+    @IsOptional()
+    sCre_SolicitudWeb?: string;
 
 }
 
