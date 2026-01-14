@@ -54,6 +54,8 @@ export const ApiConfig = () => ({
       URL_BIOMETRICO: process.env.URL_BIOMETRICO,
       PIN_BIOMETRICO: process.env.PIN_BIOMETRICO,
       AUTH_BIOMETRICO: process.env.AUTH_BIOMETRICO,
+      DFL_INSERT_OPERATION_URL: process.env.DFL_INSERT_OPERATION_URL,
+      DFL_SEARCH_OPERATION_URL: process.env.DFL_SEARCH_OPERATION_URL,
     }
     
   });

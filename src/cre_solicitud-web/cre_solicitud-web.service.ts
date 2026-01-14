@@ -44,7 +44,7 @@ export class CreSolicitudWebService {
     @Inject(CACHE_MANAGER) private cacheManager: Cache,
   ) { }
 
-   async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
+  async create(createCreSolicitudWebDto: CreateCreSolicitudWebDto) {
     const cedula = createCreSolicitudWebDto.Cedula;
     const processing = this.processingRequests.get(cedula);
     if (processing && Date.now() - processing.timestamp < this.LOCK_TIMEOUT) {
@@ -349,7 +349,7 @@ export class CreSolicitudWebService {
   /**
    * Adquiere un lock distribuido usando Redis
    */
-   
+
   async obtenerEstadoProceso(idSolicitud: number): Promise<any> {
     const cacheKey = `proceso:solicitud:${idSolicitud}`;
     const estado = await this.cacheManager.get(cacheKey);
@@ -402,13 +402,13 @@ export class CreSolicitudWebService {
   async obtenerHistorialProceso(idSolicitud: number): Promise<any> {
     const cacheKey = `proceso:solicitud:${idSolicitud}`;
     const historialKey = `historial:solicitud:${idSolicitud}`;
-    
+
     // Obtener estado actual
     const estadoActual = await this.cacheManager.get(cacheKey);
-    
+
     // Obtener historial almacenado
     const historial: any[] = (await this.cacheManager.get<any[]>(historialKey)) || [];
-    
+
     // Obtener datos de la solicitud de BD
     const solicitud = await this.creSolicitudWebRepository.findOne({
       where: { idCre_SolicitudWeb: idSolicitud }
@@ -456,12 +456,12 @@ export class CreSolicitudWebService {
       ...nuevoEstado,
       timestamp: new Date()
     });
-    
+
     // Mantener solo los últimos 50 estados en el historial
     if (historial.length > 50) {
       historial.splice(0, historial.length - 50);
     }
-    
+
     await this.cacheManager.set(historialKey, historial, 172800); // 48 horas
 
     // Emitir WebSocket para actualización en tiempo real
@@ -479,7 +479,7 @@ export class CreSolicitudWebService {
     const estados = {
       0: 'PROCESANDO',
       1: 'APROBADA',
-      2: 'PENDIENTE', 
+      2: 'PENDIENTE',
       3: 'EN_VERIFICACION',
       4: 'VERIFICADA',
       5: 'RECHAZADA',
@@ -526,7 +526,7 @@ export class CreSolicitudWebService {
   private generarResumenProceso(estadoActual: any, historial: any[], solicitud: any): any {
     const fasesCompletadas = historial?.map(h => h.fase) || [];
     const tiempoTotal = solicitud ? new Date().getTime() - new Date(solicitud.Fecha).getTime() : 0;
-    
+
     return {
       fasesCompletadas: [...new Set(fasesCompletadas)],
       tiempoTranscurridoMs: tiempoTotal,
@@ -544,9 +544,9 @@ export class CreSolicitudWebService {
    */
   private formatearTiempo(ms: number): string {
     if (ms < 1000) return `${ms}ms`;
-    if (ms < 60000) return `${Math.round(ms/1000)}s`;
-    if (ms < 3600000) return `${Math.round(ms/60000)}min`;
-    return `${Math.round(ms/3600000)}h`;
+    if (ms < 60000) return `${Math.round(ms / 1000)}s`;
+    if (ms < 3600000) return `${Math.round(ms / 60000)}min`;
+    return `${Math.round(ms / 3600000)}h`;
   }
 
   /**
@@ -841,11 +841,11 @@ export class CreSolicitudWebService {
 
       // Verificar cache primero
       let equifaxData = await this.obtenerEquifaxCache(cedula);
-     
+
       // Si no está en cache, verificar si ya fue consultado este mes en BD
       if (!equifaxData) {
         this.logger.log(`🔍 [EQUIFAX] No encontrado en cache, verificando BD...`);
-        
+
         let debeConsultarEquifax = true;
         const eqfxData = await this.eqfxidentificacionconsultadaService.findOneUAT(cedula);
 
@@ -1837,34 +1837,48 @@ export class CreSolicitudWebService {
     throw new InternalServerErrorException('Unexpected error');
 
   }
-async findByCre_solicitud (idCre_SolicitudWeb: string): Promise<CreSolicitudWeb> {
-  const creSolicitudWeb =  await this.creSolicitudWebRepository.findOne({
-    where: { sCre_SolicitudWeb: idCre_SolicitudWeb, Estado: 1 },
-  });
-  if (!creSolicitudWeb) {
-    throw new NotFoundException('Registro no encontrado');
+  async findByCre_solicitud(
+    idCre_SolicitudWeb: string,
+    Estado?: number,
+  ): Promise<CreSolicitudWeb> {
+    const where: any = {
+      sCre_SolicitudWeb: idCre_SolicitudWeb,
+    };
+
+    if (Estado !== undefined) {
+      where.Estado = Estado;
+    }
+
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
+      where,
+    });
+
+    if (!creSolicitudWeb) {
+      throw new NotFoundException('Registro no encontrado');
+    }
+
+    return creSolicitudWeb;
   }
-  return creSolicitudWeb;
-}
 
-async updateEstado(idCre_SolicitudWeb: number): Promise<CreSolicitudWeb> {
-	const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
-		where: { idCre_SolicitudWeb },
-	});
 
-	if (!creSolicitudWeb) {
-		throw new NotFoundException('Registro no encontrado');
-	}
+  async updateEstado(idCre_SolicitudWeb: number): Promise<CreSolicitudWeb> {
+    const creSolicitudWeb = await this.creSolicitudWebRepository.findOne({
+      where: { idCre_SolicitudWeb },
+    });
 
-	try {
-		creSolicitudWeb.Estado = 2;
-		const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+    if (!creSolicitudWeb) {
+      throw new NotFoundException('Registro no encontrado');
+    }
 
-		console.log(`\x1b[31mSOLICITUD APROBADA SIN REG CIVIL, solicitud #${idCre_SolicitudWeb}\x1b[0m`);
-		
-		return updated;
-	} catch (error) {
-		this.handleDBException(error);
-	}
-}
+    try {
+      creSolicitudWeb.Estado = 2;
+      const updated = await this.creSolicitudWebRepository.save(creSolicitudWeb);
+
+      console.log(`\x1b[31mSOLICITUD APROBADA SIN REG CIVIL, solicitud #${idCre_SolicitudWeb}\x1b[0m`);
+
+      return updated;
+    } catch (error) {
+      this.handleDBException(error);
+    }
+  }
 }

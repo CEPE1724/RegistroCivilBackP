@@ -180,6 +180,9 @@ import { MetricsController } from './metrics.controller';
 import { PrometheusInterceptor } from './common/interceptors/prometheus.interceptor';
 import { CreEntidadFinancieraModule } from './cre-entidad-financiera/cre-entidad-financiera.module';
 import { PersonalBddModule } from './personal-bdd/personal-bdd.module';
+import { FirOperacionFirmaModule } from './fir-operacion-firma/fir-operacion-firma.module';
+import { FirOperacionesfirmaModule } from './fir-operacionesfirma/fir-operacionesfirma.module';
+import { FirDocumentosModule } from './fir-documentos/fir-documentos.module';
 
 
 
@@ -488,7 +491,10 @@ import { PersonalBddModule } from './personal-bdd/personal-bdd.module';
     RedisModule,
     AlmacenesModule,
     CreEntidadFinancieraModule,
-    PersonalBddModule
+    PersonalBddModule,
+    FirOperacionFirmaModule,
+    FirOperacionesfirmaModule,
+    FirDocumentosModule
 
   ],
   providers: [

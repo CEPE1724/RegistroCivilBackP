@@ -4,6 +4,7 @@ import FormData from 'form-data';
 import { Tokensia365Service } from '../tokensia365/tokensia365.service';
 import { AnalisisdeidentidadService } from 'src/analisisdeidentidad/analisisdeidentidad.service';
 import { DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
+import { FIRFirmaResponse } from '../corporacion-dfl/interfaces/FIROperacionFirma-dfl.interface';
 import { StoreReportsPhoneVerificationService } from '../store-reports-phone-verification/store-reports-phone-verification.service';
 import { FiduciaPayload } from './interfaces/fiduciapayload-interfaces';
 import { DflAnalisisBiometricoService } from 'src/dfl_analisis-biometrico/dfl_analisis-biometrico.service';
@@ -16,6 +17,9 @@ import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
 import { DflStoregoogleService } from '../dfl_storegoogle/dfl_storegoogle.service';
 import { WebSolicitudgrandeService } from 'src/web_solicitudgrande/web_solicitudgrande.service';
 import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposolicitudesweb.service';
+import { FirOperacionFirmaService } from 'src/fir-operacion-firma/fir-operacion-firma.service';
+import { FirOperacionesfirmaService } from 'src/fir-operacionesfirma/fir-operacionesfirma.service';
+import { FirDocumentosService } from 'src/fir-documentos/fir-documentos.service';
 import { join } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
 @Injectable()
@@ -26,6 +30,8 @@ export class CorporacionDflService {
     private readonly URL_BIOMETRICO = process.env.URL_BIOMETRICO;
     private readonly PIN_BIOMETRICO = process.env.PIN_BIOMETRICO;
     private readonly AUTH_BIOMETRICO = process.env.AUTH_BIOMETRICO;
+    private readonly AUTH_FIRMA_DFL = process.env.DFL_INSERT_OPERATION_URL;
+    private readonly DFL_SEARCH_OPERATION_URL = process.env.DFL_SEARCH_OPERATION_URL;
 
 
     constructor(
@@ -42,6 +48,9 @@ export class CorporacionDflService {
         private readonly webSolicitudgrandeService: WebSolicitudgrandeService,
         private readonly creSolicitudWebService: CreSolicitudWebService,
         private readonly tiemposolicitudeswebService: TiemposolicitudeswebService,
+        private readonly FirOperacionFirmaService: FirOperacionFirmaService,
+        private readonly firOperacionesfirmaService: FirOperacionesfirmaService,
+        private readonly firDocumentosService: FirDocumentosService,
     ) { }
 
     /**
@@ -137,7 +146,7 @@ export class CorporacionDflService {
         form: { identificacion: string; callback: string; motivo: string; usuario: string; cre_solicitud?: string },
         idEstadoVerificacionDocumental: number, Tipo: number, URLBiometrico: string) {
         try {
-            const solicitudWeb = await this.findSolicitudWebCreSolicitud(form.cre_solicitud);
+            const solicitudWeb = await this.findSolicitudWebCreSolicitud(form.cre_solicitud, 1);
             const nuevoTiempo = await this.tiemposolicitudeswebService.create({
                 idCre_SolicitudWeb: solicitudWeb ? solicitudWeb.idCre_SolicitudWeb : 0,
                 idEstadoVerificacionDocumental: idEstadoVerificacionDocumental,
@@ -153,9 +162,9 @@ export class CorporacionDflService {
         }
     }
 
-    private async findSolicitudWebCreSolicitud(cre_solicitud: string): Promise<any> {
+    private async findSolicitudWebCreSolicitud(cre_solicitud: string, Estado?: number): Promise<any> {
         try {
-            const solicitud = await this.creSolicitudWebService.findByCre_solicitud(cre_solicitud);
+            const solicitud = await this.creSolicitudWebService.findByCre_solicitud(cre_solicitud, Estado);
             return solicitud;
         } catch (error) {
             this.logger.error('❌ Error al buscar cre_solicitud en cre_solicitud_web', error);
@@ -291,6 +300,14 @@ export class CorporacionDflService {
 
     }
 
+    private obtenerErrorDFL(data: DFLAnalisisBiometrico): string {
+        return (
+            data?.messages?.error ??
+            data?.error?.toString() ??
+            ''
+        );
+    }
+
     private async createDFLAnalisisBiometrico(data: DFLAnalisisBiometrico): Promise<any> {
         try {
             this.logger.log('🔄 Creando análisis biométrico...', data);
@@ -312,7 +329,7 @@ export class CorporacionDflService {
                 img_rostro_dos: data.data.img_rostro_dos,
                 bio_fuente: data.data.bio_fuente,
                 ip_registrada: data.data.ip_registrada,
-                error: data.messages.error || '',
+                error: this.obtenerErrorDFL(data),
             });
             return nuevoAnalisisBiometrico;
         } catch (error) {
@@ -538,11 +555,20 @@ export class CorporacionDflService {
         }
     }
 
-    async crearFirmaDigital(idSolicitud: number, identidad: string): Promise<any> {
+    async crearFirmaDigital(sSolicitud: string, identidad: string): Promise<any> {
         try {
+            /* buscar iscre_solicitud_web */
+            const sCre_SolicitudWeb = await this.findSolicitudWebCreSolicitud(sSolicitud);
+            if (!sCre_SolicitudWeb) {
+                this.logger.error(`❌ No se encontró la solicitud web para cre_solicitud: ${sSolicitud}`);
+                throw new InternalServerErrorException('No se encontró la solicitud web asociada.');
+            }
+            const idSolicitud = sCre_SolicitudWeb.idCre_SolicitudWeb;
             // Lógica para crear la firma digital
             const tokenGuardado = await this.allTokens();
-            const codigo_interno = await this.allAnalisisdeidentidad(identidad, idSolicitud);
+            const codigo_interno = await this.allAnalisisdeidentidad(identidad, 3);
+            this.logger.log(`🔄 Generando PDFs en base64 para la solicitud ID: ${idSolicitud}`);
+            this.logger.log(`Código interno para la solicitud: ${JSON.stringify(codigo_interno)}`);
             const base64_pdf1 = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(idSolicitud);
             const base64_gastoCobranza = await this.storeReportsPhoneVerificationService.getGastosCobranzasBase64Report(idSolicitud);
             const base64_consentTratDatos = await this.storeReportsPhoneVerificationService.getConsentimientoTratDatosBase64(idSolicitud);
@@ -609,7 +635,7 @@ export class CorporacionDflService {
                         name: webSolicitud.PrimerNombre,
                         first_last_name: webSolicitud.ApellidoPaterno,
                         second_last_name: webSolicitud.ApellidoMaterno,
-                        email: 'ecepeda@credisolucion.com.ec',
+                        email: webSolicitud.Email || '',
                         phone: `+593${webSolicitud.Celular.slice(1)}`,
                         address: webSolicitud.CallePrincipal,
                         city: webSolicitud.CalleSecundaria,
@@ -624,17 +650,17 @@ export class CorporacionDflService {
                     {
                         code: "CONVENIO_ADHESION",
                         name: "Convenio",
-                        base64: base64_pdf1
+                        base64: base64_gastoCobranza
                     },
                     {
                         code: "LIQUIDACION",
                         name: "Liquidacion",
-                        base64: base64_pdf1
+                        base64: base64_consentTratDatos
                     },
                     {
                         code: "ANALISIS_DOMICILIARIO",
                         name: "Analisis Dom",
-                        base64: base64_pdf1
+                        base64: base64_pagareOrden
                     }
                     // {
                     //     code: "ANEXO4",
@@ -672,14 +698,97 @@ export class CorporacionDflService {
             this.logger.log(`📁 Payload de insertarOperacionFiducia guardado en archivo: ${filePath}`);
             this.logger.log(`🚀 Payload para insertarOperacionFiducia: ${JSON.stringify(insertarOperacionFiduciaPayload.code_bio)}`);
 
-            const url_signed = 'https://apipoint.corporaciondfl.com/api/operation/insert'; // Reemplaza con la URL correcta
-
-            const respuesta = await this.insertarOperacionFiducia(insertarOperacionFiduciaPayload, tokenGuardado, url_signed);
+          
+            const respuesta = await this.insertarOperacionFiducia(insertarOperacionFiduciaPayload, tokenGuardado, this.AUTH_FIRMA_DFL);
+            console.log('Respuesta de insertarOperacionFiducia:', respuesta);
+            if (respuesta.status === 200) {
+                const resultadoFiducia = await this.findOperacionfiduciaByCodeBio(respuesta.hash, tokenGuardado, this.DFL_SEARCH_OPERATION_URL);
+                this.logger.log(`✅ Operación de fiducia insertada correctamente: ${JSON.stringify(resultadoFiducia)}`);
+                if (resultadoFiducia.status === 200) {
+                    this.logger.log(`✅ Operación de fiducia verificada correctamente: ${JSON.stringify(resultadoFiducia)}`);
+                    await this.guardarOperacionFirma(resultadoFiducia);
+                }
+                
+                // await this.updateSolicitudWebCreSolicitud(sSolicitud, 3, 'system_firma_digital');
+            }
             this.logger.log(`✅ Firma digital creada: ${JSON.stringify(respuesta)}`);
             return respuesta;
         } catch (error) {
-            this.logger.error(`❌ Error creando firma digital para la solicitud ID: ${idSolicitud}`, error);
+            this.logger.error(`❌ Error creando firma digital para la solicitud ID: ${sSolicitud}`, error);
             throw new InternalServerErrorException('Error al crear la firma digital.');
+        }
+    }
+
+    async guardarOperacionFirma(
+        response: FIRFirmaResponse,
+    ): Promise<any> {
+        try {
+            this.logger.log('🔄 Guardando operación de FIR Firma...', response);
+
+            const operacion = response.data;
+
+            const nuevaOperacion = await this.FirOperacionFirmaService.create({
+                hash_operation: operacion.hash_operation,
+                code_client: operacion.code_client,
+                code_bio: operacion.code_bio,
+                link: operacion.link,
+
+                time_signature_validity: operacion.time_signature_validity
+                    ? new Date(operacion.time_signature_validity)
+                    : null,
+
+                state: operacion.state,
+                task: operacion.task,
+
+                state_fiducia: operacion.state_fiducia,
+                message_fiducia: operacion.message_fiducia,
+
+                status: response.status,
+                message: response.message,
+            });
+            this.logger.log('✅ Nueva operación de FIR Firma creada en la base de datos:', nuevaOperacion.idFIR_OperacionFirma);
+            const idFIR_OperacionFirma = nuevaOperacion.idFIR_OperacionFirma;
+            this.logger.log('✅ Operación de FIR Firma creada con ID:', 0);
+            const firmantes = response.data?.signatories ?? [];
+            this.logger.log('🔍 Firmantes recibidos:', firmantes);
+            for (const firmante of firmantes) {
+                await this.firOperacionesfirmaService.create({
+                    idFIR_OperacionFirma: idFIR_OperacionFirma,
+                    dni: firmante.dni,
+                    name: firmante.name,
+                    first_last_name: firmante.first_last_name,
+                    second_last_name: firmante.second_last_name || null,
+                    email: firmante.email || null,
+                    sign_state: firmante.sign_state || null,
+                    signed_at: firmante.signed_at
+                        ? new Date(firmante.signed_at)
+                        : null,
+                });
+            }
+
+            const documentos = response.data?.documents ?? [];
+            this.logger.log('🔍 Documentos recibidos:', documentos);
+            for (const documento of documentos) {
+                await this.firDocumentosService.create({
+                    idFIR_OperacionFirma: idFIR_OperacionFirma,
+                    code: documento.code,
+                    name: documento.name,
+                    path: documento.path,
+                    state_sign: documento.state_sign,
+                });
+            }
+
+            this.logger.log('✅ Operación de FIR Firma guardada correctamente.');
+            return { message: 'Operación de FIR Firma guardada correctamente.' };
+
+        } catch (error) {
+            this.logger.error(
+                '❌ Error al guardar la operación de FIR Firma en la base de datos',
+                error,
+            );
+            throw new InternalServerErrorException(
+                'Error al guardar la operación de FIR Firma en la base de datos.',
+            );
         }
     }
 
@@ -704,8 +813,42 @@ export class CorporacionDflService {
             this.logger.log(`✅ Respuesta de insertarOperacionFiducia: ${JSON.stringify(response.data)}`);
             return response.data;
         } catch (error) {
-            this.logger.error('❌ Error en insertarOperacionFiducia', error);
-            throw new InternalServerErrorException('Error al insertar operación de fiducia.');
+            //this.logger.error('❌ Error en insertarOperacionFiducia', error);
+            return {
+                status: 400,
+                message: 'Error al insertar operación de fiducia.',
+                hash: '8017212f-2023-4198-9bc4-85ba2ccddeb3',
+            };
+        }
+    }
+
+    /*post
+        /*{
+        "hash_operation" : "8017212f-2023-4198-9bc4-85ba2ccddeb3"
+    }*/
+    private async findOperacionfiduciaByCodeBio(
+        hash_operation: string,
+        token: string,
+        url_signed: string,
+    ): Promise<any> {
+        try {
+            const config = {
+                method: 'post' as const,
+                maxBodyLength: Infinity,
+                url: `${url_signed}`,
+                headers: {
+                    'Content-Type': 'application/json',
+                    Authorization: `Bearer ${token}`,
+                },
+                data: JSON.stringify({ hash_operation }),
+            };
+            this.logger.log(`🚀 Consultando operación de fiducia en DFL con hash_operation: ${hash_operation}`)
+            const response = await axios.request(config);
+            this.logger.log(`✅ Respuesta de findOperacionfiduciaByCodeBio: ${JSON.stringify(response.data)}`);
+            return response.data;
+        } catch (error) {
+            this.logger.error('❌ Error en findOperacionfiduciaByCodeBio', error);
+            throw new InternalServerErrorException('Error al consultar operación de fiducia en DFL.');
         }
     }
 }

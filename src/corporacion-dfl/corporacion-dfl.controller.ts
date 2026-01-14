@@ -39,9 +39,14 @@ export class CorporacionDflController {
     return this.corporacionDflService.handleCallback(callbackData);
   }
 
-  @Post('serviciosia365pro/biometrico/crear-firma-digital/:idSolicitud/:Identidad')
-  async crearFirmaDigital(@Param('idSolicitud') idSolicitud: string, @Param('Identidad') identidad: string) {
-    return this.corporacionDflService.crearFirmaDigital(Number(idSolicitud), identidad);
+  @Post('serviciosia365pro/biometrico/crear-firma-digital/:sSolicitud/:Identidad')
+  async crearFirmaDigital(@Param('sSolicitud') sSolicitud: string, @Param('Identidad') identidad: string) {
+    return this.corporacionDflService.crearFirmaDigital(sSolicitud, identidad);
+  }
+
+  @Post('serviciosia365pro/biometrico/callback-firma-digital')
+  async callbackFirmaDigital(@Body() callbackData: any) {
+    return this.corporacionDflService.guardarOperacionFirma(callbackData);
   }
 
 }

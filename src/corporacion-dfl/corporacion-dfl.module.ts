@@ -26,7 +26,9 @@ import { WebSolicitudgrandeService } from 'src/web_solicitudgrande/web_solicitud
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CreSolicitudWebModule } from 'src/cre_solicitud-web/cre_solicitud-web.module';
 import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposolicitudesweb.service';
-
+import { FirOperacionFirmaModule } from 'src/fir-operacion-firma/fir-operacion-firma.module';
+import { FirOperacionesfirmaModule } from 'src/fir-operacionesfirma/fir-operacionesfirma.module';
+import { FirDocumentosModule } from 'src/fir-documentos/fir-documentos.module';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
@@ -41,6 +43,9 @@ import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposoli
     ]),
     StoreReportsPhoneVerificationModule,
     CreSolicitudWebModule,
+    FirOperacionFirmaModule,
+    FirOperacionesfirmaModule,
+    FirDocumentosModule,
   ],
   controllers: [CorporacionDflController],
   providers: [
@@ -55,7 +60,7 @@ import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposoli
     DflResultadoService,
     DflStoregoogleService,
     WebSolicitudgrandeService,
-    TiemposolicitudeswebService
+    TiemposolicitudeswebService,
 
   ],
   exports: [Tokensia365Service, AnalisisdeidentidadService],
