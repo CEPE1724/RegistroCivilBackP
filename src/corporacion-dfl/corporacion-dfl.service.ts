@@ -293,7 +293,7 @@ export class CorporacionDflService {
 
     private async createDFLAnalisisBiometrico(data: DFLAnalisisBiometrico): Promise<any> {
         try {
-            this.logger.log('🔄 Creando análisis biométrico...', data.error);
+            this.logger.log('🔄 Creando análisis biométrico...', data);
             const nuevoAnalisisBiometrico = await this.dflAnalisisBiometricoService.create({
                 status: data.status,
                 tipo: data.tipo,
@@ -312,7 +312,7 @@ export class CorporacionDflService {
                 img_rostro_dos: data.data.img_rostro_dos,
                 bio_fuente: data.data.bio_fuente,
                 ip_registrada: data.data.ip_registrada,
-                error: data.error || '',
+                error: data.messages.error || '',
             });
             return nuevoAnalisisBiometrico;
         } catch (error) {
@@ -420,7 +420,7 @@ export class CorporacionDflService {
             });
 
             // 👉 Referencia
-            /*
+
             await this.dflReferenciaService.create({
                 identificacion: callbackData.indicadores.metadata.referencia.identificacion,
                 codigo_dactilar: callbackData.indicadores.metadata.referencia.codigo_dactilar,
@@ -448,35 +448,33 @@ export class CorporacionDflService {
                 texto_resumen: callbackData.indicadores.metadata.resultado.texto_resumen,
                 idDFL_AnalisisBiometrico,
             });
-*/
+
             // actualizar AnalisisDeIdentidad estado
             let estadoStatues = callbackData.status === 200 ? 3 : 4; // 3 = Completado, 4 = Error
-            let mensajeError = callbackData.status === 200 ? 'Análisis completado correctamente' : `Error en análisis: ${callbackData.error}`;
+            let mensajeError = callbackData.status === 200 ? 'Análisis completado correctamente' : `Error en análisis: ${callbackData.messages.error || 'Error desconocido'}`;
             await this.analisisdeidentidadService.updateEstadoPorCodigo(callbackData.codigo, estadoStatues, mensajeError);
             const analisisExistente = await this.findAnalisisBycodigo(callbackData.codigo);
 
             if (analisisExistente && analisisExistente.idAnalisisDeIdentidad) {
                 // await this.actualizarCreSolicitud(analisisExistente.idAnalisisDeIdentidad, solicitud);
 
-                const cre_solicitud = await this.findByCedulaWithFirmaDigital(analisisExistente.identificacion, 2);
-                console.log('🔍 cre_solicitud encontrado:', cre_solicitud);
-                if (cre_solicitud && cre_solicitud.sCre_SolicitudWeb) {
-                    await this.updateSolicitudWebCreSolicitud(cre_solicitud.sCre_SolicitudWeb, estadoStatues, 'system_callback');
-                    /* insertar tiempo en tiemposolicitudesweb */
-                    await this.insertarTiempoSolicitudWeb(
-                        {
-                            identificacion: cedula,
-                            callback: '',
-                            motivo: 'Callback DFL',
-                            usuario: 'system_callback',
-                            cre_solicitud: cre_solicitud ? cre_solicitud.sCre_SolicitudWeb : undefined,
-                        },
+                const estados = [2, 4];
+
+                for (const estado of estados) {
+                    const creSolicitud = await this.findByCedulaWithFirmaDigital(
+                        analisisExistente.identificacion,
+                        estado,
+                    );
+
+                    console.log(`🔍 cre_solicitud estado ${estado}:`, creSolicitud);
+
+                    await this.procesarSolicitud(
+                        creSolicitud,
                         estadoStatues,
-                        11,
-                        '',
+                        cedula,
+                        mensajeError
                     );
                 }
-
 
             }
 
@@ -486,6 +484,36 @@ export class CorporacionDflService {
             this.logger.error(`❌ Error procesando callback: ${error.message}`);
             return { message: 'Callback recibido, pero ocurrió un error interno (registrado en logs)' };
         }
+    }
+
+    private async procesarSolicitud(
+        creSolicitud: any,
+        estadoStatues: number,
+        cedula: string,
+        mensajeError: string,
+    ) {
+        if (!creSolicitud?.sCre_SolicitudWeb) return;
+
+        const solicitudWeb = creSolicitud.sCre_SolicitudWeb;
+
+        await this.updateSolicitudWebCreSolicitud(
+            solicitudWeb,
+            estadoStatues,
+            'system_callback',
+        );
+
+        await this.insertarTiempoSolicitudWeb(
+            {
+                identificacion: cedula,
+                callback: '',
+                motivo: 'Callback DFL',
+                usuario: 'system_callback',
+                cre_solicitud: solicitudWeb,
+            },
+            estadoStatues,
+            11,
+            mensajeError
+        );
     }
 
     async findByCedulaWithFirmaDigital(cedula: string, idFirmaElectronica: number): Promise<any> {

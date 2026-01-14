@@ -1576,7 +1576,7 @@ export class CreSolicitudWebService {
 
   /* traer idFirmaDigital igual 1 por cedula */
   async findByCedulaWithFirmaDigital(cedula: string, idFirmaElectronica: number) {
-    return this.creSolicitudWebRepository.findOne({ where: { Cedula: cedula, idFirmaElectronica: idFirmaElectronica } });
+    return this.creSolicitudWebRepository.findOne({ where: { Cedula: cedula, idFirmaElectronica: idFirmaElectronica, Estado: 1 } });
   }
 
   findOne(id: number) {

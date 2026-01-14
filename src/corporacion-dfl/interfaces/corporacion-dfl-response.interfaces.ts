@@ -5,6 +5,10 @@ export interface DFLAnalisisBiometrico {
     codigo:      string;
     error:      string;
     indicadores: Indicadores;
+    messages:    Messages;
+}
+export interface Messages {
+    error: string;
 }
 
 export interface Data {

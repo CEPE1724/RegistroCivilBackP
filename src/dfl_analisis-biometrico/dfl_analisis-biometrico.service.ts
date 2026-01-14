@@ -16,6 +16,7 @@ export class DflAnalisisBiometricoService {
   ) { }
   create(createDflAnalisisBiometricoDto: CreateDflAnalisisBiometricoDto) {
     try {
+      this.logger.log('🔄 Creando análisis biométrico...', createDflAnalisisBiometricoDto);
       const nuevoAnalisis = this.dflAnalisisBiometricoRepository.create(createDflAnalisisBiometricoDto);
       return this.dflAnalisisBiometricoRepository.save(nuevoAnalisis);
     } catch (error) {
