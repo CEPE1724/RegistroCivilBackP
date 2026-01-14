@@ -1502,7 +1502,7 @@ export class CreSolicitudWebService {
       queryBuilder.andWhere('(cre_solicitud_web.idEstadoVerificacionTelefonica = :EstadoTelefonica OR :EstadoTelefonica = 0)', { EstadoTelefonica });
     }
     // Agregar el filtro para bodegas usando IN si el array de bodegasIds no está vacío
-    if (bodega && bodega.length === 1) {
+    if (bodega && bodega.length > 0) {
       queryBuilder.andWhere('cre_solicitud_web.bodega IN (:...bodega)', { bodega });
     }
 
