@@ -33,5 +33,6 @@ export const CacheTTL = {
   nominaById: 1800000, // 30 minutos
   cre_entidadfinanciera: 86400000, // 48 horas
   personal_bdd: 86400000, // 24 horas
+  cupo_credito: 86400000, // 24 horas
   // Agrega más según tus endpoints
 };

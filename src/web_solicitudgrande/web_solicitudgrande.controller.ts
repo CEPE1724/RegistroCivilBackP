@@ -3,7 +3,7 @@ import { WebSolicitudgrandeService } from './web_solicitudgrande.service';
 import { CreateWebSolicitudgrandeDto } from './dto/create-web_solicitudgrande.dto';
 import { UpdateWebSolicitudgrandeDto } from './dto/update-web_solicitudgrande.dto';
 import { UpdateCuotaYCupoDto } from './dto/update-web_solicitudgrande.dto';
-import { Auth } from 'src/auth/decorators';
+import { Auth, GetUser } from 'src/auth/decorators';
 
 @Controller('web-solicitudgrande')
 export class WebSolicitudgrandeController {
@@ -35,20 +35,24 @@ export class WebSolicitudgrandeController {
 
   @Patch('updatecuotaycupo/:id')
   @Auth()
-  updateCuotayCupo(@Param('id') id: string, @Body() updateDto: UpdateCuotaYCupoDto) {
+  updateCuotayCupo(
+    @Param('id') id: string,
+    @Body() updateDto: UpdateCuotaYCupoDto,
+    @GetUser() usuario: { idUsuario: number; Nombre: string; idGrupo: number; Activo: boolean }
+  ) {
     const idNumber = parseInt(id, 10);
     if (isNaN(idNumber)) {
       throw new BadRequestException('ID debe ser un número válido');
     }
-
-    return this.webSolicitudgrandeService.updateCuotayCupo(idNumber, updateDto);
+    // usuario contiene solo los datos del payload JWT
+    return this.webSolicitudgrandeService.updateCuotayCupo(idNumber, updateDto, usuario);
   }
 
   @Get(':id')
-  findOneId(@Param('id') id: string){
-	return this.webSolicitudgrandeService.findOneId(+id)
+  findOneId(@Param('id') id: string) {
+    return this.webSolicitudgrandeService.findOneId(+id)
   }
 
- 
+
 
 }

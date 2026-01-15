@@ -681,4 +681,9 @@ export class CreateWebSolicitudgrandeDto {
   @IsOptional()
   @IsString()
   readonly CelularInmediatoIndependiente?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  readonly CupoCredito?: boolean;
+
 }

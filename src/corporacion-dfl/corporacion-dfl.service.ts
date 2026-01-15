@@ -582,6 +582,7 @@ export class CorporacionDflService {
             this.logger.log(`✅ PDF generado en base64 para la solicitud ID: ${idSolicitud}`);
             this.logger.log(`Base64 PDF 1: ${codigo_interno}`);
             this.logger.log(`Código interno obtenido: ${JSON.stringify(codigo_interno)}`);
+            this.logger.log(`Web Solicitud obtenida: ${JSON.stringify(webSolicitud)}`);
             const insertarOperacionFiduciaPayload = {
                 code_client: '123ABC',
                 code_bio: codigo_interno.codigo,
@@ -695,20 +696,25 @@ export class CorporacionDflService {
             const filePath = join(folderPath, `insertarOperacionFiducia_Payload_${timestamp}_${numerorandom}.json`);
             if (!existsSync(folderPath)) mkdirSync(folderPath, { recursive: true });
             writeFileSync(filePath, JSON.stringify(insertarOperacionFiduciaPayload, null, 2), 'utf8');
-            this.logger.log(`📁 Payload de insertarOperacionFiducia guardado en archivo: ${filePath}`);
-            this.logger.log(`🚀 Payload para insertarOperacionFiducia: ${JSON.stringify(insertarOperacionFiduciaPayload.code_bio)}`);
+            //  this.logger.log(`📁 Payload de insertarOperacionFiducia guardado en archivo: ${filePath}`);
+            //this.logger.log(`🚀 Payload para insertarOperacionFiducia: ${JSON.stringify(insertarOperacionFiduciaPayload.code_bio)}`);
 
-          
             const respuesta = await this.insertarOperacionFiducia(insertarOperacionFiduciaPayload, tokenGuardado, this.AUTH_FIRMA_DFL);
             console.log('Respuesta de insertarOperacionFiducia:', respuesta);
+
+            // Guardar la respuesta en un archivo JSON
+            const respuestaFilePath = join(folderPath, `respuesta_insertarOperacionFiducia_${timestamp}_${numerorandom}.json`);
+            writeFileSync(respuestaFilePath, JSON.stringify(respuesta, null, 2), 'utf8');
+            this.logger.log(`📁 Respuesta de insertarOperacionFiducia guardada en archivo: ${respuestaFilePath}`);
             if (respuesta.status === 200) {
-                const resultadoFiducia = await this.findOperacionfiduciaByCodeBio(respuesta.hash, tokenGuardado, this.DFL_SEARCH_OPERATION_URL);
+                const hashOperacion = respuesta.data?.hash;
+                const resultadoFiducia = await this.findOperacionfiduciaByCodeBio(hashOperacion, tokenGuardado, this.DFL_SEARCH_OPERATION_URL);
                 this.logger.log(`✅ Operación de fiducia insertada correctamente: ${JSON.stringify(resultadoFiducia)}`);
                 if (resultadoFiducia.status === 200) {
                     this.logger.log(`✅ Operación de fiducia verificada correctamente: ${JSON.stringify(resultadoFiducia)}`);
                     await this.guardarOperacionFirma(resultadoFiducia);
                 }
-                
+                this.logger.log(`✅ Operación de fiducia verificada correctamente: ${JSON.stringify(resultadoFiducia)}`);
                 // await this.updateSolicitudWebCreSolicitud(sSolicitud, 3, 'system_firma_digital');
             }
             this.logger.log(`✅ Firma digital creada: ${JSON.stringify(respuesta)}`);
@@ -798,6 +804,7 @@ export class CorporacionDflService {
         url_signed: string,
     ): Promise<any> {
         try {
+            this.logger.log(`🚀 URL de inserción: ${url_signed}`);
             const config = {
                 method: 'post' as const,
                 maxBodyLength: Infinity,
@@ -808,16 +815,16 @@ export class CorporacionDflService {
                 },
                 data: JSON.stringify(payload),
             };
-            this.logger.log(`🚀 Enviando solicitud insertarOperacionFiducia a DFL con payload: ${JSON.stringify(url_signed)}`);
+            // this.logger.log(`🚀 Enviando solicitud insertarOperacionFiducia a DFL con payload: ${JSON.stringify(payload)}`);
             const response = await axios.request(config);
             this.logger.log(`✅ Respuesta de insertarOperacionFiducia: ${JSON.stringify(response.data)}`);
             return response.data;
         } catch (error) {
-            //this.logger.error('❌ Error en insertarOperacionFiducia', error);
-            return {
+            this.logger.error('❌ Error en insertarOperacionFiducia', error?.response?.data || error);
+            return error?.response?.data || {
                 status: 400,
                 message: 'Error al insertar operación de fiducia.',
-                hash: '8017212f-2023-4198-9bc4-85ba2ccddeb3',
+                hash: '',
             };
         }
     }
@@ -832,6 +839,8 @@ export class CorporacionDflService {
         url_signed: string,
     ): Promise<any> {
         try {
+            this.logger.log(`🚀 Consultando operación de fiducia en DFL con hash_operation: ${hash_operation}`);
+            this.logger.log(`🚀 URL de consulta: ${url_signed}`);
             const config = {
                 method: 'post' as const,
                 maxBodyLength: Infinity,
@@ -842,7 +851,7 @@ export class CorporacionDflService {
                 },
                 data: JSON.stringify({ hash_operation }),
             };
-            this.logger.log(`🚀 Consultando operación de fiducia en DFL con hash_operation: ${hash_operation}`)
+            this.logger.log(`🚀 Consultando operación de fiducia en DFL con hash_operation: ${hash_operation}`);
             const response = await axios.request(config);
             this.logger.log(`✅ Respuesta de findOperacionfiduciaByCodeBio: ${JSON.stringify(response.data)}`);
             return response.data;

@@ -23,7 +23,8 @@
     [idProductos] [int] NULL,
     [FechaSistema] [datetime] NULL,
     [Estacion] [varchar](50) NULL,
-    [Usuario] [varchar](50) NULL,*/
+    [Usuario] [varchar](50) NULL,
+    CupoCredito BIT NOT NULL DEFAULT 0*/
 
 import {
     IsNotEmpty, IsString, IsNumber, IsBoolean, IsDate, IsOptional, isNumber, Min,
@@ -216,6 +217,11 @@ export class CreateCreSolicitudWebDto {
     @IsNumber()
     @IsOptional()
     idEstadoAnalisisDeIdentidad: number;
+
+    @IsBoolean()
+    @IsOptional()
+    CupoCredito: boolean;
+    
 
     /**
      * UUID único para idempotencia

@@ -183,6 +183,7 @@ import { PersonalBddModule } from './personal-bdd/personal-bdd.module';
 import { FirOperacionFirmaModule } from './fir-operacion-firma/fir-operacion-firma.module';
 import { FirOperacionesfirmaModule } from './fir-operacionesfirma/fir-operacionesfirma.module';
 import { FirDocumentosModule } from './fir-documentos/fir-documentos.module';
+import { CupoCreditoModule } from './cupo-credito/cupo-credito.module';
 
 
 
@@ -494,7 +495,8 @@ import { FirDocumentosModule } from './fir-documentos/fir-documentos.module';
     PersonalBddModule,
     FirOperacionFirmaModule,
     FirOperacionesfirmaModule,
-    FirDocumentosModule
+    FirDocumentosModule,
+    CupoCreditoModule
 
   ],
   providers: [

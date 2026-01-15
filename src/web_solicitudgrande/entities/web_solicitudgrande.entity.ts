@@ -830,24 +830,27 @@ export class WebSolicitudgrande {
     })
     Facebook: string;
 
-	@Column('varchar', {
-		default: ''
-	})
-	JefeInmediato: string;
+    @Column('varchar', {
+        default: ''
+    })
+    JefeInmediato: string;
 
-	@Column('varchar', {
-		default: ''
-	})
-	CelularInmediato: string;
+    @Column('varchar', {
+        default: ''
+    })
+    CelularInmediato: string;
 
-	@Column('varchar', {
-		default: ''
-	})
-	JefeInmediatoIndependiente: string;
+    @Column('varchar', {
+        default: ''
+    })
+    JefeInmediatoIndependiente: string;
 
-	@Column('varchar', {
-		default: ''
-	})
-	CelularInmediatoIndependiente: string;
+    @Column('varchar', {
+        default: ''
+    })
+    CelularInmediatoIndependiente: string;
+
+    @Column({ type: 'bit', default: false })
+    CupoCredito: boolean;
 
 }

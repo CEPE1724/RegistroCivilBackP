@@ -19,5 +19,6 @@ import { MenuItemAccessUser } from './entities/menu-items-access-user.entity'; /
   ],
   controllers: [MenuItemRoleController],
   providers: [MenuItemRoleService],
+  exports: [MenuItemRoleService],
 })
 export class MenuItemRoleModule {}

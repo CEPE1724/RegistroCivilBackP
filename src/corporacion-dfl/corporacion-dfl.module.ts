@@ -22,7 +22,7 @@ import { DflMetadataProcesadaService } from 'src/dfl_metadata-procesada/dfl_meta
 import { DflReferenciaService } from 'src/dfl_referencia/dfl_referencia.service';
 import { DflResultadoService } from 'src/dfl_resultado/dfl_resultado.service';
 import { DflStoregoogleService } from 'src/dfl_storegoogle/dfl_storegoogle.service';
-import { WebSolicitudgrandeService } from 'src/web_solicitudgrande/web_solicitudgrande.service';
+import { WebSolicitudgrandeModule } from 'src/web_solicitudgrande/web_solicitudgrande.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { CreSolicitudWebModule } from 'src/cre_solicitud-web/cre_solicitud-web.module';
 import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposolicitudesweb.service';
@@ -46,6 +46,7 @@ import { FirDocumentosModule } from 'src/fir-documentos/fir-documentos.module';
     FirOperacionFirmaModule,
     FirOperacionesfirmaModule,
     FirDocumentosModule,
+    WebSolicitudgrandeModule,
   ],
   controllers: [CorporacionDflController],
   providers: [
@@ -59,7 +60,6 @@ import { FirDocumentosModule } from 'src/fir-documentos/fir-documentos.module';
     DflReferenciaService,
     DflResultadoService,
     DflStoregoogleService,
-    WebSolicitudgrandeService,
     TiemposolicitudeswebService,
 
   ],
