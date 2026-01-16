@@ -86,21 +86,21 @@ export class WebSolicitudgrandeService {
         this.logger.log(`CupoData obtenida: ${JSON.stringify(cupoData)}`);
         if (permisoVerificado.permiso === 0) {
           this.logger.warn(`Usuario ${usuario.idUsuario} no tiene permiso para actualizar el cupo.`);
-          throw new BadRequestException({
+          return {
             success: false,
             message: 'Usuario no tiene permiso para actualizar el cupo.',
             error: 'Permiso denegado',
             statusCode: 400
-          });
+          };
         }
         if (permisoVerificado.estado === "SIN PERMISO") {
           this.logger.warn(`Usuario ${usuario.idUsuario} no tiene permiso para actualizar el cupo.`);
-          throw new BadRequestException({
+           return {
             success: false,
             message: 'Usuario no identificado Autonomía o Autonomía Parcial para actualizar el cupo.',
             error: 'Permiso denegado',
             statusCode: 400
-          });
+          };
         }
         const PorcentajeCupo = cupoData.find(c => c.Autonomia && permisoVerificado.estado === "EDITAR CUPO AUTONOMIA")?.Porcentaje
           || cupoData.find(c => c.Parcial && permisoVerificado.estado === "EDITAR CUPO AUTONOMIA PARCIAL")?.Porcentaje;
@@ -114,12 +114,12 @@ export class WebSolicitudgrandeService {
         this.logger.log(`Cupo solicitado en updateDto: ${updateDto.CuotaAsignada}`);
         if (updateDto.CuotaAsignada !== undefined && updateDto.CuotaAsignada > cupoMaximoPermitido + cuotaAsignadaAnterior) {
           this.logger.warn(`Cupo solicitado ${updateDto.CuotaAsignada} excede el máximo permitido ${cupoMaximoPermitido + cuotaAsignadaAnterior} para el usuario ${usuario.idUsuario}.`);
-          throw new BadRequestException({
+           return {
             success: false,
             message: `El cupo solicitado excede el máximo permitido de ${cupoMaximoPermitido + cuotaAsignadaAnterior}.`,
             error: 'Cupo excedido',
             statusCode: 400
-          });
+          };
         }
       }
 
@@ -131,7 +131,7 @@ export class WebSolicitudgrandeService {
         }
         if (cuotaValue === true && (usuario.idGrupo === 22 || usuario.idGrupo === 24)) {
           this.logger.warn(`Cuota Asignada no puede ser actualizada porque ya fue Actualizada por un usuario con permisos.`);
-          throw new BadRequestException({
+          return({
             success: false,
             message: 'No es posible actualizar la Cuota Asignada porque ya fue actualizada por un usuario autorizado.',
             error: 'Actualización no permitida',
@@ -163,7 +163,7 @@ export class WebSolicitudgrandeService {
     }
     catch (error) {
       this.logger.error(error.message, error.stack);
-      if (error instanceof NotFoundException || error instanceof BadRequestException) {
+      if (error instanceof NotFoundException ) {
         throw error;
       }
       // Mensaje claro para el usuario final
@@ -191,7 +191,7 @@ export class WebSolicitudgrandeService {
       // Filtrar solo los permisos activos
       const permisosActivos = permisos.filter((p: any) => p.Activo === true || p.Activo === 1);
       // Buscar los permisos relevantes
-      const tieneEditarCupo = permisosActivos.some((p: any) => p.Permisos === 'EDITAR CUPO');
+      const tieneEditarCupo = permisosActivos.some((p: any) => p.Permisos === 'EDITAR VALORES DE CREDITO');
       const tieneAutonomia = permisosActivos.some((p: any) => p.Permisos === 'EDITAR CUPO AUTONOMIA');
       const tieneAutonomiaParcial = permisosActivos.some((p: any) => p.Permisos === 'EDITAR CUPO AUTONOMIA PARCIAL');
 
