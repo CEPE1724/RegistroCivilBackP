@@ -95,15 +95,22 @@ export class WebSolicitudgrandeService {
         }
         if (permisoVerificado.estado === "SIN PERMISO") {
           this.logger.warn(`Usuario ${usuario.idUsuario} no tiene permiso para actualizar el cupo.`);
-           return {
+          return {
             success: false,
             message: 'Usuario no identificado Autonomía o Autonomía Parcial para actualizar el cupo.',
             error: 'Permiso denegado',
             statusCode: 400
           };
         }
-        const PorcentajeCupo = cupoData.find(c => c.Autonomia && permisoVerificado.estado === "EDITAR CUPO AUTONOMIA")?.Porcentaje
-          || cupoData.find(c => c.Parcial && permisoVerificado.estado === "EDITAR CUPO AUTONOMIA PARCIAL")?.Porcentaje;
+
+        let PorcentajeCupo = 0;
+        if (permisoVerificado.estado === "EDITAR CUPO AUTONOMIA") {
+          // Solo toma el porcentaje donde Autonomia == 1
+          PorcentajeCupo = cupoData.find(c => c.Autonomia == true)?.Porcentaje;
+        } else if (permisoVerificado.estado === "EDITAR CUPO AUTONOMIA PARCIAL") {
+          // Solo toma el porcentaje donde Parcial == 1
+          PorcentajeCupo = cupoData.find(c => c.Parcial == true)?.Porcentaje;
+        }
 
         this.logger.log(`PorcentajeCupo determinado: ${PorcentajeCupo}`);
         /* EL CUPO NUEVO NO PUEDE EXCEDER EL PORCENTAJE PERMITIDO SEGÚN EL TIPO DE AUTONOMÍA  DEL CUPO ANTEIOR*/
@@ -114,7 +121,7 @@ export class WebSolicitudgrandeService {
         this.logger.log(`Cupo solicitado en updateDto: ${updateDto.CuotaAsignada}`);
         if (updateDto.CuotaAsignada !== undefined && updateDto.CuotaAsignada > cupoMaximoPermitido + cuotaAsignadaAnterior) {
           this.logger.warn(`Cupo solicitado ${updateDto.CuotaAsignada} excede el máximo permitido ${cupoMaximoPermitido + cuotaAsignadaAnterior} para el usuario ${usuario.idUsuario}.`);
-           return {
+          return {
             success: false,
             message: `El cupo solicitado excede el máximo permitido de ${cupoMaximoPermitido + cuotaAsignadaAnterior}.`,
             error: 'Cupo excedido',
@@ -131,7 +138,7 @@ export class WebSolicitudgrandeService {
         }
         if (cuotaValue === true && (usuario.idGrupo === 22 || usuario.idGrupo === 24)) {
           this.logger.warn(`Cuota Asignada no puede ser actualizada porque ya fue Actualizada por un usuario con permisos.`);
-          return({
+          return ({
             success: false,
             message: 'No es posible actualizar la Cuota Asignada porque ya fue actualizada por un usuario autorizado.',
             error: 'Actualización no permitida',
@@ -163,7 +170,7 @@ export class WebSolicitudgrandeService {
     }
     catch (error) {
       this.logger.error(error.message, error.stack);
-      if (error instanceof NotFoundException ) {
+      if (error instanceof NotFoundException) {
         throw error;
       }
       // Mensaje claro para el usuario final
