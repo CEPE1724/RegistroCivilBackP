@@ -1,11 +1,11 @@
-import { Controller, Post, Body, Logger, BadRequestException, Param } from '@nestjs/common';
+import { Controller, Post, Body, Logger, BadRequestException, Param, Get } from '@nestjs/common';
 import { CorporacionDflService } from './corporacion-dfl.service';
 import { DFLAnalisisBiometrico } from '../corporacion-dfl/interfaces/corporacion-dfl-response.interfaces';
-import { AuthGuard } from '@nestjs/passport';
 import { Auth, GetUser } from '../auth/decorators';
 @Controller('corporacion-dfl')
 export class CorporacionDflController {
-  private readonly logger = new Logger(CorporacionDflController.name);
+
+  private readonly logger = new Logger('CorporacionDflController');
 
   constructor(private readonly corporacionDflService: CorporacionDflService) { }
 
@@ -39,14 +39,38 @@ export class CorporacionDflController {
     return this.corporacionDflService.handleCallback(callbackData);
   }
 
-  @Post('serviciosia365pro/biometrico/crear-firma-digital/:sSolicitud/:Identidad')
-  async crearFirmaDigital(@Param('sSolicitud') sSolicitud: string, @Param('Identidad') identidad: string) {
-    return this.corporacionDflService.crearFirmaDigital(sSolicitud, identidad);
+  @Post('serviciosia365pro/biometrico/crear-firma-digital')
+  @Auth()
+  async crearFirmaDigital(
+    @Body() formData: {
+      identificacion: string;
+      cre_solicitud: string;
+      Estado?: number;
+    },
+    @GetUser() usuario: { idUsuario: number; Nombre: string; idGrupo: number; Activo: boolean }
+  ) {
+    console.log('formData recibido:', formData);
+    const { identificacion, cre_solicitud, Estado } = formData;
+    const sSolicitud = cre_solicitud;
+    const identidad = identificacion;
+
+    if (!identidad || !sSolicitud) {
+      this.logger.error('❌ Faltan campos obligatorios para crear la firma digital');
+      throw new BadRequestException('Faltan campos obligatorios para crear la firma digital');
+    }
+    this.logger.log(`Iniciando creación de firma digital para solicitud: ${sSolicitud} y identidad: ${identidad}`);
+    return this.corporacionDflService.crearFirmaDigital(sSolicitud, identidad, Estado, usuario);
   }
 
   @Post('serviciosia365pro/biometrico/callback-firma-digital')
   async callbackFirmaDigital(@Body() callbackData: any) {
     return this.corporacionDflService.guardarOperacionFirma(callbackData);
   }
+  /*
+  @Get('serviciosia365pro/biometrico/callback-firma-digital/:idOperacionFirma')
+  @Auth()
+  async obtenerEstadoFirmaDigital(@Param('idOperacionFirma') idOperacionFirma: string) {
+    return this.corporacionDflService.obtenerEstadoFirmaDigital(idOperacionFirma);
+  }*/
 
 }

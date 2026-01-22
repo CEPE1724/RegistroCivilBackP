@@ -7,7 +7,7 @@
     valido_hasta DATETIME NOT NULL,
     Usuario VARCHAR(50) DEFAULT '',
     idCre_SolicitudWeb int default 0 ,
-	codigo_interno VARCHAR(500) DEFAULT '',
+    codigo_interno VARCHAR(500) DEFAULT '',
     idEstadoAnalisisDeIdentidad INT DEFAULT 0,
     FechaSistema DATETIME DEFAULT GETDATE(),
     Mensaje varchar(500) default '', 
@@ -45,7 +45,16 @@ export class Analisisdeidentidad {
     Mensaje: string
     @Column({ type: 'datetime', nullable: true })
     FechaRespuesta: Date | null;
-    @Column({ type: 'varchar', length: 1000, nullable: true })
-    sCreSolicitudWeb: string 
+    @Column({ length: 100, default: '' })
+    hash_operation: string;
+
+    // [sCreSolicitudWeb] [uniqueidentifier] NULL,
+    @Column({
+        type: 'uniqueidentifier',
+        name: 'sCreSolicitudWeb',
+        nullable: true,
+    })
+    sCreSolicitudWeb: string | null;
+
 }
 

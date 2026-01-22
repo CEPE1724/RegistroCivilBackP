@@ -22,6 +22,7 @@ import { FirOperacionesfirmaService } from 'src/fir-operacionesfirma/fir-operaci
 import { FirDocumentosService } from 'src/fir-documentos/fir-documentos.service';
 import { join } from 'path';
 import { existsSync, mkdirSync, writeFileSync } from 'fs';
+import { Nombre } from 'src/cognosolicitudcredito/interfaces/cognoapi-response.interface';
 @Injectable()
 export class CorporacionDflService {
     private readonly logger = new Logger(CorporacionDflService.name);
@@ -141,12 +142,12 @@ export class CorporacionDflService {
             throw new InternalServerErrorException('Error al obtener los análisis de identidad desde la base de datos.');
         }
     }
-    // await this.insertarTiempoSolicitudWeb(form, 2,1, 2, nuevoAnalisis.data.url);
+
     private async insertarTiempoSolicitudWeb(
         form: { identificacion: string; callback: string; motivo: string; usuario: string; cre_solicitud?: string },
-        idEstadoVerificacionDocumental: number, Tipo: number, URLBiometrico: string) {
+        idEstadoVerificacionDocumental: number, Tipo: number, URLBiometrico: string, Estado?: number ) {
         try {
-            const solicitudWeb = await this.findSolicitudWebCreSolicitud(form.cre_solicitud, 1);
+            const solicitudWeb = await this.findSolicitudWebCreSolicitud(form.cre_solicitud, Estado);
             const nuevoTiempo = await this.tiemposolicitudeswebService.create({
                 idCre_SolicitudWeb: solicitudWeb ? solicitudWeb.idCre_SolicitudWeb : 0,
                 idEstadoVerificacionDocumental: idEstadoVerificacionDocumental,
@@ -186,6 +187,28 @@ export class CorporacionDflService {
         } catch (error) {
             this.logger.error('❌ Error al actualizar cre_solicitud en cre_solicitud_web', error);
             throw new InternalServerErrorException('Error al actualizar cre_solicitud en cre_solicitud_web.');
+        }
+    }
+
+    private async updateAnalisisdeidentidadCreSolicitud(codigo_interno: string, idEstadoAnalisisDeIdentidad: number, idCre_SolicitudWeb: number, sCreSolicitudWeb: string, hashOperacion: string): Promise<any> {
+        try {
+            this.logger.log(`🔄 Actualizando análisis de identidad para codigo_interno: ${codigo_interno}`);
+            this.logger.log(`🔄 Nuevos valores - idEstadoAnalisisDeIdentidad: ${idEstadoAnalisisDeIdentidad}, 
+                idCre_SolicitudWeb: ${idCre_SolicitudWeb}, sCreSolicitudWeb: ${sCreSolicitudWeb}`);
+              
+            const actualizado = await this.analisisdeidentidadService.updateForByCodigo(codigo_interno,
+                {
+                    idEstadoAnalisisDeIdentidad: idEstadoAnalisisDeIdentidad,
+                    idCre_SolicitudWeb: idCre_SolicitudWeb,
+                    sCreSolicitudWeb: sCreSolicitudWeb,
+                    hash_operation: hashOperacion
+                }
+
+            );
+            return actualizado;
+        } catch (error) {
+            this.logger.error('❌ Error al actualizar cre_solicitud en análisis de identidad', error);
+            throw new InternalServerErrorException('Error al actualizar cre_solicitud en análisis de identidad.');
         }
     }
 
@@ -555,172 +578,201 @@ export class CorporacionDflService {
         }
     }
 
-    async crearFirmaDigital(sSolicitud: string, identidad: string): Promise<any> {
+    private async getAllBase64Documents(idSolicitud: number): Promise<any> {
         try {
-            /* buscar iscre_solicitud_web */
-            const sCre_SolicitudWeb = await this.findSolicitudWebCreSolicitud(sSolicitud);
+            this.logger.log(`🔄 Generando PDFs en base64 para solicitud ID: ${idSolicitud}`);
+            return {
+                base64_pdf1: await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(idSolicitud),
+                base64_gastoCobranza: await this.storeReportsPhoneVerificationService.getGastosCobranzasBase64Report(idSolicitud),
+                base64_consentTratDatos: await this.storeReportsPhoneVerificationService.getConsentimientoTratDatosBase64(idSolicitud),
+                base64_pagareOrden: await this.storeReportsPhoneVerificationService.getPagareALaOrdenBase64(idSolicitud),
+                base64_entregaDocCred: await this.storeReportsPhoneVerificationService.getActaEntregaDocsBase64(idSolicitud),
+                base64_compromisoLugPag: await this.storeReportsPhoneVerificationService.getCompromisoLugPagoBase64(idSolicitud),
+                base64_declarComprom: await this.storeReportsPhoneVerificationService.getDeclaracionCompromisosBase64(idSolicitud),
+                base64_contratComprVent: await this.storeReportsPhoneVerificationService.getcompraVentaResDominioBase64(idSolicitud),
+                base64_tabAmortizacion: await this.storeReportsPhoneVerificationService.getTablaAmortizacionBase64(idSolicitud),
+            };
+        } catch (error) {
+            this.logger.error(`❌ Error generando PDFs en base64`, error);
+            throw new InternalServerErrorException('Error al generar los PDFs en base64.');
+        }
+    }
+
+    private buildFiduciaPayload(webSolicitud: any, codigo_interno: any, identidad: string, base64Docs: any): FiduciaPayload {
+        return {
+            code_client: '123ABC',
+            code_bio: codigo_interno.codigo,
+            type_process: 'VARIOS',
+            data_fiducia: {
+                CodigoNegocio: '3',
+                TipoOperacion: 'E',
+                NumeroOperacion: codigo_interno.codigo_interno,
+                FechaEmision: '2025-10-02 15:51:38.987000',
+                FechaVencimiento: '2026-10-02 00:00:00',
+                FechaFirma: '2025-10-02 15:51:38.987000',
+                Plazo: '12',
+                Tasa: '15.60',
+                Monto: '589.88',
+                Cuota: '53.41',
+                DistribucionGeografica: 'GUAYAS',
+                Acreedor: {
+                    CodigoTipoIdentificacion: '2',
+                    NumeroIdentificacion: '09999999999999',
+                    RazonSocial: 'POINT.',
+                },
+                Deudor: {
+                    CodigoTipoPersona: '1',
+                    CodigoTipoIdentificacion: '1',
+                    NumeroIdentificacion: identidad,
+                    CodigoNacionalidad: '593',
+                    Nacionalidad: 'ECUATORIANA',
+                    RazonSocial: 'XXXXXX',
+                    PrimerNombre: webSolicitud.PrimerNombre,
+                    SegundoNombre: webSolicitud.SegundoNombre || '',
+                    PrimerApellido: webSolicitud.ApellidoPaterno,
+                    SegundoApellido: webSolicitud.ApellidoMaterno || '',
+                    Correo: 'ecepeda@credisolucion.com.ec',
+                    Celular: `+593${webSolicitud.Celular.slice(1)}`,
+                    Telefono: '04/2111111',
+                    Direccion: webSolicitud.ReferenciaUbicacion || 'N/A',
+                    CallePrincipal: webSolicitud.CallePrincipal || 'SANTA LUCIA',
+                    Numeracion: webSolicitud.NumeroCasa || 'SN',
+                    CalleSecundaria: webSolicitud.CalleSecundaria || 'BARRANQUILLA',
+                    ReferenciaDireccion: webSolicitud.ReferenciaUbicacion || 'None',
+                    CodigoPaisDireccion: '593',
+                    CodigoProvinciaDireccion: '217',
+                    CodigoCiudadDireccion: '21701',
+                    CodigoParroquiaDireccion: '2170103',
+                },
+            },
+            signatories: [
+                {
+                    dni: identidad,
+                    name: webSolicitud.PrimerNombre,
+                    first_last_name: webSolicitud.ApellidoPaterno,
+                    second_last_name: webSolicitud.ApellidoMaterno,
+                    email: webSolicitud.Email || '',
+                    phone: `+593${webSolicitud.Celular.slice(1)}`,
+                    address: webSolicitud.CallePrincipal,
+                    city: webSolicitud.CalleSecundaria,
+                },
+            ],
+            documents: [
+                { code: "SEGUNDO_PAGARE", name: "Segundo P", base64: base64Docs.base64_pdf1 },
+                { code: "CONVENIO_ADHESION", name: "Convenio", base64: base64Docs.base64_gastoCobranza },
+                { code: "LIQUIDACION", name: "Liquidacion", base64: base64Docs.base64_consentTratDatos },
+                { code: "ANALISIS_DOMICILIARIO", name: "Analisis Dom", base64: base64Docs.base64_pagareOrden },
+                { code: "PAGARE_A_LA_ORDEN", name: "Pagare", base64: base64Docs.base64_entregaDocCred },
+                { code: "ACTA_ENTREGA_DOCUMENTOS", name: "Acta Entrega", base64: base64Docs.base64_compromisoLugPag },
+                { code: "COMPROMISO_LUGAR_PAGO", name: "Compromiso Lugar Pago", base64: base64Docs.base64_declarComprom },
+                { code: "DECLARACION_COMPROMISOS", name: "Declaracion Compromisos", base64: base64Docs.base64_contratComprVent },
+                { code: "TABLA_AMORTIZACION", name: "Tabla Amortizacion", base64: base64Docs.base64_tabAmortizacion },
+            ]
+        } as FiduciaPayload;
+    }
+
+    private saveLogFile(tipo: string, data: any, timestamp: string, numeroRandom: number): void {
+        const folderPath = join(__dirname, '../../logs/biometrico');
+        const filePath = join(folderPath, `${tipo}_${timestamp}_${numeroRandom}.json`);
+        if (!existsSync(folderPath)) mkdirSync(folderPath, { recursive: true });
+        writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf8');
+        this.logger.log(`📁 Archivo guardado: ${filePath}`);
+    }
+
+    private async completarFirmaDigitalExitosa(sSolicitud: string, codigo_interno: any, idSolicitud: number, sCre_SolicitudWeb: any, hashOperacion: string, usuario: any, resultadoFiducia: any): Promise<void> {
+        this.logger.log(`✅ Completando operación de firma digital`);
+        await this.updateSolicitudWebCreSolicitud(sSolicitud, 6, usuario.Nombre);
+        await this.updateAnalisisdeidentidadCreSolicitud(codigo_interno.codigo, 5, idSolicitud, sCre_SolicitudWeb.sCre_SolicitudWeb, hashOperacion);
+        await this.insertarTiempoSolicitudWeb({
+            identificacion: '',
+            callback: '',
+            motivo: 'Callback DFL',
+            usuario: usuario.Nombre,
+            cre_solicitud: sSolicitud,
+        }, 6, 11, '');
+        await this.guardarOperacionFirma(resultadoFiducia);
+    }
+
+    async crearFirmaDigital(sSolicitud: string, identidad: string, Estado: number | undefined, usuario: { idUsuario: number; Nombre: string; idGrupo: number; Activo: boolean }): Promise<any> {
+        try {
+            // 1. Validar solicitud web
+            let newEstado = Estado - 1;
+            const sCre_SolicitudWeb = await this.findSolicitudWebCreSolicitud(sSolicitud, newEstado);
             if (!sCre_SolicitudWeb) {
                 this.logger.error(`❌ No se encontró la solicitud web para cre_solicitud: ${sSolicitud}`);
                 throw new InternalServerErrorException('No se encontró la solicitud web asociada.');
             }
             const idSolicitud = sCre_SolicitudWeb.idCre_SolicitudWeb;
-            // Lógica para crear la firma digital
+            this.logger.log(`🔄 Procesando firma digital para solicitud ID: ${idSolicitud}, cre_solicitud: ${sSolicitud}`);
+          
+            const ObtenerAnalisis = await this.obtenerEstadoFirmaDigital(sSolicitud, sCre_SolicitudWeb.idCre_SolicitudWeb);
+            this.logger.log(`🔄 Estado actual de la firma digital: ${JSON.stringify(ObtenerAnalisis)}`);
+         
+            if (ObtenerAnalisis && ObtenerAnalisis.hash_operation) {
+                /* const resultadoFiducia = await this.findOperacionfiduciaByCodeBio(hashOperacion, tokenGuardado, this.DFL_SEARCH_OPERATION_URL);*/
+                const resultadoFiducia = await this.findOperacionfiduciaByCodeBio(ObtenerAnalisis.hash_operation, await this.allTokens(), this.DFL_SEARCH_OPERATION_URL);
+                if (resultadoFiducia.status === 200) {
+                    const response = await this.guardarOperacionFirma(resultadoFiducia);
+                    this.logger.log(`🔄 Respuesta de guardar operación de firma: ${JSON.stringify(response)}`);
+
+                    const estadoFirma = response.estadoFirma;
+                    const estadoAnalisi = estadoFirma - 1; // Ajuste para mapeo de estados
+                    const linkFirma = response.linkFirma?.trim() || '';
+                    this.logger.log(`🔄 Mapeo de estados - estadoFirma: ${estadoFirma}, estadoAnalisi: ${estadoAnalisi}, LINK: ${linkFirma}`);
+                  //  this.logger.log(`🔄 Mapeo de estados - estadoFirma: ${estadoFirma}, sSolicitud: ${sCre_SolicitudWeb.data}`);
+                  //  return;
+                    await this.updateSolicitudWebCreSolicitud(sSolicitud, estadoFirma, usuario.Nombre);
+                    await this.updateAnalisisdeidentidadCreSolicitud(ObtenerAnalisis.codigo, estadoAnalisi, idSolicitud, sCre_SolicitudWeb.sCreSolicitudWeb, ObtenerAnalisis.hash_operation);
+                    await this.insertarTiempoSolicitudWeb({
+                        identificacion: '',
+                        callback: '',
+                        motivo: 'Callback DFL',
+                        usuario: usuario.Nombre,
+                        cre_solicitud: sSolicitud,
+                    }, estadoFirma, 11, linkFirma);
+                    this.logger.log(`✅ Estado de la firma digital recuperada: ${estadoFirma}`);
+                    this.logger.log(`✅ Operación de firma digital ya guardada en la base de datos para hash: ${ObtenerAnalisis.hash_operation}`);
+                }
+                this.logger.log(`✅ La solicitud web ya tiene una firma digital asociada: ${ObtenerAnalisis.hash_operation}`);
+                return ObtenerAnalisis;
+            }
+            
+            // 2. Obtener datos necesarios
             const tokenGuardado = await this.allTokens();
             const codigo_interno = await this.allAnalisisdeidentidad(identidad, 3);
-            this.logger.log(`🔄 Generando PDFs en base64 para la solicitud ID: ${idSolicitud}`);
-            this.logger.log(`Código interno para la solicitud: ${JSON.stringify(codigo_interno)}`);
-            const base64_pdf1 = await this.storeReportsPhoneVerificationService.getDflFirmaDigitalReport(idSolicitud);
-            const base64_gastoCobranza = await this.storeReportsPhoneVerificationService.getGastosCobranzasBase64Report(idSolicitud);
-            const base64_consentTratDatos = await this.storeReportsPhoneVerificationService.getConsentimientoTratDatosBase64(idSolicitud);
-            const base64_pagareOrden = await this.storeReportsPhoneVerificationService.getPagareALaOrdenBase64(idSolicitud);
-            const base64_entregaDocCred = await this.storeReportsPhoneVerificationService.getActaEntregaDocsBase64(idSolicitud);
-            const base64_compromisoLugPag = await this.storeReportsPhoneVerificationService.getCompromisoLugPagoBase64(idSolicitud);
-            const base64_declarComprom = await this.storeReportsPhoneVerificationService.getDeclaracionCompromisosBase64(idSolicitud);
-            const base64_contratComprVent = await this.storeReportsPhoneVerificationService.getcompraVentaResDominioBase64(idSolicitud);
-            const base64_tabAmortizacion = await this.storeReportsPhoneVerificationService.getTablaAmortizacionBase64(idSolicitud);
             const webSolicitud = await this.webSolicitudgrandeService.findOneId(idSolicitud);
-            this.logger.log(`✅ PDF generado en base64 para la solicitud ID: ${idSolicitud}`);
-            this.logger.log(`Base64 PDF 1: ${codigo_interno}`);
-            this.logger.log(`Código interno obtenido: ${JSON.stringify(codigo_interno)}`);
-            this.logger.log(`Web Solicitud obtenida: ${JSON.stringify(webSolicitud)}`);
-            const insertarOperacionFiduciaPayload = {
-                code_client: '123ABC',
-                code_bio: codigo_interno.codigo,
-                type_process: 'VARIOS',
-                data_fiducia: {
-                    CodigoNegocio: '3',
-                    TipoOperacion: 'E',
-                    NumeroOperacion: codigo_interno.codigo_interno,
-                    FechaEmision: '2025-10-02 15:51:38.987000',
-                    FechaVencimiento: '2026-10-02 00:00:00',
-                    FechaFirma: '2025-10-02 15:51:38.987000',
-                    Plazo: '12',
-                    Tasa: '15.60',
-                    Monto: '589.88',
-                    Cuota: '53.41',
-                    DistribucionGeografica: 'GUAYAS',
-                    Acreedor: {
-                        CodigoTipoIdentificacion: '2',
-                        NumeroIdentificacion: '09999999999999',
-                        RazonSocial: 'POINT.',
-                    },
-                    Deudor: {
-                        CodigoTipoPersona: '1',
-                        CodigoTipoIdentificacion: '1',
-                        NumeroIdentificacion: identidad,
-                        CodigoNacionalidad: '593',
-                        Nacionalidad: 'ECUATORIANA',
-                        RazonSocial: 'XXXXXX',
-                        PrimerNombre: webSolicitud.PrimerNombre,
-                        SegundoNombre: webSolicitud.SegundoNombre || '',
-                        PrimerApellido: webSolicitud.ApellidoPaterno,
-                        SegundoApellido: webSolicitud.ApellidoMaterno || '',
-                        Correo: 'ecepeda@credisolucion.com.ec',
-                        Celular: `+593${webSolicitud.Celular.slice(1)}`,
-                        Telefono: '04/2111111',
-                        Direccion: webSolicitud.ReferenciaUbicacion || 'N/A',
-                        CallePrincipal: webSolicitud.CallePrincipal || 'SANTA LUCIA',
-                        Numeracion: webSolicitud.NumeroCasa || 'SN',
-                        CalleSecundaria: webSolicitud.CalleSecundaria || 'BARRANQUILLA',
-                        ReferenciaDireccion: webSolicitud.ReferenciaUbicacion || 'None',
-                        CodigoPaisDireccion: '593',
-                        CodigoProvinciaDireccion: '217',
-                        CodigoCiudadDireccion: '21701',
-                        CodigoParroquiaDireccion: '2170103',
-                    },
-                },
+            this.logger.log(`🔄 Código interno obtenido: ${JSON.stringify(codigo_interno)}`);
 
-                signatories: [
-                    {
-                        dni: identidad,
-                        name: webSolicitud.PrimerNombre,
-                        first_last_name: webSolicitud.ApellidoPaterno,
-                        second_last_name: webSolicitud.ApellidoMaterno,
-                        email: webSolicitud.Email || '',
-                        phone: `+593${webSolicitud.Celular.slice(1)}`,
-                        address: webSolicitud.CallePrincipal,
-                        city: webSolicitud.CalleSecundaria,
-                    },
-                ],
-                documents: [
-                    {
-                        code: "SEGUNDO_PAGARE",
-                        name: "Segundo P",
-                        base64: base64_pdf1
-                    },
-                    {
-                        code: "CONVENIO_ADHESION",
-                        name: "Convenio",
-                        base64: base64_gastoCobranza
-                    },
-                    {
-                        code: "LIQUIDACION",
-                        name: "Liquidacion",
-                        base64: base64_consentTratDatos
-                    },
-                    {
-                        code: "ANALISIS_DOMICILIARIO",
-                        name: "Analisis Dom",
-                        base64: base64_pagareOrden
-                    }
-                    // {
-                    //     code: "ANEXO4",
-                    //     name: "Anexo",
-                    //     base64: base64_entregaDocCred
-                    // },					
-                    // {
-                    // 	code: "COMPROMISO_LUGAR_PAGO",
-                    //     name: "",
-                    //     base64: base64_compromisoLugPag
-                    // },{
-                    // 	code: "DECLARACION_COMPROMISO",
-                    //     name: "",
-                    //     base64: base64_declarComprom
-                    // },{
-                    // 	code: "COMPRA_VENTA",
-                    //     name: "",
-                    //     base64: base64_contratComprVent
-                    // },{
-                    // 	code: "TABLA_AMORTIZACION",
-                    //     name: "",
-                    //     base64: base64_tabAmortizacion
-                    // }
-                ]
-            };
+            // 3. Generar PDFs en base64
+            const base64Docs = await this.getAllBase64Documents(idSolicitud);
 
-            /* creacion de archivo log con la respuesta enviada*/
+            // 4. Construir payload
+            const insertarOperacionFiduciaPayload = this.buildFiduciaPayload(webSolicitud, codigo_interno, identidad, base64Docs);
+
+            // 5. Guardar payload en archivo y enviar a fiducia
             const now = new Date();
             const timestamp = now.toISOString().replace(/[:.]/g, '-').replace('T', '_').replace('Z', '');
             const numerorandom = Math.floor(Math.random() * 10000);
-            const folderPath = join(__dirname, '../../logs/biometrico');
-            const filePath = join(folderPath, `insertarOperacionFiducia_Payload_${timestamp}_${numerorandom}.json`);
-            if (!existsSync(folderPath)) mkdirSync(folderPath, { recursive: true });
-            writeFileSync(filePath, JSON.stringify(insertarOperacionFiduciaPayload, null, 2), 'utf8');
-            //  this.logger.log(`📁 Payload de insertarOperacionFiducia guardado en archivo: ${filePath}`);
-            //this.logger.log(`🚀 Payload para insertarOperacionFiducia: ${JSON.stringify(insertarOperacionFiduciaPayload.code_bio)}`);
+            this.saveLogFile('insertarOperacionFiducia_Payload', insertarOperacionFiduciaPayload, timestamp, numerorandom);
 
+            // 6. Enviar operación a fiducia
             const respuesta = await this.insertarOperacionFiducia(insertarOperacionFiduciaPayload, tokenGuardado, this.AUTH_FIRMA_DFL);
-            console.log('Respuesta de insertarOperacionFiducia:', respuesta);
+            this.logger.log(`✅ Respuesta de insertarOperacionFiducia: ${JSON.stringify(respuesta)}`);
+            this.saveLogFile('respuesta_insertarOperacionFiducia', respuesta, timestamp, numerorandom);
 
-            // Guardar la respuesta en un archivo JSON
-            const respuestaFilePath = join(folderPath, `respuesta_insertarOperacionFiducia_${timestamp}_${numerorandom}.json`);
-            writeFileSync(respuestaFilePath, JSON.stringify(respuesta, null, 2), 'utf8');
-            this.logger.log(`📁 Respuesta de insertarOperacionFiducia guardada en archivo: ${respuestaFilePath}`);
+            // 7. Procesar respuesta exitosa
             if (respuesta.status === 200) {
                 const hashOperacion = respuesta.data?.hash;
                 const resultadoFiducia = await this.findOperacionfiduciaByCodeBio(hashOperacion, tokenGuardado, this.DFL_SEARCH_OPERATION_URL);
-                this.logger.log(`✅ Operación de fiducia insertada correctamente: ${JSON.stringify(resultadoFiducia)}`);
                 if (resultadoFiducia.status === 200) {
-                    this.logger.log(`✅ Operación de fiducia verificada correctamente: ${JSON.stringify(resultadoFiducia)}`);
-                    await this.guardarOperacionFirma(resultadoFiducia);
+                    await this.completarFirmaDigitalExitosa(sSolicitud, codigo_interno, idSolicitud, sCre_SolicitudWeb, hashOperacion, usuario, resultadoFiducia);
                 }
-                this.logger.log(`✅ Operación de fiducia verificada correctamente: ${JSON.stringify(resultadoFiducia)}`);
-                // await this.updateSolicitudWebCreSolicitud(sSolicitud, 3, 'system_firma_digital');
             }
+
             this.logger.log(`✅ Firma digital creada: ${JSON.stringify(respuesta)}`);
             return respuesta;
         } catch (error) {
-            this.logger.error(`❌ Error creando firma digital para la solicitud ID: ${sSolicitud}`, error);
+            this.logger.error(`❌ Error creando firma digital para la solicitud: ${sSolicitud}`, error);
             throw new InternalServerErrorException('Error al crear la firma digital.');
         }
     }
@@ -784,8 +836,30 @@ export class CorporacionDflService {
                 });
             }
 
+            const stateFirma = response.data.state;
+            const taskFirma = response.data.task;
+            const linkFirma = response.data.link;
+            this.logger.log(`🔄 Procesando estado de firma: state='${stateFirma}', task='${taskFirma}'`);
+            const estadoFirma = (() => {
+                if (stateFirma === 'GENERANDO_FIRMA' && !taskFirma) return 6; // En Proceso
+                if (stateFirma === 'PENDIENTE' && taskFirma === 'ENVIO_URL_FIRMA') return 7; // En Proceso
+                if (stateFirma === 'PENDIENTE' && taskFirma === 'CLIENTE ACEPTA FIRMA') return 8;
+                if (stateFirma === 'COMPLETED' && taskFirma === 'COMPLETED') return 9;
+                if (stateFirma === 'CANCELADO' && taskFirma === 'CLIENTE RECHAZA FIRMA') return 10;
+                if (stateFirma === 'CANCELADO' && taskFirma === 'FALLO PREGUNTA SEGURIDAD') return 11;
+                if (stateFirma === 'CADUCADO' && taskFirma === 'LINK DE FIRMA VENCIDO') return 12;
+                return 0;
+            })();
+
+            this.logger.log(`🔄 Estado de firma digital determinado: ${estadoFirma}`);
+
+
             this.logger.log('✅ Operación de FIR Firma guardada correctamente.');
-            return { message: 'Operación de FIR Firma guardada correctamente.' };
+            return {
+                message: 'Operación de FIR Firma guardada correctamente.',
+                estadoFirma: estadoFirma,
+                linkFirma: linkFirma,
+            };
 
         } catch (error) {
             this.logger.error(
@@ -829,10 +903,7 @@ export class CorporacionDflService {
         }
     }
 
-    /*post
-        /*{
-        "hash_operation" : "8017212f-2023-4198-9bc4-85ba2ccddeb3"
-    }*/
+
     private async findOperacionfiduciaByCodeBio(
         hash_operation: string,
         token: string,
@@ -860,4 +931,19 @@ export class CorporacionDflService {
             throw new InternalServerErrorException('Error al consultar operación de fiducia en DFL.');
         }
     }
+
+    async obtenerEstadoFirmaDigital(sSolicitud: string, idCre_SolicitudWeb: number): Promise<any> {
+        try {
+            const creSolicitud = await this.analisisdeidentidadService.findAnalisisByCreSolicitud(sSolicitud, idCre_SolicitudWeb);
+            if (!creSolicitud) {
+                this.logger.error(`❌ No se encontró la solicitud web para cre_solicitud: ${sSolicitud}`);
+                throw new InternalServerErrorException('No se encontró la solicitud web asociada.');
+            }
+            return creSolicitud;
+        } catch (error) {
+            this.logger.error(`❌ Error obteniendo estado de firma digital para la solicitud: ${sSolicitud}`, error);
+            throw new InternalServerErrorException('Error al obtener el estado de la firma digital.');
+        }
+    }
 }
+

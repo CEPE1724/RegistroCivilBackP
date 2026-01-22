@@ -151,7 +151,7 @@ export class WebSolicitudgrandeService {
 
         updateData.Cupo = updateDto.Cupo;
       }
-
+      updateData.CuotaAsignada = updateDto.CuotaAsignada;
       if (usuario && usuario.idGrupo && (usuario.idGrupo === 22 || usuario.idGrupo === 24)) {
         this.logger.log(`Usuario con ID ${usuario.idUsuario} y grupo ${usuario.idGrupo} tiene permiso para actualizar CupoCredito.`);
         updateData.CupoCredito = true;

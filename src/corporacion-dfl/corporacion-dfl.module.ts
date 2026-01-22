@@ -29,10 +29,12 @@ import { TiemposolicitudeswebService } from 'src/tiemposolicitudesweb/tiemposoli
 import { FirOperacionFirmaModule } from 'src/fir-operacion-firma/fir-operacion-firma.module';
 import { FirOperacionesfirmaModule } from 'src/fir-operacionesfirma/fir-operacionesfirma.module';
 import { FirDocumentosModule } from 'src/fir-documentos/fir-documentos.module';
+import { AuthModule } from 'src/auth/auth.module'; 
+import { PassportModule } from '@nestjs/passport';
 @Module({
   imports: [
     TypeOrmModule.forFeature([
-      Tokensia365,
+      Tokensia365, 
       Analisisdeidentidad,
       DflAnalisisBiometrico,
       DflIndicadoresAnverso,
@@ -40,13 +42,17 @@ import { FirDocumentosModule } from 'src/fir-documentos/fir-documentos.module';
       DflMetadataProcesada,
       DflReferencia,
       DflResultado,
+  
+      
     ]),
+    PassportModule,
     StoreReportsPhoneVerificationModule,
     CreSolicitudWebModule,
     FirOperacionFirmaModule,
     FirOperacionesfirmaModule,
     FirDocumentosModule,
     WebSolicitudgrandeModule,
+        AuthModule,
   ],
   controllers: [CorporacionDflController],
   providers: [

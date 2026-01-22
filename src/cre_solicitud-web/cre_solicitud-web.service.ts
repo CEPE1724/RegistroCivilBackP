@@ -1845,7 +1845,7 @@ export class CreSolicitudWebService {
       sCre_SolicitudWeb: idCre_SolicitudWeb,
     };
 
-    if (Estado !== undefined) {
+    if ((Estado !== undefined && Estado !== null && Estado > 0)) {
       where.Estado = Estado;
     }
 

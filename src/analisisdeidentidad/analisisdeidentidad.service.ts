@@ -131,6 +131,20 @@ export class AnalisisdeidentidadService {
     }
   }
 
+  async findAnalisisByCreSolicitud(cre_solicitud: string, idCre_SolicitudWeb: number) {
+    try {
+      this.logger.log(`🔍 Buscando análisis de identidad para cre_solicitud: ${cre_solicitud} y idCre_SolicitudWeb: ${idCre_SolicitudWeb}`);
+      const analisis = await this.analisisDeIdentidadRepository.findOne(
+        { where: { sCreSolicitudWeb: cre_solicitud, idCre_SolicitudWeb: idCre_SolicitudWeb } });
+        this.logger.log(`✅ Análisis encontrado: ${JSON.stringify(analisis)}`);
+      return analisis || {};
+    }
+    catch (error) {
+      this.logger.error('❌ Error al obtener análisis de identidad por cre_solicitud', error.stack);
+      throw new InternalServerErrorException('Error al obtener análisis de identidad por cre_solicitud');
+    }
+  }
+
   async updateEstadoPorCodigo(codigo: string, idEstadoAnalisisDeIdentidad: number, mensajeError?: string) {
     try {
       this.logger.log(`🔄 Actualizando estado por código: ${codigo} -> Estado ${idEstadoAnalisisDeIdentidad}`);
@@ -159,4 +173,27 @@ export class AnalisisdeidentidadService {
       throw new InternalServerErrorException('Error al actualizar estado de análisis de identidad');
     }
   }
+
+  async updateForByCodigo(codigo: string, 
+      updateData: UpdateAnalisisdeidentidadDto) {
+    try {
+      this.logger.log(`🔄 Actualizando análisis de identidad por código: ${codigo}`)  
+      const analisis = await this.analisisDeIdentidadRepository.findOne({ where: { codigo } })
+      if (!analisis) {
+        this.logger.error(`❌ No se encontró un análisis de identidad con código ${codigo}`);
+        throw new InternalServerErrorException('Análisis de identidad no encontrado');
+      }
+       this.logger.log(`🔄 Datos a actualizar: ${JSON.stringify(updateData)}`);
+       this.logger.log(`🔄 Análisis encontrado antes de actualizar: ${JSON.stringify(analisis)}`);
+      this.analisisDeIdentidadRepository.merge(analisis, updateData);
+
+      const actualizado = await this.analisisDeIdentidadRepository.save(analisis);
+      this.logger.log(`✅ Análisis de identidad actualizado correctamente para código ${codigo}`);
+      return actualizado;
+    } catch (error) {
+      this.logger.error('❌ Error al actualizar análisis de identidad', error.stack);
+      throw new InternalServerErrorException('Error al actualizar análisis de identidad');
+    }
+  }
 }
+

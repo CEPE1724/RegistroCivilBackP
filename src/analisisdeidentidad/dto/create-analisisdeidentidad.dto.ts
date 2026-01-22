@@ -7,7 +7,7 @@
     valido_hasta DATETIME NOT NULL,
     Usuario VARCHAR(50) DEFAULT '',
     idCre_SolicitudWeb int default 0 ,
-	codigo_interno VARCHAR(500) DEFAULT '',
+    codigo_interno VARCHAR(500) DEFAULT '',
     idEstadoAnalisisDeIdentidad INT DEFAULT 0,
     FechaSistema DATETIME DEFAULT GETDATE(),
     Mensaje varchar(500) default '', 
@@ -15,7 +15,7 @@
 );
 */
 
-import { IsString, IsNotEmpty, IsDate, IsOptional, IsNumber } from 'class-validator';
+import { IsString, IsNotEmpty, IsDate, IsOptional, IsNumber, IsUUID, isString } from 'class-validator';
 
 export class CreateAnalisisdeidentidadDto {
 
@@ -42,7 +42,7 @@ export class CreateAnalisisdeidentidadDto {
     @IsString()
     @IsOptional()
     Usuario: string;
-   
+
     @IsNumber()
     @IsOptional()
     idCre_SolicitudWeb?: number;
@@ -66,4 +66,12 @@ export class CreateAnalisisdeidentidadDto {
     @IsDate()
     @IsOptional()
     FechaRespuesta?: Date;
+
+    @IsUUID()
+    @IsOptional()
+    sCreSolicitudWeb?: string;
+
+    @IsString()
+    @IsOptional()
+    hash_operation?: string;
 }
