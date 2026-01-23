@@ -102,30 +102,40 @@ export class ExcelSolicitudesWebService {
 	worksheet.getCell('BD3').value = 'Hora corrección telefonica 5';
 	worksheet.getCell('BE3').value = 'Nombre verificación domicilio';
 	worksheet.getCell('BF3').value = 'Hora asignacion domicilio';
-	worksheet.getCell('BG3').value = 'Hora aprovacion domicilio';
-	worksheet.getCell('BH3').value = 'Hora reasignacion supervisor dom';
-	worksheet.getCell('BI3').value = 'Hora reasignacion App dom';
-	worksheet.getCell('BJ3').value = 'Hora rechazo domicilio';
-	worksheet.getCell('BK3').value = 'Nombre verificación laboral';
-	worksheet.getCell('BL3').value = 'Hora asignacion laboral';
-	worksheet.getCell('BM3').value = 'Hora aprovacion laboral';
-	worksheet.getCell('BN3').value = 'Hora reasignacion supervisor lab';
-	worksheet.getCell('BO3').value = 'Hora reasignacion App lab';
-	worksheet.getCell('BP3').value = 'Hora rechazo laboral';
-	worksheet.getCell('BQ3').value = 'Duración solicitud'; 
-	worksheet.getCell('BR3').value = 'Duración documental'; 
-	worksheet.getCell('BS3').value = 'Duración telefónica'; 
-	worksheet.getCell('BT3').value = 'Nombre analista'; 
-	worksheet.getCell('BU3').value = 'Nombre operador'; 
-	worksheet.getCell('BV3').value = 'Persona que aprobó'; 
-	worksheet.getCell('BW3').value = 'Tiempo que aprobó'; 
-	worksheet.getCell('BX3').value = 'Aprobó documental' 
-	worksheet.getCell('BY3').value = 'Tiempo aprobó documental'
-	worksheet.getCell('BZ3').value = 'Verificación Domicilio';
-	worksheet.getCell('CA3').value = 'Verificación Laboral';
-	worksheet.getCell('CB3').value = 'Cuota Asignada';
-	worksheet.getCell('CC3').value = 'Motivo Continuidad';
-	worksheet.getCell('CD3').value = 'Fecha Ingreso Afiliacion'
+	worksheet.getCell('BG3').value = 'Asignado a';
+	worksheet.getCell('BH3').value = 'Hora aprovacion domicilio';
+	worksheet.getCell('BI3').value = 'Aprobado por';
+	worksheet.getCell('BJ3').value = 'Hora reasignacion supervisor dom';
+	worksheet.getCell('BK3').value = 'Sup reasigno a';
+	worksheet.getCell('BL3').value = 'Hora reasignacion App dom';
+	worksheet.getCell('BM3').value = 'App reasignado a';
+	worksheet.getCell('BN3').value = 'Hora rechazo domicilio';
+	worksheet.getCell('BO3').value = 'Rechazado por';
+	worksheet.getCell('BP3').value = 'Nombre verificación laboral';
+	worksheet.getCell('BQ3').value = 'Hora asignacion laboral';
+	worksheet.getCell('BR3').value = 'Asignado a';
+	worksheet.getCell('BS3').value = 'Hora aprovacion laboral';
+	worksheet.getCell('BT3').value = 'Aprobado por';
+	worksheet.getCell('BU3').value = 'Hora reasignacion supervisor lab';
+	worksheet.getCell('BV3').value = 'Sup reasigno a';
+	worksheet.getCell('BW3').value = 'Hora reasignacion App lab';
+	worksheet.getCell('BX3').value = 'App reasignado a';
+	worksheet.getCell('BY3').value = 'Hora rechazo laboral';
+	worksheet.getCell('BZ3').value = 'Rechazado por';
+	worksheet.getCell('CA3').value = 'Duración solicitud'; 
+	worksheet.getCell('CB3').value = 'Duración documental'; 
+	worksheet.getCell('CC3').value = 'Duración telefónica'; 
+	worksheet.getCell('CD3').value = 'Nombre analista'; 
+	worksheet.getCell('CE3').value = 'Nombre operador'; 
+	worksheet.getCell('CF3').value = 'Persona que aprobó'; 
+	worksheet.getCell('CG3').value = 'Tiempo que aprobó'; 
+	worksheet.getCell('CH3').value = 'Aprobó documental' 
+	worksheet.getCell('CI3').value = 'Tiempo aprobó documental'
+	worksheet.getCell('CJ3').value = 'Verificación Domicilio';
+	worksheet.getCell('CK3').value = 'Verificación Laboral';
+	worksheet.getCell('CL3').value = 'Cuota Asignada';
+	worksheet.getCell('CM3').value = 'Motivo Continuidad';
+	worksheet.getCell('CN3').value = 'Fecha Ingreso Afiliacion';
 
     // formato encabezado
     const headerRow = worksheet.getRow(3);
@@ -201,16 +211,26 @@ export class ExcelSolicitudesWebService {
 	toFechaHoraTexto(item.HoraCorreccionTelefonica_5),
     item.NombreVerificacionDomicilio,
     toFechaHoraTexto(item.horaAsigDom),
+	item.asignadoA,
     toFechaHoraTexto(item.horaAprovDom),
+	item.aprovDomPor,
     toFechaHoraTexto(item.hReasigSupDom),
+	item.reasigSupA,
     toFechaHoraTexto(item.hReasigAppDom),
+	item.reasigAppA,
     toFechaHoraTexto(item.horaRechDom),
+	item.rechDomPor,
     item.NombreVerificacionLaboral,
 	toFechaHoraTexto(item.horaAsigLab),
+	item.asignadoA1,
 	toFechaHoraTexto(item.horaAprobLab),
+	item.aprovLabPor,
 	toFechaHoraTexto(item.horaReasigSupLab),
+	item.reasigLabSupA,
 	toFechaHoraTexto(item.horaReasigAppLab),
+	item.reasigLabAppA,
 	toFechaHoraTexto(item.horaRechLab),
+	item.rechLabPor,	
     item.DuracionSolicitud,
     item.Duraciondocumental,
     item.DuracionTelefonica,
