@@ -1,17 +1,27 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Inject, Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CboGestorCobranzas } from './cbo-gestor-cobranzas.entity';
+import { PersonalBddService } from 'src/personal-bdd/personal-bdd.service';
+import { RedisService } from 'src/redis/redis.service';
 import {
     CboGestorCobranzasOperativoFilterDto,
     CboGestorCobranzasOperativoResponseDto,
     CboGestorCobranzasOperativoPaginatedResponseDto,
+    CboGestorCobranzasOperativoFilterDetalleDto,
+    CboGestorCobranzasOperativoDetalleResponseDto,
+    CboGestorCobranzasOperativoFilterDetalleWebDto,
+    CboGestorCobranzasOperativoDetalleWebResponseDto,
+    GuardaCbo_GestionesDeCobranzasWebDto,
+    TablaDeAmortizacionResponseDto
+    
 } from './cbo-gestor-cobranzas-operativo.dto';
 
-/**
- * Service para consumir el SP Cbo_GestorDeCobranzasOperativo
- * Maneja la lógica de filtrado y paginación de gestores de cobranzas
- */
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { CacheTTL } from '../common/cache-ttl.config';
+import { Cache } from 'cache-manager';
+
+
 @Injectable()
 export class CboGestorCobranzasOperativoService {
     private readonly logger = new Logger(CboGestorCobranzasOperativoService.name);
@@ -19,7 +29,90 @@ export class CboGestorCobranzasOperativoService {
     constructor(
         @InjectRepository(CboGestorCobranzas)
         private readonly cboGestorCobranzasRepository: Repository<CboGestorCobranzas>,
+        @Inject(CACHE_MANAGER) private cacheManager: Cache,
+        private readonly personalBddService: PersonalBddService,
+        private readonly redisService: RedisService,
     ) { }
+
+
+    async getDetalleGestoresCobranzasDetalleOperativoWeb(
+        filtros: CboGestorCobranzasOperativoFilterDetalleWebDto,
+    ): Promise<CboGestorCobranzasOperativoDetalleWebResponseDto[]> {
+        try {
+            // const params = this.validarParametros(filtros);
+            this.logger.log(
+                `🔍 Ejecutando SP ConsultaCbo_GestionesDeCobranzasWeb con parámetros: ${JSON.stringify(filtros)}`,
+            );
+            const cacheKey = `ConsultaCbo_GestionesDeCobranzasWeb_${filtros.idCompra}`;
+            const cached = await this.cacheManager.get<CboGestorCobranzasOperativoDetalleWebResponseDto[]>(cacheKey);
+            if (cached) {
+                this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+                return cached;
+            }
+
+            this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+
+            const query = `EXEC [dbo].[ConsultaCbo_GestionesDeCobranzasWeb]
+                @idCompra = @0`;
+
+            const datos: CboGestorCobranzasOperativoDetalleWebResponseDto[] =
+                await this.cboGestorCobranzasRepository.query(query, [
+                    filtros.idCompra,
+                ]);
+
+            await this.cacheManager.set(cacheKey, datos, CacheTTL.CboGestorCobranzasOperativoDetalle);
+            this.logger.log(`✅ Datos almacenados en Redis para: ${cacheKey}`);
+            return datos;
+        }
+        catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP Cbo_GestorDeCobranzasOperativoDetalle: ${error.message} `,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al obtener el detalle de gestores de cobranzas. Por favor intente más tarde.',
+            );
+        }
+    }
+
+
+    async getDetalleGestoresCobranzasDetalleOperativo(
+        filtros: CboGestorCobranzasOperativoFilterDetalleDto,
+    ): Promise<CboGestorCobranzasOperativoDetalleResponseDto[]> {
+        try {
+
+            const cacheKey = `cbo_gestor_cobranzas_detalle_${filtros.ScRE_SOLIICTUDwEB}`;
+            const cached = await this.cacheManager.get<CboGestorCobranzasOperativoDetalleResponseDto[]>(cacheKey);
+            if (cached) {
+                this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+                return cached;
+            }
+            this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+
+
+            const query = `EXEC [dbo].[Cbo_GestorDeCobranzasOperativoDetalle]
+                @ScRE_SOLIICTUDwEB = @0`;
+            const datos: CboGestorCobranzasOperativoDetalleResponseDto[] =
+                await this.cboGestorCobranzasRepository.query(query, [
+                    filtros.ScRE_SOLIICTUDwEB,
+                ]);
+
+
+            await this.cacheManager.set(cacheKey, datos, CacheTTL.CboGestorCobranzasOperativoDetalle);
+            this.logger.log(`✅ Datos almacenados en Redis para: ${cacheKey}`);
+            return datos;
+        }
+        catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP Cbo_GestorDeCobranzasOperativoDetalle: ${error.message} `,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al obtener el detalle de gestores de cobranzas. Por favor intente más tarde.',
+            );
+        }
+    }
+
 
 
     async getGestoresCobranzasOperativo(
@@ -33,6 +126,31 @@ export class CboGestorCobranzasOperativoService {
                 `🔍 Ejecutando SP Cbo_GestorDeCobranzasOperativo con parámetros: ${JSON.stringify(params)}`,
             );
 
+            const queryCount = `EXEC [dbo].[Cbo_GestorDeCobranzasOperativoCount]
+                @DesdeDiasMora = @0,
+                @HastaDiasMora = @1,
+                @CobradorOperador = @2,
+                @idOperadorCobrador = @3,
+                @Gestionados = @4,
+                @idCbo_ResultadoGestion = @5,
+                @idCbo_Gestores = @6,
+                @GestionHoy = @7
+                `;
+
+            const totalCountResult = await this.cboGestorCobranzasRepository.query(queryCount, [
+                params.desdeDiasMora,
+                params.hastaDiasMora,
+                params.cobradorOperador,
+                params.idOperadorCobrador, // Ya es null o un GUID válido
+                params.gestionados,
+                params.idCbo_ResultadoGestion,
+                params.idGestores,
+                params.GestionHoy,
+            ]);
+
+            const totalCount = totalCountResult[0]?.TotalRegistros || 0;
+
+
             // Ejecutar el SP directamente usando query con parámetros posicionales
             const query = `EXEC [dbo].[Cbo_GestorDeCobranzasOperativo]
                 @DesdeDiasMora = @0,
@@ -41,36 +159,40 @@ export class CboGestorCobranzasOperativoService {
                 @idOperadorCobrador = @3,
                 @Gestionados = @4,
                 @idCbo_ResultadoGestion = @5,
-                @PageNumber = @6,
-                @PageSize = @7,
-                 @OrdenarPor = @8,
-                 @Direccion = @9`; 
-
+                @idCbo_Gestores = @6,
+                @GestionHoy = @7,
+                @PageNumber = @8,
+                @PageSize = @9,
+                 @OrdenarPor = @10,
+                 @Direccion = @11`;
             const datos: CboGestorCobranzasOperativoResponseDto[] =
                 await this.cboGestorCobranzasRepository.query(query, [
                     params.desdeDiasMora,
                     params.hastaDiasMora,
                     params.cobradorOperador,
-                    params.idOperadorCobrador,
+                    params.idOperadorCobrador, // Ya es null o un GUID válido
                     params.gestionados,
                     params.idCbo_ResultadoGestion,
+                    params.idGestores,
+                    params.GestionHoy,
                     params.pageNumber,
                     params.pageSize,
                     params.ordenarPor,
                     params.direccion,
                 ]);
 
-            this.logger.log(`✅ SP ejecutado exitosamente.Registros obtenidos: ${ datos.length } `);
-
+            this.logger.log(`✅ SP ejecutado exitosamente.Registros obtenidos: ${datos.length} `);
+            this.logger.log(`✅ Total registros para paginación: ${totalCount} `);
             return {
                 data: datos,
                 pageNumber: params.pageNumber,
                 pageSize: params.pageSize,
-                totalCount: datos.length,
+                totalCount: totalCount,
+                totalPages: totalCount === 0 ? 0 : Math.ceil(totalCount / params.pageSize)
             };
         } catch (error) {
             this.logger.error(
-                `❌ Error ejecutando SP Cbo_GestorDeCobranzasOperativo: ${ error.message } `,
+                `❌ Error ejecutando SP Cbo_GestorDeCobranzasOperativo: ${error.message} `,
                 error.stack,
             );
             throw new InternalServerErrorException(
@@ -79,20 +201,21 @@ export class CboGestorCobranzasOperativoService {
         }
     }
 
-    /**
-     * Valida y normaliza los parámetros del filtro
-     * @param filtros - Filtros del usuario
-     * @returns Parámetros validados
-     */
+
     private validarParametros(
         filtros: CboGestorCobranzasOperativoFilterDto,
     ): Required<CboGestorCobranzasOperativoFilterDto> {
         const desdeDiasMora = filtros.desdeDiasMora ?? 1;
         const hastaDiasMora = filtros.hastaDiasMora ?? 100000;
         const cobradorOperador = filtros.cobradorOperador ?? 0;
-        const idOperadorCobrador = filtros.idOperadorCobrador ?? 0;
+        // Convertir cadena vacía o "null" a null para UNIQUEIDENTIFIER
+        const idOperadorCobrador = (!filtros.idOperadorCobrador || filtros.idOperadorCobrador === 'null')
+            ? null
+            : filtros.idOperadorCobrador;
         const gestionados = filtros.gestionados ?? 0;
         const idCbo_ResultadoGestion = filtros.idCbo_ResultadoGestion ?? 0;
+        const idGestores = filtros.idGestores ?? 0;
+        const GestionHoy = filtros.GestionHoy ?? 0;
         const pageNumber = Math.max(1, filtros.pageNumber ?? 1);
         const pageSize = Math.max(1, filtros.pageSize ?? 50);
 
@@ -122,16 +245,14 @@ export class CboGestorCobranzasOperativoService {
             idOperadorCobrador,
             gestionados,
             idCbo_ResultadoGestion,
+            idGestores,
+            GestionHoy,
             pageNumber,
             pageSize,
         } as Required<CboGestorCobranzasOperativoFilterDto>;
     }
 
-    /**
-     * Método auxiliar para exportar datos a Excel o similares
-     * @param filtros - Filtros de búsqueda
-     * @returns Todos los datos sin paginación
-     */
+
     async exportarGestoresCobranzas(
         filtros: Omit<CboGestorCobranzasOperativoFilterDto, 'pageNumber' | 'pageSize'>,
     ): Promise<CboGestorCobranzasOperativoResponseDto[]> {
@@ -146,13 +267,187 @@ export class CboGestorCobranzasOperativoService {
             });
 
             this.logger.log(
-                `✅ Exportación completada.Total de registros: ${ response.data.length } `,
+                `✅ Exportación completada.Total de registros: ${response.data.length} `,
             );
 
             return response.data;
         } catch (error) {
-            this.logger.error(`❌ Error exportando gestores de cobranzas: ${ error.message } `);
+            this.logger.error(`❌ Error exportando gestores de cobranzas: ${error.message} `);
             throw error;
         }
     }
+
+
+    async guardaCbo_GestionesDeCobranzasWeb(
+        datos: GuardaCbo_GestionesDeCobranzasWebDto,
+        usuario: { idUsuario: number; Nombre: string; idGrupo: number; Activo: boolean },
+    ): Promise<{ success: boolean; message: string }> {
+        try {
+            this.logger.log(
+                `🔍 Ejecutando SP GuardaCbo_GestionesDeCobranzasWeb con datos: ${JSON.stringify(datos)}`,
+            );
+            const idOperadorCobrador = await this.obtenerIdOperadorCobradorPorNombre(usuario.Nombre);
+            this.logger.log(`🔍 idOperadorCobrador obtenido: ${idOperadorCobrador}`);
+            /*CREATE PROCEDURE [dbo].[GuardaCbo_GestionesDeCobranzasWeb] (
+     @idCompra int,
+     @idOperadorCobrador UNIQUEIDENTIFIER = null,
+     @idCbo_EstadoGestion int,
+     @idCbo_EstadosTipocontacto int = 0,
+     @idCbo_ResultadoGestion int,
+     @Notas varchar(300),
+     @telefono varchar(15),
+     @FechaPago DateTime,
+     @Valor Decimal(18,2),
+     @Usuario varchar(50)*/
+            const query = `EXEC [dbo].[GuardaCbo_GestionesDeCobranzasWeb]
+                @idCompra = @0,
+                @idOperadorCobrador = @1,
+                @idCbo_EstadoGestion = @2,
+                @idCbo_EstadosTipocontacto = @3,
+                @idCbo_ResultadoGestion = @4,
+                @Notas = @5,
+                @telefono = @6,
+                @Usuario = @7,
+                @FechaPago = @8,
+                @Valor = @9`;
+            await this.cboGestorCobranzasRepository.query(query, [
+                datos.idCompra,
+                idOperadorCobrador,
+                datos.idCbo_EstadoGestion,
+                datos.idCbo_EstadosTipocontacto,
+                datos.idCbo_ResultadoGestion,
+                datos.Notas,
+                datos.telefono,
+                usuario.Nombre,
+                datos.FechaPago,
+                datos.Valor,
+            ]);
+            this.logger.log(`✅ SP ejecutado exitosamente. Gestión de cobranza guardada.`);
+
+            /* delete cache related to cobranzas after insert */
+            const cacheKeys = `ConsultaCbo_GestionesDeCobranzasWeb_${datos.idCompra}`;
+            await this.redisService.delete(cacheKeys);
+            this.logger.log(`✅ Caché relacionado con cobranzas eliminado después de la inserción.`);
+
+            return { success: true, message: 'Gestión de cobranza guardada exitosamente.' };
+        } catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP GuardaCbo_GestionesDeCobranzasWeb: ${error.message} `,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al guardar la gestión de cobranza. Por favor intente más tarde.',
+            );
+        }
+    }
+
+
+
+    private async obtenerIdOperadorCobradorPorNombre(nombre: string): Promise<string | null> {
+        const cacheKey = `PersonalBdd_IdOperadorCobrador_${nombre}`;
+        const cachedId = await this.cacheManager.get<string>(cacheKey);
+        if (cachedId) {
+            this.logger.log(`✅ CACHE HIT - idOperadorCobrador obtenido desde Redis para: ${cacheKey}`);
+            return cachedId;
+        }
+        this.logger.log(`❌ CACHE MISS - Consultando PersonalBdd para: ${cacheKey}`);
+        const personal = await this.personalBddService.findOne(nombre);
+        const idOperadorCobrador = personal ? personal.idPersonalBDD : null;
+        if (idOperadorCobrador) {
+            await this.cacheManager.set(cacheKey, idOperadorCobrador, CacheTTL.PersonalBddIdOperadorCobrador);
+            this.logger.log(`✅ idOperadorCobrador almacenado en Redis para: ${cacheKey}`);
+        }
+        return idOperadorCobrador;
+    }
+/*ALTER PROCEDURE [dbo].[Cobranzas]  
+ (
+	@idCompra Int, @Fecha Date
+	)	WITH RECOMPILE
+AS*/
+     async getTablaAmortizacion(idCompra: number, Fecha: Date): Promise<TablaDeAmortizacionResponseDto[]> {
+        try {
+            this.logger.log(
+                `🔍 Ejecutando SP Cobranzas para idCompra: ${idCompra} y Fecha: ${Fecha}`,
+            );
+            const query = `EXEC [dbo].[Cobranzas]
+                @idCompra = @0,
+                @Fecha = @1
+                `;
+
+            const datos: any[] =
+                await this.cboGestorCobranzasRepository.query(query, [
+                    idCompra,
+                    Fecha,
+                ]);
+
+            this.logger.log(`✅ SP ejecutado exitosamente. Registros obtenidos: ${datos.length} `);
+            return datos;
+        }
+        catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP Cobranzas: ${error.message} `,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al obtener la tabla de amortización. Por favor intente más tarde.',
+            );
+        }
+    }
+
+    async getTablaAmortizacionValores(idCompra: number, Fecha: Date): Promise<TablaDeAmortizacionResponseDto[]> {
+        try {
+            this.logger.log(
+                `🔍 Ejecutando SP ValoresCobranza para idCompra: ${idCompra} y Fecha: ${Fecha}`,
+            );
+            const query = `EXEC [dbo].[ValoresCobranza]
+                @idCompra = @0,
+                @Fecha = @1
+                `;
+
+            const datos: any[] =
+                await this.cboGestorCobranzasRepository.query(query, [
+                    idCompra,
+                    Fecha,
+                ]);
+
+            this.logger.log(`✅ SP ejecutado exitosamente. Registros obtenidos: ${datos.length} `);
+            return datos;
+        }
+        catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP ValoresCobranza: ${error.message} `,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al obtener la tabla de amortización. Por favor intente más tarde.',
+            );
+        }
+    }
+
+    async getTablaAmortizacionValoresDetallePagos(idCre_TablaDeAmortizacion: number): Promise<TablaDeAmortizacionResponseDto[]> {
+        try {
+            this.logger.log(
+                `🔍 Ejecutando SP [ResumenPagoCrediPoint_APP] para idCre_TablaDeAmortizacion: ${idCre_TablaDeAmortizacion}`,
+            );
+            const query = `EXEC [dbo].[ResumenPagoCrediPoint_APP]
+                @idCre_TablaDeAmortizacion = @0
+                `;
+            const datos: any[] =
+                await this.cboGestorCobranzasRepository.query(query, [
+                    idCre_TablaDeAmortizacion
+                ]);
+            this.logger.log(`✅ SP ejecutado exitosamente. Registros obtenidos: ${datos.length} `);
+            return datos;
+        }
+        catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP [ResumenPagoCrediPoint_APP]: ${error.message} `,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al obtener el detalle de pagos de la tabla de amortización. Por favor intente más tarde.',
+            );
+        }
+    }
+
 }

@@ -35,4 +35,8 @@ export const CacheTTL = {
   personal_bdd: 86400000, // 24 horas
   cupo_credito: 86400000, // 24 horas
   // Agrega más según tus endpoints
+  CboGestorCobranzasOperativoDetalle: 14400000, // 4 horas
+  PersonalBddIdOperadorCobrador: 86400000, // 24 horas
+  cbo_scores_cobranza: 86400000, // 24 horas
+  cbo_gestores: 86400000, // 24 horas
 };

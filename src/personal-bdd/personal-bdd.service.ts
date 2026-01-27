@@ -49,4 +49,21 @@ export class PersonalBddService {
     this.logger.log(`💾 Datos guardados en Redis para: ${cacheKey}`);
     return response;
   }
+
+  async findOne(codigo: string) {
+    const cacheKey = `personal_bdd_codigo_${codigo}`;
+    const cached = await this.cacheManager.get<PersonalBdd>(cacheKey);
+    if (cached) {
+      this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+      return cached;
+    }
+    this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+    const personalBdd = await this.personalbddrepository.findOne({ where: { codigo } });
+    if (personalBdd) {
+      await this.cacheManager.set(cacheKey, personalBdd, CacheTTL.personal_bdd);
+      this.logger.log(`💾 Datos guardados en Redis para: ${cacheKey}`);
+    }
+
+    return personalBdd;
+  }
 }

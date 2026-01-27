@@ -195,8 +195,8 @@ export class CiudadanoService {
     try {
       // ✅ Crear agente HTTPS con el certificado .pfx
       const httpsAgent = new https.Agent({
-        pfx: fs.readFileSync('C:\\Deployment\\SSL\\app.services.pfx'),
-        passphrase: 'P01nT$2025_APP_sevices', // ⚠️ pon la contraseña que usaste al exportar el certificado
+        pfx: fs.readFileSync('C:\\Deployment\\SSL\\app.services_2026.pfx'),
+        passphrase: 'Cr3d!t0sP0intTW', // ⚠️ pon la contraseña que usaste al exportar el certificado
         rejectUnauthorized: false,           // Desactivar validación solo si es entorno de pruebas
         secureProtocol: 'TLSv1_2_method',    // Fuerza uso de TLS 1.2
       });

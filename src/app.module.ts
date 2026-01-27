@@ -184,6 +184,7 @@ import { FirOperacionFirmaModule } from './fir-operacion-firma/fir-operacion-fir
 import { FirOperacionesfirmaModule } from './fir-operacionesfirma/fir-operacionesfirma.module';
 import { FirDocumentosModule } from './fir-documentos/fir-documentos.module';
 import { CupoCreditoModule } from './cupo-credito/cupo-credito.module';
+import { CboScoresCobranzaModule } from './cbo-scores-cobranza/cbo-scores-cobranza.module';
 
 
 
@@ -496,7 +497,8 @@ import { CupoCreditoModule } from './cupo-credito/cupo-credito.module';
     FirOperacionFirmaModule,
     FirOperacionesfirmaModule,
     FirDocumentosModule,
-    CupoCreditoModule
+    CupoCreditoModule,
+    CboScoresCobranzaModule
 
   ],
   providers: [

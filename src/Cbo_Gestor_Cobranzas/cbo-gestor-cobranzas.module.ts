@@ -7,11 +7,13 @@ import { CboGestorCobranzasController } from './cbo-gestor-cobranzas.controller'
 import { CboGestorCobranzasOperativoService } from './cbo-gestor-cobranzas-operativo.service';
 import { CboGestorCobranzasOperativoController } from './cbo-gestor-cobranzas-operativo.controller';
 import { AuthModule } from 'src/auth/auth.module';
-
+import { PersonalBddModule } from 'src/personal-bdd/personal-bdd.module';
+import { RedisModule } from 'src/redis/redis.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([CboGestorCobranzas]), AuthModule],
+  imports: [TypeOrmModule.forFeature([CboGestorCobranzas]), AuthModule, PersonalBddModule, RedisModule],
   providers: [CboGestorCobranzasService, CboGestorCobranzasOperativoService],
   controllers: [CboGestorCobranzasController, CboGestorCobranzasOperativoController],
   exports: [CboGestorCobranzasService, CboGestorCobranzasOperativoService],
+ 
 })
 export class CboGestorCobranzasModule {}

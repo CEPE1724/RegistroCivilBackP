@@ -8,5 +8,6 @@ import { AuthModule } from 'src/auth/auth.module';
   imports: [TypeOrmModule.forFeature([PersonalBdd]), AuthModule],
   controllers: [PersonalBddController],
   providers: [PersonalBddService],
+  exports: [PersonalBddService],
 })
 export class PersonalBddModule {}
