@@ -47,4 +47,5 @@ export const CacheTTL = {
   cbo_tipo_cliente: 86400000, // 24 horas
   cbo_edad : 86400000, // 24 horas
   cbo_saldos: 86400000, // 24 horas
+  cbo_score_resultado: 86400000, // 24 horas
 };

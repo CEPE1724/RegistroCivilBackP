@@ -192,6 +192,7 @@ import { CboRiesgoModule } from './cbo-riesgo/cbo-riesgo.module';
 import { CboTipoClienteModule } from './cbo-tipo-cliente/cbo-tipo-cliente.module';
 import { CboEdadModule } from './cbo-edad/cbo-edad.module';
 import { CboSaldosModule } from './cbo-saldos/cbo-saldos.module';
+import { CboScoreResultadoModule } from './cbo-score-resultado/cbo-score-resultado.module';
 
 
 
@@ -512,7 +513,8 @@ import { CboSaldosModule } from './cbo-saldos/cbo-saldos.module';
     CboRiesgoModule,
     CboTipoClienteModule,
     CboEdadModule,
-    CboSaldosModule
+    CboSaldosModule,
+    CboScoreResultadoModule
 
   ],
   providers: [
