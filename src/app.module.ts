@@ -188,6 +188,8 @@ import { CboScoresCobranzaModule } from './cbo-scores-cobranza/cbo-scores-cobran
 import { CboRiesgosModule } from './cbo-riesgos/cbo-riesgos.module';
 import { CboSegmentosModule } from './cbo-segmentos/cbo-segmentos.module';
 import { CboAlmacenesModule } from './cbo-almacenes/cbo-almacenes.module';
+import { CboRiesgoModule } from './cbo-riesgo/cbo-riesgo.module';
+import { CboTipoClienteModule } from './cbo-tipo-cliente/cbo-tipo-cliente.module';
 
 
 
@@ -504,7 +506,9 @@ import { CboAlmacenesModule } from './cbo-almacenes/cbo-almacenes.module';
     CboScoresCobranzaModule,
     CboRiesgosModule,
     CboSegmentosModule,
-    CboAlmacenesModule
+    CboAlmacenesModule,
+    CboRiesgoModule,
+    CboTipoClienteModule
 
   ],
   providers: [

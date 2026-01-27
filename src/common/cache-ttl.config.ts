@@ -41,4 +41,8 @@ export const CacheTTL = {
   cbo_gestores: 86400000, // 24 horas
   cbo_riesgos: 86400000, // 24 horas
   cbo_segmentos: 86400000, // 24 horas
+  cbo_almacenes: 86400000, // 24 horas
+  bodegas_score: 86400000, // 24 horas
+  cbo_riesgo_estado: 86400000, // 24 horas
+  cbo_tipo_cliente: 86400000, // 24 horas
 };
