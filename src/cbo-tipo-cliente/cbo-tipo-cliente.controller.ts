@@ -5,16 +5,16 @@ import { UpdateCboTipoClienteDto } from './dto/update-cbo-tipo-cliente.dto';
 import { Auth } from 'src/auth/decorators';
 @Controller('cbo-tipo-cliente')
 export class CboTipoClienteController {
-  constructor(private readonly cboTipoClienteService: CboTipoClienteService) {}
+  constructor(private readonly cboTipoClienteService: CboTipoClienteService) { }
 
 
 
 
 
-   @Get()
-      @Auth()
-      findAll(@Query('sCbo_Scores_Cobranzas') sCbo_Scores_Cobranzas: string) {
-        return this.cboTipoClienteService.findAll(sCbo_Scores_Cobranzas);
-      }
- 
+  @Get()
+  @Auth()
+  findAll(@Query('sCbo_Scores_Cobranzas') sCbo_Scores_Cobranzas: string) {
+    return this.cboTipoClienteService.findAll(sCbo_Scores_Cobranzas);
+  }
+
 }

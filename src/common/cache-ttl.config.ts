@@ -45,4 +45,6 @@ export const CacheTTL = {
   bodegas_score: 86400000, // 24 horas
   cbo_riesgo_estado: 86400000, // 24 horas
   cbo_tipo_cliente: 86400000, // 24 horas
+  cbo_edad : 86400000, // 24 horas
+  cbo_saldos: 86400000, // 24 horas
 };

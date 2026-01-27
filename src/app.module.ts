@@ -190,6 +190,8 @@ import { CboSegmentosModule } from './cbo-segmentos/cbo-segmentos.module';
 import { CboAlmacenesModule } from './cbo-almacenes/cbo-almacenes.module';
 import { CboRiesgoModule } from './cbo-riesgo/cbo-riesgo.module';
 import { CboTipoClienteModule } from './cbo-tipo-cliente/cbo-tipo-cliente.module';
+import { CboEdadModule } from './cbo-edad/cbo-edad.module';
+import { CboSaldosModule } from './cbo-saldos/cbo-saldos.module';
 
 
 
@@ -508,7 +510,9 @@ import { CboTipoClienteModule } from './cbo-tipo-cliente/cbo-tipo-cliente.module
     CboSegmentosModule,
     CboAlmacenesModule,
     CboRiesgoModule,
-    CboTipoClienteModule
+    CboTipoClienteModule,
+    CboEdadModule,
+    CboSaldosModule
 
   ],
   providers: [
