@@ -39,4 +39,6 @@ export const CacheTTL = {
   PersonalBddIdOperadorCobrador: 86400000, // 24 horas
   cbo_scores_cobranza: 86400000, // 24 horas
   cbo_gestores: 86400000, // 24 horas
+  cbo_riesgos: 86400000, // 24 horas
+  cbo_segmentos: 86400000, // 24 horas
 };

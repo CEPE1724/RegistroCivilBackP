@@ -1,12 +1,13 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import { Cache } from 'cache-manager';
+import { CacheTTL } from '../common/cache-ttl.config';
 import { CreateCboScoresCobranzaDto } from './dto/create-cbo-scores-cobranza.dto';
 import { UpdateCboScoresCobranzaDto } from './dto/update-cbo-scores-cobranza.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CboScoresCobranza } from './entities/cbo-scores-cobranza.entity';
-import { CACHE_MANAGER } from '@nestjs/cache-manager';
-import { Cache } from 'cache-manager';
-import { CacheTTL } from '../common/cache-ttl.config';
+
 
 @Injectable()
 export class CboScoresCobranzaService {
@@ -25,7 +26,9 @@ export class CboScoresCobranzaService {
         return cached;
     }
     this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
-    const result = await this.cboScoresCobranzaRepository.find();
+    const result = await this.cboScoresCobranzaRepository.find({
+      order: { idCbo_Scores_Cobranzas: 'DESC' },
+    });
     await this.cacheManager.set(cacheKey, result, CacheTTL.cbo_scores_cobranza);
     this.logger.log(`💾 Datos guardados en Redis para: ${cacheKey}`);
    
