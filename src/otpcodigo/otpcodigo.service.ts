@@ -1,17 +1,57 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { MoreThan, Repository } from 'typeorm';
+import { MoreThan, Repository, DataSource  } from 'typeorm';
 import { Otpcodigo } from './entities/otpcodigo.entity';
-import * as crypto from 'crypto';
 import axios from 'axios';
 import { EmailService } from 'src/email/email.service';
+import * as XLSX from 'xlsx';
+
+interface RegistroExcel {
+  celular: string;
+  dni?: string;
+  [key: string]: any;
+}
+
+const variablesPorMensaje: Record<number, string[]> = {
+	36308: ['nombre'],
+	36500: ['nombre', 'diasMora'],
+	36701: [],
+	39315: ['mes'],
+	47109: ['nombre', 'dia'],	
+};
+
+const SQL_CONSULTA = `
+select top 5
+	cg.idCbo_GestorDeCobranzas,
+	cg.idCbo_Gestores,
+	cg.idCompra,
+	cs.cedula as dni,
+	CONCAT(cs.ApellidoPaterno, ' ', cs.PrimerNombre) as nombre,
+	wg.Celular,
+	cg.Dias_Mora_Actual as diasMora
+from Cbo_GestorDeCobranzas cg
+inner join Cre_SolicitudWeb cs 
+	on cg.sCre_SolicitudWeb = cs.sCre_SolicitudWeb
+inner join Web_SolicitudGrande wg 
+	on wg.idCre_SolicitudWeb = cs.idCre_SolicitudWeb
+where Fecha_Gestion < '20260127'
+	and idCbo_Gestores = 4
+`;
+
 
 @Injectable()
 export class OtpcodigoService {
+
+	private readonly API_MASSEND_USER = process.env.API_MASSEND_USER;
+	private readonly API_MASSEND_PASS = process.env.API_MASSEND_PASS;
+	private readonly API_MASSEND_URL_MASIVO = process.env.API_MASSEND_URL_MASIVO;
+	private readonly API_MASSEND_URL_UNO = process.env.API_MASSEND_URL_UNO;
+	
   constructor(
     @InjectRepository(Otpcodigo)
     private otpRepository: Repository<Otpcodigo>,
     private readonly emailService: EmailService, // ⬅️ inyectamos EmailService
+	private readonly dataSource: DataSource,
 
   ) { }
 
@@ -141,4 +181,243 @@ export class OtpcodigoService {
 
     return true;
   }
+
+	async procesarExcelYEnviar(file: Express.Multer.File, body: any) {
+
+		if (!file?.buffer) { throw new Error('Archivo inválido o vacío'); }
+
+		try {
+			const workbook = XLSX.read(file.buffer, { type: 'buffer' });
+			const sheetName = workbook.SheetNames[0];
+			const sheet = workbook.Sheets[sheetName];
+
+			const registros = XLSX.utils.sheet_to_json<RegistroExcel>(sheet);
+
+			const mensajeId = Number(body.mensajeid);
+			const variables = variablesPorMensaje[mensajeId];
+
+			if (!variables) {
+				throw new Error(`No hay configuración de variables para mensajeid ${mensajeId}`);
+			}
+
+			if (registros.length < 1000 || registros.length > 25000) {
+				throw new Error('Cantidad de registros inválida');
+			}
+
+			// eliminar teléfonos duplicados
+			const telefonos = new Set();
+			for (const r of registros) {
+				if (telefonos.has(r.celular)) {
+					throw new Error(`Teléfono duplicado: ${r.celular}`);
+				}
+				telefonos.add(r.celular);
+			}
+
+			const envios_json = registros.map((r, index) => {
+				const datos = variables.map((key) => {
+					if (r[key] === undefined || r[key] === null || r[key] === '') {
+						throw new Error(
+							`Fila ${index + 2}: falta la columna "${key}" requerida por el mensaje`
+						);
+					}
+					return r[key];
+				}).join(',');
+
+				return {
+					telefono: r.celular,
+					dni: r.dni ?? '',
+					datos,
+				};
+			});
+
+			return this.enviarMassend(envios_json, body);
+		} catch (error) {
+			console.error('❌ Error procesando Excel:', error.message);
+			throw error;
+		}
+	}
+
+
+	async enviarMassend(envios_json, body) {
+
+		// PRUEBA UNO A UNO
+		if (process.env.MASSEND_MODE === 'uno') {
+
+			const primerRegistro = envios_json[0];
+
+			const payload = {
+				user: this.API_MASSEND_USER,
+				pass: this.API_MASSEND_PASS,
+				mensajeid: Number(body.mensajeid),
+				telefono: primerRegistro.telefono,
+				dni: primerRegistro.dni,
+				tipo: Number(body.tipo),
+				ruta: Number(body.ruta),
+				datos: primerRegistro.datos,
+				campana: body.campana,
+			};
+
+			const { data } = await axios.post(
+				this.API_MASSEND_URL_UNO,
+				payload,
+				{ timeout: 15000 }
+			);
+
+			if (data.RefError.cod_error !== 100) {
+				throw new Error(data.RefError.errorinfo);
+			}
+
+			return {
+				modo: 'PRUEBA_UNO_A_UNO',
+				respuesta: data,
+			};
+		}
+
+		// MASIVO
+		const payload = {
+			user: this.API_MASSEND_USER,
+			pass: this.API_MASSEND_PASS,
+			mensajeid: Number(body.mensajeid),
+			campana: body.campana,
+			campanaid: 123,
+			tipo: Number(body.tipo),
+			ruta: Number(body.ruta),
+			envios_json,
+		};
+
+		const { data } = await axios.post(
+			this.API_MASSEND_URL_MASIVO,
+			payload,
+			{ timeout: 60000 }
+		);
+
+		if (data.RefError.cod_error !== 100) {
+			throw new Error(data.RefError.errorinfo);
+		}
+
+		return data;
+	}
+
+
+	async procesarConsulta(body: any) {
+
+		try {
+			const mensajeId = Number(body.mensajeid);
+			const variables = variablesPorMensaje[mensajeId];
+
+			if (!variables) {
+				throw new Error(`No hay configuración para mensajeid ${mensajeId}`);
+			}
+
+			const registros = await this.dataSource.query(SQL_CONSULTA);
+
+			if (!registros.length) {
+				throw new Error('La consulta no retornó registros');
+			}
+
+			const envios_json = registros.map((r, index) => {
+				const datos = variables.map((key) => {
+					if (r[key] === undefined || r[key] === null || r[key] === '') {
+						throw new Error(
+							`Registro ${index + 1}: falta el campo "${key}"`
+						);
+					}
+					return r[key];
+				}).join(',');
+
+				return {
+					telefono: '0959595083',
+					dni: r.dni,
+					datos,
+				};
+			});
+
+			return this.enviarMassendCantidad(envios_json, body);
+		} catch (error) {
+			console.error('❌ Error enviando desde BD:', error.message);
+			throw error;
+		}
+	}
+
+
+	async enviarMassendCantidad(envios_json: any[], body: any) {
+
+		// UNO A UNO
+		if (envios_json.length < 1000) {
+
+			const respuestas = [];
+
+			for (const envio of envios_json) {
+
+				const payload = {
+					user: this.API_MASSEND_USER,
+					pass: this.API_MASSEND_PASS,
+					mensajeid: body.mensajeid,
+					telefono: String(envio.telefono),
+					dni: envio.dni,
+					tipo: String(body.tipo),
+					ruta: String(body.ruta),
+					datos: String(envio.datos),
+					campana: String(body.campana),
+				};
+
+				const { data } = await axios.post(
+					this.API_MASSEND_URL_UNO,
+					payload,
+					{
+						timeout: 15000,
+						headers: {
+							'Content-Type': 'application/json',
+						},
+					}
+				);
+
+				if (data.RefError.cod_error !== 100) {
+					throw new Error(data.RefError.errorinfo);
+				}
+
+				respuestas.push(data);
+			}
+
+			return {
+				modo: 'UNO_A_UNO',
+				total: envios_json.length,
+				respuestas,
+			};
+		}
+
+		// MASIVO
+		const payload = {
+			user: this.API_MASSEND_USER,
+			pass: this.API_MASSEND_PASS,
+			mensajeid: Number(body.mensajeid),
+			campana: body.campana,
+			campanaid: 123,
+			tipo: Number(body.tipo),
+			ruta: Number(body.ruta),
+			envios_json,
+		};
+
+		const { data } = await axios.post(
+			this.API_MASSEND_URL_MASIVO,
+			payload,
+			{
+				timeout: 60000,
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}
+		);
+
+		if (data.RefError.cod_error !== 100) {
+			throw new Error(data.RefError.errorinfo);
+		}
+
+		return {
+			modo: 'MASIVO',
+			total: envios_json.length,
+			respuesta: data,
+		};
+	}
+  
 }
