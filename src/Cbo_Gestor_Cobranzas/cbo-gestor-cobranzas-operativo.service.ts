@@ -575,10 +575,9 @@ export class CboGestorCobranzasOperativoService {
             return;
         }
 
-        const { idUsuario, Nombre, Factura, Ruc, ValorLetra } = datos[0];
+        const { idUsuario, Nombre, Factura, Ruc } = datos[0];
 
-        const mensaje = `El cliente ${Nombre} (CI: ${Ruc}) canceló una de sus letras correspondiente a la factura N° ${Factura}${ValorLetra ? ` por un valor de $${ValorLetra}.` : '.'
-            }`;
+        const mensaje = `El cliente ${Nombre} (CI: ${Ruc}) canceló una de sus letras correspondiente a la factura N° ${Factura}. Gracias por su gestión.`;
 
         this.logger.log(
             `📢 Enviando notificación de pago al usuario ${idUsuario} | solicitudId: ${idCompra}`,
