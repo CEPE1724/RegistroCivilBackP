@@ -13,7 +13,9 @@ import {
     CboGestorCobranzasOperativoFilterDetalleWebDto,
     CboGestorCobranzasOperativoDetalleWebResponseDto,
     GuardaCbo_GestionesDeCobranzasWebDto,
-    TablaDeAmortizacionResponseDto
+    TablaDeAmortizacionResponseDto,
+    CboGestorCobranzasOperativoPorcentajeDto,
+    CboGestorCobranzasOperativoPorcentajeResponseDto
     
 } from './cbo-gestor-cobranzas-operativo.dto';
 
@@ -112,6 +114,60 @@ export class CboGestorCobranzasOperativoService {
             );
         }
     }
+
+   async getPorcentajeCobranzas(
+  filtros: CboGestorCobranzasOperativoPorcentajeDto,
+  usuario: { idUsuario: number; Nombre: string; idGrupo: number; Activo: boolean },
+): Promise<CboGestorCobranzasOperativoPorcentajeResponseDto[]> {
+  try {
+
+    const cacheKey = `cbo_gestor_cobranzas_porcentaje_${filtros.ScRE_SOLIICTUDwEB}`;
+    const cached =
+      await this.cacheManager.get<CboGestorCobranzasOperativoPorcentajeResponseDto[]>(cacheKey);
+
+    if (cached) {
+      this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+      return cached;
+    }
+
+    this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
+
+    const query = `EXEC [dbo].[Cbo_GestorDeCobranzasOperativoSumatoria]	
+                   @idOperadorCobrador = @0`;
+
+    let datos: CboGestorCobranzasOperativoPorcentajeResponseDto[] =
+      await this.cboGestorCobranzasRepository.query(query, [
+        filtros.ScRE_SOLIICTUDwEB,
+      ]);
+
+  /*  if (usuario.idGrupo !== 31 && usuario.idGrupo !== 19) {
+      datos = datos.map(() => ({
+        TotalCobrado: 0,
+        TotalProyectado: 0,
+        PorcentajeCobrado: 0,
+      }));
+    }*/
+
+    await this.cacheManager.set(
+      cacheKey,
+      datos,
+      CacheTTL.CboGestorCobranzasOperativoPorcentaje,
+    );
+
+    this.logger.log(`✅ Datos almacenados en Redis para: ${cacheKey}`);
+
+    return datos;
+
+  } catch (error) {
+    this.logger.error(
+      `❌ Error ejecutando SP Cbo_GestorDeCobranzasOperativoSumatoria: ${error.message}`,
+      error.stack,
+    );
+    throw new InternalServerErrorException(
+      'Error al obtener el detalle de gestores de cobranzas. Por favor intente más tarde.',
+    );
+  }
+}
 
 
 

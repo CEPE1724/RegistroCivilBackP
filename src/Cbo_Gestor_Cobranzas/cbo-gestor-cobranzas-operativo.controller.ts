@@ -2,7 +2,7 @@ import { Controller, Get, Query, UseGuards, Logger, Post, Body } from '@nestjs/c
 import { CboGestorCobranzasOperativoService } from './cbo-gestor-cobranzas-operativo.service';
 import { CboGestorCobranzasOperativoFilterDetalleDto, CboGestorCobranzasOperativoFilterDto,
         CboGestorCobranzasOperativoFilterDetalleWebDto, GuardaCbo_GestionesDeCobranzasWebDto,
-        TablaAmortizacionFilterDto, TablaAmortizacionValoresFilterDto
+        TablaAmortizacionFilterDto, TablaAmortizacionValoresFilterDto, CboGestorCobranzasOperativoPorcentajeDto
 
  } from './cbo-gestor-cobranzas-operativo.dto';
 import { Auth, GetUser } from '../auth/decorators';
@@ -72,4 +72,14 @@ export class CboGestorCobranzasOperativoController {
         this.logger.log(`📥 Solicitud de detalle de pagos para idCompra: ${filtros.idCre_TablaDeAmortizacion}`);
         return this.cboGestorCobranzasOperativoService.getTablaAmortizacionValoresDetallePagos(filtros.idCre_TablaDeAmortizacion);
     }
+
+    @Get('porcentaje-cobranza')
+    @Auth()
+    async getPorcentajeCobranzas(@Query() filtros: CboGestorCobranzasOperativoPorcentajeDto,
+    @GetUser() usuario: { idUsuario: number; Nombre: string; idGrupo: number; Activo: boolean } ) {
+        this.logger.log(`📥 Solicitud de porcentaje de cobranza para solicitud web: ${filtros.ScRE_SOLIICTUDwEB}`);
+        return this.cboGestorCobranzasOperativoService.getPorcentajeCobranzas(filtros, usuario);
+    }
+
+
 }

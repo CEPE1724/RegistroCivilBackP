@@ -208,6 +208,12 @@ export class CboGestorCobranzasOperativoFilterDetalleDto {
     ScRE_SOLIICTUDwEB?: string = null;
 }
 
+export class CboGestorCobranzasOperativoPorcentajeDto {
+   
+    @IsOptional()
+    @IsUUID()
+    ScRE_SOLIICTUDwEB: string = null;
+}
 export class CboGestorCobranzasOperativoFilterDetalleWebDto {
     @IsOptional()
     @Type(() => Number)
@@ -216,6 +222,12 @@ export class CboGestorCobranzasOperativoFilterDetalleWebDto {
     idCompra?: number = 1;
 
  
+}
+
+export class CboGestorCobranzasOperativoPorcentajeResponseDto {
+    TotalCobrado: number;
+    TotalProyectado: number;
+    PorcentajeCobrado: number;
 }
 
 /*TelefonoDomicilio	TelefonoDomiliarDos	Celular	CallePrincipal	CalleSecundaria	NumeroCasa	ReferenciaUbicacion	Latitud	Longitud
