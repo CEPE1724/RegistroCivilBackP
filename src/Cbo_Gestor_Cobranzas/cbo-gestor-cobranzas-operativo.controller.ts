@@ -2,10 +2,12 @@ import { Controller, Get, Query, UseGuards, Logger, Post, Body } from '@nestjs/c
 import { CboGestorCobranzasOperativoService } from './cbo-gestor-cobranzas-operativo.service';
 import { CboGestorCobranzasOperativoFilterDetalleDto, CboGestorCobranzasOperativoFilterDto,
         CboGestorCobranzasOperativoFilterDetalleWebDto, GuardaCbo_GestionesDeCobranzasWebDto,
-        TablaAmortizacionFilterDto, TablaAmortizacionValoresFilterDto, CboGestorCobranzasOperativoPorcentajeDto
+        TablaAmortizacionFilterDto, TablaAmortizacionValoresFilterDto, CboGestorCobranzasOperativoPorcentajeDto,
+        notificacionFilterDto
 
  } from './cbo-gestor-cobranzas-operativo.dto';
 import { Auth, GetUser } from '../auth/decorators';
+import { get } from 'http';
 
 
 @Controller('cbo-gestores-cobranzas-operativo')
@@ -81,5 +83,11 @@ export class CboGestorCobranzasOperativoController {
         return this.cboGestorCobranzasOperativoService.getPorcentajeCobranzas(filtros, usuario);
     }
 
+    @Get('notificacion')
+    @Auth()
+    async getnotificaciones(@Query() filtros: notificacionFilterDto) {
+        this.logger.log(`📥 Solicitud de notificaciones para idCompra: ${filtros.idCompra} `);
+        return this.cboGestorCobranzasOperativoService.getnotificaciones(filtros.idCompra);
+    }
 
 }

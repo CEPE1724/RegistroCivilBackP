@@ -9,8 +9,9 @@ import { CboGestorCobranzasOperativoController } from './cbo-gestor-cobranzas-op
 import { AuthModule } from 'src/auth/auth.module';
 import { PersonalBddModule } from 'src/personal-bdd/personal-bdd.module';
 import { RedisModule } from 'src/redis/redis.module';
+import { CreSolicitudwebWsModule } from 'src/cre_solicitudweb-ws/cre_solicitudweb-ws.module';
 @Module({
-  imports: [TypeOrmModule.forFeature([CboGestorCobranzas]), AuthModule, PersonalBddModule, RedisModule],
+  imports: [TypeOrmModule.forFeature([CboGestorCobranzas]), AuthModule, PersonalBddModule, RedisModule, CreSolicitudwebWsModule],
   providers: [CboGestorCobranzasService, CboGestorCobranzasOperativoService],
   controllers: [CboGestorCobranzasController, CboGestorCobranzasOperativoController],
   exports: [CboGestorCobranzasService, CboGestorCobranzasOperativoService],

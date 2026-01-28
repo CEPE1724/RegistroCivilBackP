@@ -88,6 +88,16 @@ export class TablaAmortizacionFilterDto {
     Fecha?: Date = new Date();
 }
 
+export class notificacionFilterDto {
+
+    @Type(() => Number)
+    @IsNumber()
+    @Min(0)
+    idCompra?: number = 0;
+
+ 
+}
+
 export class TablaAmortizacionValoresFilterDto {
 
     @Type(() => Number)

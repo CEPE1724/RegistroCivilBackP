@@ -189,5 +189,50 @@ async handleConnection(client: Socket) {
       timestamp: new Date().toISOString()
     });
   }
+
+  @SubscribeMessage('send-notification-to-user')
+  enviarNotificacionAUsuario(client: Socket, payload: { 
+    codigoUsuario: number, 
+    mensaje: string,
+    tipo: 'info' | 'warning' | 'error',
+    data?: any 
+  }) {
+    // Buscar socket(s) del usuario por su código
+    const userSockets = this.creSolicitudwebWsService
+      .getSocketsByUserId(payload.codigoUsuario);
+    
+    // Enviar notificación a todas las sesiones activas de ese usuario
+    userSockets.forEach(socketId => {
+      this.wss.to(socketId).emit('nueva-notificacion', {
+        mensaje: payload.mensaje,
+        tipo: payload.tipo,
+        data: payload.data,
+        timestamp: new Date()
+      });
+    });
+  }
+
+  // Método público en gateway para que otros módulos envíen notificaciones
+  notificarUsuario(codigoUsuario: number, notificacion: any) {
+    console.log(`🔍 Buscando sockets para usuario ID: ${codigoUsuario}`);
+    
+    // Ver todos los usuarios conectados
+    const connectedUsers = this.creSolicitudwebWsService.getConnectedUsersInfo();
+    console.log(`📊 Usuarios conectados:`, connectedUsers.map(u => `${u.userName} (ID: ${u.userId})`));
+    
+    const userSockets = this.creSolicitudwebWsService
+      .getSocketsByUserId(codigoUsuario);
+
+    console.log(`🔔 Enviando notificación al usuario ID ${codigoUsuario} en ${userSockets.length} socket(s).`);
+    
+    if (userSockets.length === 0) {
+      console.warn(`⚠️ No se encontraron sockets activos para el usuario ID: ${codigoUsuario}`);
+    }
+    
+    userSockets.forEach(socketId => {
+      console.log(`📤 Enviando a socket: ${socketId}`);
+      this.wss.to(socketId).emit('nueva-notificacion-pago', notificacion);
+    });
+  }
 }
 

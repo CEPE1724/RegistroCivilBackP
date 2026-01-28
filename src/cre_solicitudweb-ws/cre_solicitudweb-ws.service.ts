@@ -8,7 +8,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 interface ConnectedClients {
     [id: string]: 
     {
-        socekt: Socket,
+        socket: Socket,
         user: Usuario
     }
 }
@@ -37,7 +37,7 @@ export class CreSolicitudwebWsService {
         
         this.connectedClients[client.id] = 
         {
-            socekt: client,
+            socket: client,
             user: user
         };
         
@@ -57,19 +57,23 @@ export class CreSolicitudwebWsService {
 
     getSocketByUserId(idUsuario: number): Socket | null {
         const client = Object.values(this.connectedClients).find(client => client.user.idUsuario === idUsuario);
-        return client ? client.socekt : null;
+        return client ? client.socket : null;
       }
 
     getSocketByNombre(nombre: string): Socket | undefined {
         for (const client of Object.values(this.connectedClients)) {
             if (client.user.Nombre === nombre) {
-                return client.socekt; 
+                return client.socket; 
             }
         }
         return undefined;
     }
     
-      
+    getSocketsByUserId(userId: number): string[] {
+        return Object.entries(this.connectedClients)
+          .filter(([socketId, client]) => client.user.idUsuario === userId)
+          .map(([socketId, client]) => socketId);
+    }
       
     getConnectedClients(): string[] {
         return Object.keys(this.connectedClients);
@@ -93,7 +97,7 @@ export class CreSolicitudwebWsService {
                 console.log(`❌ Desconectando sesión anterior: ${clientId}`);
                 
                 // Notificar al cliente que será desconectado por sesión duplicada
-                client.socekt.emit('session-terminated', {
+                client.socket.emit('session-terminated', {
                     reason: 'duplicate_session',
                     message: 'Tu sesión ha sido cerrada porque iniciaste sesión en otro dispositivo',
                     timestamp: new Date().toISOString()
@@ -101,7 +105,7 @@ export class CreSolicitudwebWsService {
                 
                 // Desconectar después de un pequeño delay para asegurar que el mensaje se envíe
                 setTimeout(() => {
-                    client.socekt.disconnect(true);
+                    client.socket.disconnect(true);
                     // Limpiar de la lista de conectados
                     delete this.connectedClients[clientId];
                 }, 500);
@@ -128,14 +132,14 @@ export class CreSolicitudwebWsService {
         if (client) {
             console.log(`🔧 Admin desconectando usuario ${client.user.Nombre} (ID: ${userId})`);
             
-            client.socekt.emit('session-terminated', {
+            client.socket.emit('session-terminated', {
                 reason,
                 message: 'Tu sesión ha sido cerrada por un administrador',
                 timestamp: new Date().toISOString()
             });
             
             setTimeout(() => {
-                client.socekt.disconnect(true);
+                client.socket.disconnect(true);
             }, 500);
             
             return true;

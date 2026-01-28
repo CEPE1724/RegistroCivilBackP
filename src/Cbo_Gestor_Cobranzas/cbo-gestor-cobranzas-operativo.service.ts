@@ -18,6 +18,7 @@ import {
     CboGestorCobranzasOperativoPorcentajeResponseDto
     
 } from './cbo-gestor-cobranzas-operativo.dto';
+import { CreSolicitudwebWsGateway } from "../cre_solicitudweb-ws/cre_solicitudweb-ws.gateway";
 
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CacheTTL } from '../common/cache-ttl.config';
@@ -27,6 +28,7 @@ import { Cache } from 'cache-manager';
 @Injectable()
 export class CboGestorCobranzasOperativoService {
     private readonly logger = new Logger(CboGestorCobranzasOperativoService.name);
+  
 
     constructor(
         @InjectRepository(CboGestorCobranzas)
@@ -34,6 +36,7 @@ export class CboGestorCobranzasOperativoService {
         @Inject(CACHE_MANAGER) private cacheManager: Cache,
         private readonly personalBddService: PersonalBddService,
         private readonly redisService: RedisService,
+        private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway,
     ) { }
 
 
@@ -505,5 +508,52 @@ AS*/
             );
         }
     }
+
+    async getnotificaciones(idCompra: number): Promise<any[]> {
+  try {
+    this.logger.log(
+      `🔍 Ejecutando SP [Cbo_GestorDeCobranzasOperativoGateway] para idCompra: ${idCompra}`,
+    );
+
+    const query = `EXEC [dbo].[Cbo_GestorDeCobranzasOperativoGateway]
+                   @idCompra = @0`;
+
+      const datos: any[] =
+                await this.cboGestorCobranzasRepository.query(query, [
+                    idCompra
+                ]);
+
+    this.logger.log(
+      `✅ SP ejecutado exitosamente. Registros obtenidos: ${datos.length}`,
+    );
+
+    // 🔔 SOLO SI HAY DATOS
+    if (datos && datos.length > 0) {
+      const { idUsuario } = datos[0]; // el SP devuelve solo un usuario
+this.logger.log(`📢 Enviando notificación al usuario: ${idUsuario} para la solicitudId: ${idCompra}`);
+      this.creSolicitudwebWsGateway.notificarUsuario(idUsuario, {
+        tipo: 'success',
+        mensaje: 'Cobranza actualizada correctamente.',
+        solicitudId: idCompra,
+      });
+
+      this.logger.log(`📢 Notificación enviada al usuario: ${idUsuario}`);
+    } else {
+      this.logger.log(`ℹ️ No hay notificaciones para enviar`);
+    }
+
+    return datos;
+
+  } catch (error) {
+    this.logger.error(
+      `❌ Error ejecutando SP [Cbo_GestorDeCobranzasOperativoGateway]: ${error.message}`,
+      error.stack,
+    );
+    throw new InternalServerErrorException(
+      'Error al obtener las notificaciones. Por favor intente más tarde.',
+    );
+  }
+}
+
 
 }
