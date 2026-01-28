@@ -49,4 +49,5 @@ export const CacheTTL = {
   cbo_saldos: 86400000, // 24 horas
   cbo_score_resultado: 86400000, // 24 horas
   CboGestorCobranzasOperativoPorcentaje: 14400000, // 4 horas
+  Cbo_GestorDeCobranzasOperativoGateway: 2592000000, // 30 dias
 };

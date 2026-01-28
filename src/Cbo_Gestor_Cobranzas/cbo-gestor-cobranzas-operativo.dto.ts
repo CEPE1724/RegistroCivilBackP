@@ -93,7 +93,9 @@ export class notificacionFilterDto {
     @Type(() => Number)
     @IsNumber()
     @Min(0)
-    idCompra?: number = 0;
+    idCompra: number = 0;
+
+
 
  
 }

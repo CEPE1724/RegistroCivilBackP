@@ -87,7 +87,7 @@ export class CboGestorCobranzasOperativoController {
     //@Auth()
     async getnotificaciones(@Query() filtros: notificacionFilterDto) {
         this.logger.log(`📥 Solicitud de notificaciones para idCompra: ${filtros.idCompra} `);
-        return this.cboGestorCobranzasOperativoService.getnotificaciones(filtros.idCompra);
+        return this.cboGestorCobranzasOperativoService.getnotificaciones(filtros.idCompra );
     }
 
 }
