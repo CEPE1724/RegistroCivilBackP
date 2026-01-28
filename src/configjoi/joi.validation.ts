@@ -35,4 +35,10 @@ export const JoinValidationSchema = Joi.object({
   AUTH_BIOMETRICO: Joi.string().required(),
   DFL_INSERT_OPERATION_URL: Joi.string().required(),
   DFL_SEARCH_OPERATION_URL: Joi.string().required(),
+  API_MASSEND_USER: Joi.string().required(),
+  API_MASSEND_PASS: Joi.string().required(),
+  API_MASSEND_URL_MASIVO: Joi.string().required(),
+  API_MASSEND_URL_UNO: Joi.string().required(),
+  
+
 });

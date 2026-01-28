@@ -56,7 +56,13 @@ export const ApiConfig = () => ({
       AUTH_BIOMETRICO: process.env.AUTH_BIOMETRICO,
       DFL_INSERT_OPERATION_URL: process.env.DFL_INSERT_OPERATION_URL,
       DFL_SEARCH_OPERATION_URL: process.env.DFL_SEARCH_OPERATION_URL,
-    }
+    },
+	masend: {
+		API_MASSEND_USER: process.env.API_MASSEND_USER,
+		API_MASSEND_PASS: process.env.API_MASSEND_PASS,
+		API_MASSEND_URL_MASIVO: process.env.API_MASSEND_URL_MASIVO,
+		API_MASSEND_URL_UNO: process.env.API_MASSEND_URL_UNO,
+	}
     
   });
   

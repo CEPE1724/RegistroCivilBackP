@@ -1,8 +1,9 @@
-import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards, UseInterceptors, UploadedFile, Req } from '@nestjs/common';
 import { OtpcodigoService } from './otpcodigo.service';
 import { Auth } from 'src/auth/decorators';
 import { BSONSymbol } from 'typeorm';
 import { EnvTokenAuthGuard } from 'src/metrics/otp-auth.guard';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 @Controller('otp')
 export class OtpController {
@@ -53,4 +54,21 @@ async generateOtpGrafana(
     const isValid = await this.otpService.verifyOtp(phoneNumber, otpCode, cedula, bodega);
     return { success: isValid };
   }
+
+	@Post('smsMasivo')
+	@UseInterceptors(FileInterceptor('file'))
+	async enviarMasivo(
+		@UploadedFile() file: Express.Multer.File,
+		@Body() body: any,
+	) {
+		if (!file) { throw new Error('No se recibió el archivo'); }
+
+		return this.otpService.procesarExcelYEnviar(file, body);
+	}
+
+	@Post('smsAut')
+	async enviarDesdeBD(@Body() body: any) {
+		return this.otpService.procesarConsulta(body);
+	}
+
 }
