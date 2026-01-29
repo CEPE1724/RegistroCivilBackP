@@ -23,12 +23,13 @@ import { CreSolicitudwebWsGateway } from "../cre_solicitudweb-ws/cre_solicitudwe
 import { CACHE_MANAGER } from '@nestjs/cache-manager';
 import { CacheTTL } from '../common/cache-ttl.config';
 import { Cache } from 'cache-manager';
-
+import axios, { AxiosInstance } from 'axios';
 
 @Injectable()
 export class CboGestorCobranzasOperativoService {
     private readonly logger = new Logger(CboGestorCobranzasOperativoService.name);
-
+    private readonly EXPO_NOTIFICATION_URL = 'https://appservices.com.ec/cobranza/api/v1/point/NotificationUser/expo';
+    private readonly axiosInstance: AxiosInstance;
 
     constructor(
         @InjectRepository(CboGestorCobranzas)
@@ -37,7 +38,14 @@ export class CboGestorCobranzasOperativoService {
         private readonly personalBddService: PersonalBddService,
         private readonly redisService: RedisService,
         private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway,
-    ) { }
+    )  {
+        this.axiosInstance = axios.create({
+            timeout: 5000,
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        });
+    }
 
 
     async getDetalleGestoresCobranzasDetalleOperativoWeb(
@@ -564,7 +572,7 @@ export class CboGestorCobranzasOperativoService {
 
                 // 👉 ENVIAR NOTIFICACIÓN TAMBIÉN DESDE CACHE
                 this.enviarNotificacionPago(cached, idCompra);
-                 await this.InsertNewPago(idCompra);
+                await this.InsertNewPago(idCompra);
                 return cached;
             }
 
@@ -586,6 +594,19 @@ export class CboGestorCobranzasOperativoService {
 
             // 👉 ENVIAR NOTIFICACIÓN DESDE BD
             this.enviarNotificacionPago(datos, idCompra);
+            const data = await this.FindCompromisosDePago(idCompra);
+            const cliente = {
+                idUsuario: data[0]?.idUsuario,
+                nombre: data[0]?.Nombre,
+                cedula: data[0]?.Ruc,
+                factura: data[0]?.Factura,
+                Enviar: data[0]?.Enviar,
+                Empresa: data[0]?.Empresa,
+                tokens: data[0]?.Token ? data[0]?.Token : []
+            };
+            if (cliente.Enviar === 1) {
+                await this.enviarNotificacionExpo(cliente);
+            }
             await this.InsertNewPago(idCompra);
 
             this.logger.log(`✅ Datos almacenados en Redis para: ${cacheKey}`);
@@ -632,6 +653,96 @@ export class CboGestorCobranzasOperativoService {
 
         this.logger.log(`✅ Notificación enviada correctamente al usuario: ${idUsuario}`);
     }
+
+    private async enviarNotificacionExpo(
+        cliente: {
+            nombre: string;
+            cedula: string;
+            factura: string;
+            tokens: string[];
+            idUsuario: number;
+            Enviar: number;
+            Empresa: string;
+        },
+    ): Promise<void> {
+        try {
+            if (!cliente.tokens || cliente.tokens.length === 0) {
+                this.logger.warn('⚠️ No hay tokens disponibles para enviar notificación Expo');
+                return;
+            }
+            /*"tokens": [
+        "ExponentPushToken[C-Fy3MNUgLZvRhGLAlDarJ]"
+      ],*/
+            const tokens = [cliente.tokens];
+            const payload = {
+                tokens: tokens,
+                notification: {
+                    type: 'success',
+                    title: '✅ Pago recibido del cliente',
+                    body: `🎉 El cliente ${cliente.nombre} (🆔 ${cliente.cedula}) ha cumplido con su compromiso de pago. 📄 Factura: ${cliente.factura}.`,
+                    url: 'https://miempresa.com/mis-pagos',
+                    empresa: 'CREDI',
+                },
+            };
+
+            this.logger.log(
+                `📤 Enviando notificación Expo a URL: ${this.EXPO_NOTIFICATION_URL}`,
+            );
+            this.logger.log(
+                `📤 Payload: ${JSON.stringify(payload)}`,
+            );
+
+            const response = await this.axiosInstance.post(
+                this.EXPO_NOTIFICATION_URL,
+                payload,
+            );
+
+            this.logger.log(
+                `✅ Notificación Expo enviada exitosamente. Respuesta: ${JSON.stringify(response.data)}`,
+            );
+        } catch (error) {
+            if (error.response) {
+                this.logger.error(
+                    `❌ Error enviando notificación Expo. Status: ${error.response.status}, Data: ${JSON.stringify(error.response.data)}`,
+                );
+            } else if (error.request) {
+                this.logger.error(
+                    `❌ No se recibió respuesta del servidor: ${error.message}`,
+                );
+            } else {
+                this.logger.error(
+                    `❌ Error configurando la solicitud: ${error.message}`,
+                );
+            }
+        }
+    }
+
+    async FindCompromisosDePago(idcompra: number): Promise<any[]> {
+        try {
+            this.logger.log(
+                `🔍 Ejecutando SP [Cbo_GestorDeCobranzasOperativoGatewayCobrador] para idcompra: ${idcompra}`,
+            );
+            const query = `EXEC [dbo].[Cbo_GestorDeCobranzasOperativoGatewayCobrador]
+                @idcompra = @0
+                `;
+            const datos: any[] =
+                await this.cboGestorCobranzasRepository.query(query, [
+                    idcompra
+                ]);
+            this.logger.log(`✅ SP ejecutado exitosamente. Registros obtenidos: ${datos.length} `);
+            return datos;
+        }
+        catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP [Cbo_GestorDeCobranzasOperativoGatewayCobrador]: ${error.message} `,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al obtener los compromisos de pago. Por favor intente más tarde.',
+            );
+        }
+    }
+
 
 }
 
