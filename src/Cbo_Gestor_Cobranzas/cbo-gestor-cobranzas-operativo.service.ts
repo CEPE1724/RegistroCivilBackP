@@ -564,7 +564,7 @@ export class CboGestorCobranzasOperativoService {
 
                 // 👉 ENVIAR NOTIFICACIÓN TAMBIÉN DESDE CACHE
                 this.enviarNotificacionPago(cached, idCompra);
-
+                 await this.InsertNewPago(idCompra);
                 return cached;
             }
 
