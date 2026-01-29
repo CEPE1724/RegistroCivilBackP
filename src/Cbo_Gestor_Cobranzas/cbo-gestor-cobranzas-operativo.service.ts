@@ -71,7 +71,7 @@ export class CboGestorCobranzasOperativoService {
         }
         catch (error) {
             this.logger.error(
-                `❌ Error ejecutando SP Cbo_GestorDeCobranzasOperativoDetalle: ${error.message} `,
+                `❌ Error ejecutando SP ConsultaCbo_GestionesDeCobranzasWeb: ${error.message} `,
                 error.stack,
             );
             throw new InternalServerErrorException(
@@ -509,6 +509,46 @@ export class CboGestorCobranzasOperativoService {
         }
     }
 
+    async InsertNewPago(idCompra: number): Promise<{ ok: boolean }> {
+        try {
+            this.logger.log(
+                `🔍 Ejecutando SP [GuardaCbo_GestionesDeCobranzasCanalesMasivos] para idCompra: ${idCompra}`,
+            );
+            /*    @idCompra int,
+    @Telefono varchar (15) ='',
+    @Notas varchar (250) ='',
+    @idCbo_EstadoGestion int = 12,
+    @idCbo_EstadosTipocontacto int = 10,
+    @idCbo_ResultadoGestion int = 80*/
+            const query = `
+            EXEC [dbo].[GuardaCbo_GestionesDeCobranzasCanalesMasivos] 
+                @idCompra = @0,
+                @Telefono = '',
+                @Notas = 'PAGO REALIZADO DESDE LATINIUM.',
+                @idCbo_EstadoGestion = 8,
+                @idCbo_EstadosTipocontacto = 1,
+                @idCbo_ResultadoGestion = 1
+        `;
+
+            await this.cboGestorCobranzasRepository.query(query, [
+                idCompra
+            ]);
+            const cacheKeys = `ConsultaCbo_GestionesDeCobranzasWeb_${idCompra}`;
+            await this.redisService.delete(cacheKeys);
+            this.logger.log(`✅ SP ejecutado exitosamente.`);
+            return { ok: true };
+        } catch (error) {
+            this.logger.error(
+                `❌ Error ejecutando SP [GuardaCbo_GestionesDeCobranzasCanalesMasivos]: ${error.message}`,
+                error.stack,
+            );
+            throw new InternalServerErrorException(
+                'Error al insertar nuevo pago. Por favor intente más tarde.',
+            );
+        }
+    }
+
+
     async getnotificaciones(idCompra: number): Promise<any[]> {
         try {
             this.logger.log(
@@ -546,6 +586,7 @@ export class CboGestorCobranzasOperativoService {
 
             // 👉 ENVIAR NOTIFICACIÓN DESDE BD
             this.enviarNotificacionPago(datos, idCompra);
+            await this.InsertNewPago(idCompra);
 
             this.logger.log(`✅ Datos almacenados en Redis para: ${cacheKey}`);
             this.logger.log(

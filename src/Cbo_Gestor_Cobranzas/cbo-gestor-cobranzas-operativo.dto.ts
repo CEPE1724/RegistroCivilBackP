@@ -216,7 +216,7 @@ export class TablaDeAmortizacionResponseDto {
 export class CboGestorCobranzasOperativoFilterDetalleDto {
    
     @IsOptional()
-    @IsUUID()
+    @IsString()
     ScRE_SOLIICTUDwEB?: string = null;
 }
 
