@@ -38,7 +38,7 @@ export class CboGestorCobranzasOperativoService {
         private readonly personalBddService: PersonalBddService,
         private readonly redisService: RedisService,
         private readonly creSolicitudwebWsGateway: CreSolicitudwebWsGateway,
-    )  {
+    ) {
         this.axiosInstance = axios.create({
             timeout: 5000,
             headers: {
@@ -558,73 +558,68 @@ export class CboGestorCobranzasOperativoService {
 
 
     async getnotificaciones(idCompra: number): Promise<any[]> {
+        const cacheKey = `Cbo_GestorDeCobranzasOperativoGateway_${idCompra}`;
+
         try {
-            this.logger.log(
-                `🔍 Ejecutando SP [Cbo_GestorDeCobranzasOperativoGateway] para idCompra: ${idCompra}`,
-            );
+            this.logger.log(`🔍 Ejecutando SP [Cbo_GestorDeCobranzasOperativoGateway] para idCompra: ${idCompra}`);
 
-            const cacheKey = `Cbo_GestorDeCobranzasOperativoGateway_${idCompra}`;
-            const cached = await this.cacheManager.get<any[]>(cacheKey);
+            // 🔹 Intentar obtener datos desde cache
+            let datos: any[] = await this.cacheManager.get<any[]>(cacheKey);
+            let cacheHit = !!datos;
 
-            // 🔹 CACHE HIT
-            if (cached) {
+            if (cacheHit) {
                 this.logger.log(`✅ CACHE HIT - Datos obtenidos desde Redis para: ${cacheKey}`);
+            } else {
+                this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
 
-                // 👉 ENVIAR NOTIFICACIÓN TAMBIÉN DESDE CACHE
-                this.enviarNotificacionPago(cached, idCompra);
+                const query = `EXEC [dbo].[Cbo_GestorDeCobranzasOperativoGateway] @idCompra = @0`;
+                datos = await this.cboGestorCobranzasRepository.query(query, [idCompra]);
+
+                // Guardar en cache
+                await this.cacheManager.set(cacheKey, datos, CacheTTL.Cbo_GestorDeCobranzasOperativoGateway);
+                this.logger.log(`✅ Datos almacenados en Redis para: ${cacheKey}`);
+            }
+
+            // 🔹 FLUJO ÚNICO PARA NOTIFICACIONES Y PAGO
+            if (datos.length > 0) {
+                // 1️⃣ Enviar notificación de pago
+                this.enviarNotificacionPago(datos, idCompra);
+
+
+                const dataCliente = await this.FindCompromisosDePago(idCompra);
+                const cliente = this.mapClienteForNotification(dataCliente[0]);
+
+                if (cliente?.Enviar === 1 && cliente.tokens.length > 0) {
+                    await this.enviarNotificacionExpo(cliente);
+                }
                 await this.InsertNewPago(idCompra);
-                return cached;
             }
 
-            // 🔹 CACHE MISS
-            this.logger.log(`❌ CACHE MISS - Consultando base de datos para: ${cacheKey}`);
-
-            const query = ` EXEC [dbo].[Cbo_GestorDeCobranzasOperativoGateway]
-                              @idCompra = @0 `;
-
-            const datos: any[] = await this.cboGestorCobranzasRepository.query(query, [
-                idCompra,
-            ]);
-
-            await this.cacheManager.set(
-                cacheKey,
-                datos,
-                CacheTTL.Cbo_GestorDeCobranzasOperativoGateway,
-            );
-
-            // 👉 ENVIAR NOTIFICACIÓN DESDE BD
-            this.enviarNotificacionPago(datos, idCompra);
-            const data = await this.FindCompromisosDePago(idCompra);
-            const cliente = {
-                idUsuario: data[0]?.idUsuario,
-                nombre: data[0]?.Nombre,
-                cedula: data[0]?.Ruc,
-                factura: data[0]?.Factura,
-                Enviar: data[0]?.Enviar,
-                Empresa: data[0]?.Empresa,
-                tokens: data[0]?.Token ? data[0]?.Token : []
-            };
-            if (cliente.Enviar === 1) {
-                await this.enviarNotificacionExpo(cliente);
-            }
-            await this.InsertNewPago(idCompra);
-
-            this.logger.log(`✅ Datos almacenados en Redis para: ${cacheKey}`);
-            this.logger.log(
-                `✅ SP ejecutado exitosamente. Registros obtenidos: ${datos.length}`,
-            );
-
+            this.logger.log(`✅ SP ejecutado exitosamente. Registros obtenidos: ${datos.length}`);
             return datos;
         } catch (error) {
             this.logger.error(
                 `❌ Error ejecutando SP [Cbo_GestorDeCobranzasOperativoGateway]: ${error.message}`,
                 error.stack,
             );
-
             throw new InternalServerErrorException(
                 'Error al obtener las notificaciones. Por favor intente más tarde.',
             );
         }
+    }
+
+    private mapClienteForNotification(data: any) {
+        if (!data) return null;
+
+        return {
+            idUsuario: data.idUsuario,
+            nombre: data.Nombre,
+            cedula: data.Ruc,
+            factura: data.Factura,
+            Enviar: data.Enviar,
+            Empresa: data.Empresa,
+            tokens: data.Token ? data.Token : []
+        };
     }
 
 
