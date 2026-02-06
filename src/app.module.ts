@@ -193,6 +193,7 @@ import { CboTipoClienteModule } from './cbo-tipo-cliente/cbo-tipo-cliente.module
 import { CboEdadModule } from './cbo-edad/cbo-edad.module';
 import { CboSaldosModule } from './cbo-saldos/cbo-saldos.module';
 import { CboScoreResultadoModule } from './cbo-score-resultado/cbo-score-resultado.module';
+import { CreGcTelefonoModule } from './cre-gc-telefono/cre-gc-telefono.module';
 
 
 
@@ -514,7 +515,8 @@ import { CboScoreResultadoModule } from './cbo-score-resultado/cbo-score-resulta
     CboTipoClienteModule,
     CboEdadModule,
     CboSaldosModule,
-    CboScoreResultadoModule
+    CboScoreResultadoModule,
+    CreGcTelefonoModule
 
   ],
   providers: [

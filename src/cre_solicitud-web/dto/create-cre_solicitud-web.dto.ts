@@ -218,9 +218,17 @@ export class CreateCreSolicitudWebDto {
     @IsOptional()
     idEstadoAnalisisDeIdentidad: number;
 
+     @IsNumber()
+    @IsOptional()
+    iDuplicado: number;
+
     @IsBoolean()
     @IsOptional()
     CupoCredito: boolean;
+
+    @IsNumber()
+    @IsOptional()
+    idCliente: number;
     
 
     /**

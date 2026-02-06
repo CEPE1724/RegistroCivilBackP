@@ -201,7 +201,8 @@ export class CboGestorCobranzasOperativoService {
                 @Gestionados = @4,
                 @idCbo_ResultadoGestion = @5,
                 @idCbo_Gestores = @6,
-                @GestionHoy = @7
+                @GestionHoy = @7,
+                @Filtro = @8
                 `;
 
             const totalCountResult = await this.cboGestorCobranzasRepository.query(queryCount, [
@@ -213,6 +214,7 @@ export class CboGestorCobranzasOperativoService {
                 params.idCbo_ResultadoGestion,
                 params.idGestores,
                 params.GestionHoy,
+                params.Filtro,
             ]);
 
             const totalCount = totalCountResult[0]?.TotalRegistros || 0;
@@ -228,10 +230,11 @@ export class CboGestorCobranzasOperativoService {
                 @idCbo_ResultadoGestion = @5,
                 @idCbo_Gestores = @6,
                 @GestionHoy = @7,
-                @PageNumber = @8,
-                @PageSize = @9,
-                 @OrdenarPor = @10,
-                 @Direccion = @11`;
+                @Filtro = @8,
+                @PageNumber = @9,
+                @PageSize = @10,
+                @OrdenarPor = @11,
+                @Direccion = @12`;
             const datos: CboGestorCobranzasOperativoResponseDto[] =
                 await this.cboGestorCobranzasRepository.query(query, [
                     params.desdeDiasMora,
@@ -242,6 +245,7 @@ export class CboGestorCobranzasOperativoService {
                     params.idCbo_ResultadoGestion,
                     params.idGestores,
                     params.GestionHoy,
+                    params.Filtro,
                     params.pageNumber,
                     params.pageSize,
                     params.ordenarPor,
@@ -283,6 +287,7 @@ export class CboGestorCobranzasOperativoService {
         const idCbo_ResultadoGestion = filtros.idCbo_ResultadoGestion ?? 0;
         const idGestores = filtros.idGestores ?? 0;
         const GestionHoy = filtros.GestionHoy ?? 0;
+        const Filtro = filtros.Filtro ?? '';
         const pageNumber = Math.max(1, filtros.pageNumber ?? 1);
         const pageSize = Math.max(1, filtros.pageSize ?? 50);
 
@@ -314,6 +319,7 @@ export class CboGestorCobranzasOperativoService {
             idCbo_ResultadoGestion,
             idGestores,
             GestionHoy,
+            Filtro,
             pageNumber,
             pageSize,
         } as Required<CboGestorCobranzasOperativoFilterDto>;

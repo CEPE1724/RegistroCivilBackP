@@ -54,6 +54,10 @@ export class CboGestorCobranzasOperativoFilterDto {
     GestionHoy?: number = 0;
 
     @IsOptional()
+    @IsString()
+    Filtro?: string = '';
+
+    @IsOptional()
     @Type(() => Number)
     @IsNumber()
     @Min(1)

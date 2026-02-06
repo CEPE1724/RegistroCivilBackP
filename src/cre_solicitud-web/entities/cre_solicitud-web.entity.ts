@@ -156,6 +156,12 @@ export class CreSolicitudWeb {
     @Column({ type: 'bit', default: false })
     CupoCredito: boolean;
 
+     @Column({ type: 'int', default: 0 })
+    idCliente: number;
+
+    @Column({ type: 'int', default: 0 })
+    iDuplicado: number;
+
     //ALTER TABLE [dbo].[Cre_SolicitudWeb] ADD  CONSTRAINT [DF_Cre_SolicitudWeb_sCre_SolicitudWeb]  DEFAULT (newsequentialid()) FOR [sCre_SolicitudWeb]
     @Column('uniqueidentifier', { default: () => 'newsequentialid()' })
     sCre_SolicitudWeb: string;
